@@ -12,9 +12,11 @@ import {
   DO_NOT_RENDER_ID_PREFIX,
   ensureToolCallsHaveResponses,
 } from "@/lib/ensure-tool-responses";
-import { LangGraphLogoSVG } from "../icons/langgraph";
+import { LangGraphLogoSVG, MathemistLogoWithText } from "../icons/langgraph";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LangToggle } from "@/components/lang-toggle";
+import { useI18n } from "@/providers/I18n";
 import {
   ArrowDown,
   LoaderCircle,
@@ -74,6 +76,7 @@ function StickyToBottomContent(props: {
 
 function ScrollToBottom(props: { className?: string }) {
   const { isAtBottom, scrollToBottom } = useStickToBottomContext();
+  const { t } = useI18n();
 
   if (isAtBottom) return null;
   return (
@@ -83,12 +86,13 @@ function ScrollToBottom(props: { className?: string }) {
       onClick={() => scrollToBottom()}
     >
       <ArrowDown className="h-4 w-4" />
-      <span>Scroll to bottom</span>
+      <span>{t.scrollToBottom}</span>
     </Button>
   );
 }
 
 function OpenGitHubRepo() {
+  const { t } = useI18n();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -96,16 +100,13 @@ function OpenGitHubRepo() {
           <a
             href="https://github.com/Xi-Lian/Mathemist"
             target="_blank"
-            className="flex items-center justify-center"
+            className="inline-flex h-7 w-7 items-center justify-center rounded-md hover:bg-accent"
           >
-            <GitHubSVG
-              width="24"
-              height="24"
-            />
+            <GitHubSVG className="h-4 w-4" />
           </a>
         </TooltipTrigger>
         <TooltipContent side="left">
-          <p>Open GitHub repo</p>
+          <p>{t.openGitHubRepo}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -113,6 +114,7 @@ function OpenGitHubRepo() {
 }
 
 export function Thread() {
+  const { t } = useI18n();
   const [artifactContext, setArtifactContext] = useArtifactContext();
   const [artifactOpen, closeArtifact] = useArtifactOpen();
 
@@ -327,6 +329,7 @@ export function Thread() {
                 )}
               </div>
               <div className="absolute top-2 right-4 flex items-center gap-3">
+                <LangToggle />
                 <ThemeToggle />
                 <OpenGitHubRepo />
               </div>
@@ -362,25 +365,20 @@ export function Thread() {
                     damping: 30,
                   }}
                 >
-                  <LangGraphLogoSVG
-                    width={32}
+                  <MathemistLogoWithText
+                    width={160}
                     height={32}
                   />
-                  <span className="text-xl font-semibold tracking-tight">
-                    Agent Chat
-                  </span>
                 </motion.button>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <LangToggle />
                 <ThemeToggle />
-                <div className="flex items-center">
-                  <OpenGitHubRepo />
-                </div>
+                <OpenGitHubRepo />
                 <TooltipIconButton
-                  size="lg"
-                  className="p-4"
-                  tooltip="New thread"
+                  size="icon"
+                  tooltip={t.newThread}
                   variant="ghost"
                   onClick={() => setThreadId(null)}
                 >
@@ -439,10 +437,7 @@ export function Thread() {
                 <div className="sticky bottom-0 flex flex-col items-center gap-8 bg-background">
                   {!chatStarted && (
                     <div className="flex items-center gap-3">
-                      <LangGraphLogoSVG className="h-8 flex-shrink-0" />
-                      <h1 className="text-2xl font-semibold tracking-tight">
-                        Agent Chat
-                      </h1>
+                      <MathemistLogoWithText width={180} height={40} className="flex-shrink-0" />
                     </div>
                   )}
 
@@ -482,7 +477,7 @@ export function Thread() {
                             form?.requestSubmit();
                           }
                         }}
-                        placeholder="Type your message..."
+                        placeholder={t.typeYourMessage}
                         className="field-sizing-content resize-none border-none bg-transparent p-3.5 pb-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
                       />
 
@@ -498,7 +493,7 @@ export function Thread() {
                               htmlFor="render-tool-calls"
                               className="text-sm text-muted-foreground"
                             >
-                              Hide Tool Calls
+                              {t.hideToolCalls}
                             </Label>
                           </div>
                         </div>
@@ -508,7 +503,7 @@ export function Thread() {
                         >
                           <Plus className="size-5 text-muted-foreground" />
                           <span className="text-sm text-muted-foreground">
-                            Upload PDF or Image
+                            {t.uploadPdfOrImage}
                           </span>
                         </Label>
                         <input
@@ -526,7 +521,7 @@ export function Thread() {
                             className="ml-auto"
                           >
                             <LoaderCircle className="h-4 w-4 animate-spin" />
-                            Cancel
+                            {t.cancel}
                           </Button>
                         ) : (
                           <Button
@@ -537,7 +532,7 @@ export function Thread() {
                               (!input.trim() && contentBlocks.length === 0)
                             }
                           >
-                            Send
+                            {t.send}
                           </Button>
                         )}
                       </div>
