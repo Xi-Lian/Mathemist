@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- 几何图形 Logo - 开放三角形 + 斜线 -->
+  <g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="butt" stroke-linejoin="miter">
+    <!-- 开放三角形 -->
+    <path d="M12 36 L24 8 L36 36" />
+    <!-- 极简斜线切入 -->
+    <line x1="6" y1="28" x2="42" y2="18" />
+  </g>
+</svg>

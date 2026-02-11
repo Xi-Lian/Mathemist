@@ -1,0 +1,36 @@
+# 核心依赖
+langgraph>=1.0.0
+langserve>=0.3.0
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+python-dotenv>=1.0.0
+
+# LangChain相关
+langchain>=1.0.0
+langchain-deepseek>=1.0.0
+langchain-community>=0.4.0
+
+# 向量数据库
+chromadb>=0.6.0
+
+# 数据验证
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# HTTP客户端
+httpx>=0.25.0
+
+# 工具库
+numpy>=1.26.0
+pandas>=2.0.0
+transformers>=4.35.0
+
+# 开发依赖
+black>=23.0.0
+isort>=5.0.0
+flake8>=6.0.0
+mypy>=1.0.0
+
+# 测试依赖
+pytest>=7.0.0
+pytest-asyncio>=0.21.0

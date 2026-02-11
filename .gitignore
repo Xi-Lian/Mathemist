@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Vector DB
 chroma_db/
 
@@ -6,10 +7,14 @@ chroma_db/
 paraphrase-multilingual-MiniLM-L12-v2/           # 如果模型通过其他方式分发
 
 # Python临时文件
+=======
+node_modules/
+>>>>>>> 8ab2b4c3f4db6a981b70dcfc3239993237578de1
 __pycache__/
 *.pyc
 .venv/
 venv/
+<<<<<<< HEAD
 .env
 
 # OS（系统文件）
@@ -20,3 +25,21 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+=======
+backend/chroma_db/
+.env
+.env.local
+frontend/.next/
+frontend/out/
+frontend/build/
+dist/
+*.log
+npm-debug.log*
+yarn-debug.log*
+.DS_Store
+Thumbs.db
+.claude
+.claude.md
+.iflow
+iflow.md
+>>>>>>> 8ab2b4c3f4db6a981b70dcfc3239993237578de1
