@@ -5,7 +5,8 @@ from .nodes import (
     resource_retrieval_node,
     lesson_plan_generation_node,
     visualization_suggestion_node,
-    search_result_processing_node
+    search_result_processing_node,
+    response_formatting_node
 )
 
 def create_math_agent_graph():
@@ -21,6 +22,7 @@ def create_math_agent_graph():
     graph.add_node("lesson_plan_generation", lesson_plan_generation_node)
     graph.add_node("visualization_suggestion", visualization_suggestion_node)
     graph.add_node("search_result_processing", search_result_processing_node)
+    graph.add_node("response_formatting", response_formatting_node)
     
     # 定义边和路由
     
@@ -31,19 +33,29 @@ def create_math_agent_graph():
     graph.add_edge("intent_understanding", "resource_retrieval")
     
     # 资源检索节点 -> 根据意图路由到不同处理节点
-    def route_after_retrieval(state: MathAgentState):
+    def route_after_retrieval(state):
         """
         根据意图路由到不同的处理节点
         """
+        # 处理 state 可能是字典或 MathAgentState 对象的情况
+        if isinstance(state, dict):
+            intent = state.get("intent")
+        else:
+            intent = getattr(state, "intent", None)
+        
+        print(f"🔀 路由函数: state 类型 = {type(state)}")
+        print(f"🔀 路由函数: intent = {intent}")
+        
         # 根据意图路由
-        if state.intent == "generate_lesson_plan":
+        if intent == "generate_lesson_plan":
             return "lesson_plan_generation"
-        elif state.intent == "visualization":
+        elif intent == "visualization":
             return "visualization_suggestion"
-        elif state.intent == "search":
+        elif intent == "search":
             return "search_result_processing"
         else:
             # 默认路由到搜索结果处理
+            print(f"⚠️ 未知意图 {intent}，使用默认路由")
             return "search_result_processing"
     
     graph.add_conditional_edges(
@@ -56,10 +68,13 @@ def create_math_agent_graph():
         }
     )
     
-    # 处理节点 -> 结束节点
-    graph.add_edge("lesson_plan_generation", END)
-    graph.add_edge("visualization_suggestion", END)
-    graph.add_edge("search_result_processing", END)
+    # 所有处理节点 -> 响应格式化节点
+    graph.add_edge("lesson_plan_generation", "response_formatting")
+    graph.add_edge("visualization_suggestion", "response_formatting")
+    graph.add_edge("search_result_processing", "response_formatting")
+    
+    # 响应格式化节点 -> 结束节点
+    graph.add_edge("response_formatting", END)
     
     # 编译图
     compiled_graph = graph.compile()

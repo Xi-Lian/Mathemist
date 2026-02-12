@@ -8,6 +8,7 @@ from langserve import add_routes
 from langgraph.types import StreamMode
 from app.graph import math_agent_graph
 from app.state import MathAgentState
+from app.langgraph_api import router as langgraph_api_router
 
 # 配置日志
 logging.basicConfig(
@@ -49,13 +50,22 @@ app = FastAPI(
 )
 
 # 配置CORS
+# 从环境变量读取允许的源，支持多个域名，用逗号分隔
+allowed_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+allowed_origins = [origin.strip() for origin in allowed_origins if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该设置具体的前端域名
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+logger.info(f"CORS配置: 允许的源: {allowed_origins}")
+
+# 添加 LangGraph API 路由
+app.include_router(langgraph_api_router)
 
 # 健康检查端点
 @app.get("/health")
