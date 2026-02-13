@@ -6,7 +6,10 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Request, Body
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from app.graph import math_agent_graph
+from app.graph import create_math_agent_graph
+
+# 创建math_agent_graph实例
+math_agent_graph = create_math_agent_graph()
 from app.state import MathAgentState
 
 logger = logging.getLogger(__name__)

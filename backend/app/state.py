@@ -13,6 +13,7 @@ class MathAgentState:
     
     # 意图理解
     intent: Optional[str] = None  # 可能的值: "search", "generate_lesson_plan", "visualization"
+    intents: List[Dict[str, Any]] = field(default_factory=list)  # 多个意图及其置信度
     
     # 检索结果
     retrieved_resources: Optional[List[Dict[str, Any]]] = None

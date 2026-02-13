@@ -40,13 +40,28 @@ def create_math_agent_graph():
         # 处理 state 可能是字典或 MathAgentState 对象的情况
         if isinstance(state, dict):
             intent = state.get("intent")
+            intents = state.get("intents", [])
         else:
             intent = getattr(state, "intent", None)
+            intents = getattr(state, "intents", [])
         
         print(f"🔀 路由函数: state 类型 = {type(state)}")
         print(f"🔀 路由函数: intent = {intent}")
+        print(f"🔀 路由函数: intents = {intents}")
         
-        # 根据意图路由
+        # 检查是否有多个高置信度意图
+        high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
+        
+        if len(high_confidence_intents) > 1:
+            print(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
+            # 优先处理教案生成意图
+            if any(i.get("type") == "generate_lesson_plan" for i in high_confidence_intents):
+                return "lesson_plan_generation"
+            # 其次处理可视化意图
+            elif any(i.get("type") == "visualization" for i in high_confidence_intents):
+                return "visualization_suggestion"
+        
+        # 根据主要意图路由
         if intent == "generate_lesson_plan":
             return "lesson_plan_generation"
         elif intent == "visualization":
@@ -80,6 +95,3 @@ def create_math_agent_graph():
     compiled_graph = graph.compile()
     
     return compiled_graph
-
-# 导出图实例
-math_agent_graph = create_math_agent_graph()

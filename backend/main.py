@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langserve import add_routes
 from langgraph.types import StreamMode
-from app.graph import math_agent_graph
+from app.graph import create_math_agent_graph
 from app.state import MathAgentState
 from app.langgraph_api import router as langgraph_api_router
 
@@ -121,18 +121,34 @@ async def invoke_math_agent(request: MathAgentRequest) -> Dict[str, Any]:
         智能体处理结果
     """
     try:
+        print(f"====================================")
+        print(f"收到请求: {request.user_input}")
+        print(f"====================================")
         logger.info(f"Processing user input: {request.user_input}")
         
         # 构建输入状态
-        input_state = {
-            "user_input": request.user_input,
-            "chat_history": request.chat_history or [],
-            "context": request.context or {}
-        }
+        input_state = MathAgentState(
+            user_input=request.user_input,
+            chat_history=request.chat_history or [],
+            context=request.context or {}
+        )
+        
+        logger.info(f"Input state: {input_state}")
+        
+        # 重新创建math_agent_graph实例，确保使用最新的节点函数
+        math_agent_graph = create_math_agent_graph()
+        
+        print(f"开始调用LangGraph...")
+        print(f"输入状态类型: {type(input_state)}")
+        print(f"输入状态内容: {input_state}")
         
         # 调用LangGraph
         result = await math_agent_graph.ainvoke(input_state)
         
+        print(f"LangGraph调用完成")
+        print(f"结果类型: {type(result)}")
+        print(f"结果内容: {result}")
+        logger.info(f"Result: {result}")
         logger.info(f"Processing completed successfully")
         
         # 构建响应
@@ -140,6 +156,7 @@ async def invoke_math_agent(request: MathAgentRequest) -> Dict[str, Any]:
             "status": "success",
             "data": {
                 "intent": result.get("intent"),
+                "intents": result.get("intents"),
                 "lesson_plan": result.get("lesson_plan"),
                 "visualization_suggestions": result.get("visualization_suggestions"),
                 "retrieved_resources": result.get("retrieved_resources"),
@@ -153,6 +170,60 @@ async def invoke_math_agent(request: MathAgentRequest) -> Dict[str, Any]:
         
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+# 直接生成教案的端点
+@app.post("/math-agent/generate-lesson-plan")
+async def generate_lesson_plan(request: MathAgentRequest) -> Dict[str, Any]:
+    """
+    直接生成教案，绕过意图理解节点
+    
+    Args:
+        request: 包含用户输入、对话历史和上下文的请求对象
+    
+    Returns:
+        教案生成结果
+    """
+    try:
+        logger.info(f"Generating lesson plan for: {request.user_input}")
+        
+        # 导入必要的函数
+        from app.nodes import retrieve_resources, lesson_plan_generation_node
+        from app.state import MathAgentState
+        
+        # 检索资源
+        retrieved_resources = retrieve_resources(
+            query=request.user_input,
+            intent="generate_lesson_plan"
+        )
+        
+        # 创建状态对象
+        state = MathAgentState(
+            user_input=request.user_input,
+            chat_history=request.chat_history or [],
+            context=request.context or {},
+            intent="generate_lesson_plan",
+            retrieved_resources=retrieved_resources
+        )
+        
+        # 直接调用教案生成节点
+        result = lesson_plan_generation_node(state)
+        
+        logger.info(f"Lesson plan generation completed successfully")
+        
+        # 构建响应
+        response = {
+            "status": "success",
+            "data": {
+                "lesson_plan": result.get("lesson_plan"),
+                "error": result.get("error")
+            }
+        }
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error generating lesson plan: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 # 流式调用端点
@@ -191,7 +262,7 @@ async def stream_math_agent(request: MathAgentRequest):
 # 添加LangServe路由
 add_routes(
     app,
-    math_agent_graph,
+    create_math_agent_graph(),
     path="/langserve/math-agent"
 )
 
