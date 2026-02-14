@@ -1,0 +1,200 @@
+"""
+工具模块
+
+提供通用的辅助工具和常量定义：
+- 辅助函数
+- 常量定义
+"""
+
+from .helpers import (
+    CustomJSONEncoder,
+    generate_id,
+    get_current_timestamp,
+    safe_get,
+    safe_str,
+    is_empty,
+    truncate_text,
+    format_percentage,
+    deduplicate_list,
+    sort_by_key,
+    merge_dicts,
+    validate_email,
+    sanitize_filename,
+    format_file_size
+)
+
+from .constants import (
+    # API相关
+    API_PREFIX,
+    API_TAGS,
+    
+    # 助手相关
+    ASSISTANT_ID,
+    ASSISTANT_NAME,
+    ASSISTANT_DESCRIPTION,
+    GRAPH_ID,
+    MODEL_NAME,
+    VERSION,
+    CATEGORY,
+    
+    # 意图类型
+    INTENT_SEARCH,
+    INTENT_GENERATE_LESSON_PLAN,
+    INTENT_VISUALIZATION,
+    
+    # 资源类型
+    RESOURCE_TYPE_LESSON_PLAN,
+    RESOURCE_TYPE_SYLLABUS,
+    RESOURCE_TYPE_COURSEWARE,
+    RESOURCE_TYPE_LESSON_CASE,
+    RESOURCE_TYPE_GGB,
+    RESOURCE_TYPE_VISUALIZATION,
+    RESOURCE_TYPE_EXERCISE,
+    RESOURCE_TYPE_THEORY,
+    RESOURCE_TYPE_NAMES,
+    RESOURCE_TYPE_ICONS,
+    
+    # ChromaDB
+    COLLECTION_NAME,
+    DEFAULT_N_RESULTS,
+    
+    # 模型
+    DEEPSEEK_MODEL,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_MAX_TOKENS,
+    LESSON_PLAN_MAX_TOKENS,
+    
+    # 内容处理
+    DEFAULT_SUMMARY_LENGTH,
+    DEFAULT_CONTENT_LENGTH,
+    
+    # 状态
+    STATUS_PENDING,
+    STATUS_RUNNING,
+    STATUS_SUCCESS,
+    STATUS_ERROR,
+    STATUS_CANCELLED,
+    
+    # 步骤
+    STEP_INTENT_UNDERSTANDING,
+    STEP_RESOURCE_RETRIEVAL,
+    STEP_LESSON_PLAN_GENERATION,
+    STEP_VISUALIZATION_SUGGESTIONS,
+    STEP_RESPONSE_FORMATTING,
+    STEP_NAMES,
+    
+    # 错误消息
+    ERROR_EMPTY_INPUT,
+    ERROR_MODEL_NOT_INITIALIZED,
+    ERROR_CHROMADB_NOT_FOUND,
+    ERROR_RESOURCE_RETRIEVAL_FAILED,
+    ERROR_LESSON_PLAN_GENERATION_FAILED,
+    ERROR_VISUALIZATION_ADVICE_FAILED,
+    ERROR_RESPONSE_FORMATTING_FAILED,
+    
+    # 默认值
+    DEFAULT_CONFIDENCE,
+    DEFAULT_RELEVANCE_THRESHOLD,
+    
+    # HTTP状态码
+    HTTP_STATUS_OK,
+    HTTP_STATUS_CREATED,
+    HTTP_STATUS_BAD_REQUEST,
+    HTTP_STATUS_NOT_FOUND,
+    HTTP_STATUS_INTERNAL_ERROR,
+    
+    # 分页
+    DEFAULT_LIMIT,
+    DEFAULT_OFFSET,
+    MAX_LIMIT,
+    
+    # 日志级别
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_CRITICAL
+)
+
+__all__ = [
+    # 辅助函数
+    "CustomJSONEncoder",
+    "generate_id",
+    "get_current_timestamp",
+    "safe_get",
+    "safe_str",
+    "is_empty",
+    "truncate_text",
+    "format_percentage",
+    "deduplicate_list",
+    "sort_by_key",
+    "merge_dicts",
+    "validate_email",
+    "sanitize_filename",
+    "format_file_size",
+    
+    # 常量
+    "API_PREFIX",
+    "API_TAGS",
+    "ASSISTANT_ID",
+    "ASSISTANT_NAME",
+    "ASSISTANT_DESCRIPTION",
+    "GRAPH_ID",
+    "MODEL_NAME",
+    "VERSION",
+    "CATEGORY",
+    "INTENT_SEARCH",
+    "INTENT_GENERATE_LESSON_PLAN",
+    "INTENT_VISUALIZATION",
+    "RESOURCE_TYPE_LESSON_PLAN",
+    "RESOURCE_TYPE_SYLLABUS",
+    "RESOURCE_TYPE_COURSEWARE",
+    "RESOURCE_TYPE_LESSON_CASE",
+    "RESOURCE_TYPE_GGB",
+    "RESOURCE_TYPE_VISUALIZATION",
+    "RESOURCE_TYPE_EXERCISE",
+    "RESOURCE_TYPE_THEORY",
+    "RESOURCE_TYPE_NAMES",
+    "RESOURCE_TYPE_ICONS",
+    "COLLECTION_NAME",
+    "DEFAULT_N_RESULTS",
+    "DEEPSEEK_MODEL",
+    "DEFAULT_TEMPERATURE",
+    "DEFAULT_MAX_TOKENS",
+    "LESSON_PLAN_MAX_TOKENS",
+    "DEFAULT_SUMMARY_LENGTH",
+    "DEFAULT_CONTENT_LENGTH",
+    "STATUS_PENDING",
+    "STATUS_RUNNING",
+    "STATUS_SUCCESS",
+    "STATUS_ERROR",
+    "STATUS_CANCELLED",
+    "STEP_INTENT_UNDERSTANDING",
+    "STEP_RESOURCE_RETRIEVAL",
+    "STEP_LESSON_PLAN_GENERATION",
+    "STEP_VISUALIZATION_SUGGESTIONS",
+    "STEP_RESPONSE_FORMATTING",
+    "STEP_NAMES",
+    "ERROR_EMPTY_INPUT",
+    "ERROR_MODEL_NOT_INITIALIZED",
+    "ERROR_CHROMADB_NOT_FOUND",
+    "ERROR_RESOURCE_RETRIEVAL_FAILED",
+    "ERROR_LESSON_PLAN_GENERATION_FAILED",
+    "ERROR_VISUALIZATION_ADVICE_FAILED",
+    "ERROR_RESPONSE_FORMATTING_FAILED",
+    "DEFAULT_CONFIDENCE",
+    "DEFAULT_RELEVANCE_THRESHOLD",
+    "HTTP_STATUS_OK",
+    "HTTP_STATUS_CREATED",
+    "HTTP_STATUS_BAD_REQUEST",
+    "HTTP_STATUS_NOT_FOUND",
+    "HTTP_STATUS_INTERNAL_ERROR",
+    "DEFAULT_LIMIT",
+    "DEFAULT_OFFSET",
+    "MAX_LIMIT",
+    "LOG_LEVEL_DEBUG",
+    "LOG_LEVEL_INFO",
+    "LOG_LEVEL_WARNING",
+    "LOG_LEVEL_ERROR",
+    "LOG_LEVEL_CRITICAL"
+]

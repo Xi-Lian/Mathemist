@@ -127,8 +127,8 @@ const StreamSession = ({
 };
 
 // Default values for the form
-const DEFAULT_API_URL = "http://localhost:2024";
-const DEFAULT_ASSISTANT_ID = "agent";
+const DEFAULT_API_URL = "http://localhost:8000";
+const DEFAULT_ASSISTANT_ID = "math-agent";
 
 export const StreamProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -264,8 +264,8 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <StreamSession
       apiKey={apiKey}
-      apiUrl={apiUrl}
-      assistantId={assistantId}
+      apiUrl={finalApiUrl}
+      assistantId={finalAssistantId}
     >
       {children}
     </StreamSession>

@@ -8,6 +8,9 @@ class MathAgentState:
     # 对话消息（LangGraph SDK 期望的字段）
     messages: List[Dict[str, Any]] = field(default_factory=list)
     
+    # 当前消息（用于发送消息事件）
+    message: Optional[Dict[str, Any]] = None
+    
     # 用户输入
     user_input: str = ""
     

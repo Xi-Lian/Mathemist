@@ -1,18 +1,19 @@
 from langgraph.graph import StateGraph, END, START
 from .state import MathAgentState
-from .nodes import (
-    intent_understanding_node,
-    resource_retrieval_node,
-    lesson_plan_generation_node,
-    visualization_suggestion_node,
-    search_result_processing_node,
-    response_formatting_node
-)
 
 def create_math_agent_graph():
     """
     创建高中数学资源智能体的LangGraph状态机
     """
+    # 动态导入节点函数，确保使用最新的代码
+    from .nodes import (
+        intent_understanding_node,
+        resource_retrieval_node,
+        lesson_plan_generation_node,
+        visualization_suggestions_node,
+        response_formatting_node
+    )
+    
     # 创建StateGraph实例
     graph = StateGraph(MathAgentState)
     
@@ -20,8 +21,7 @@ def create_math_agent_graph():
     graph.add_node("intent_understanding", intent_understanding_node)
     graph.add_node("resource_retrieval", resource_retrieval_node)
     graph.add_node("lesson_plan_generation", lesson_plan_generation_node)
-    graph.add_node("visualization_suggestion", visualization_suggestion_node)
-    graph.add_node("search_result_processing", search_result_processing_node)
+    graph.add_node("visualization_suggestions", visualization_suggestions_node)
     graph.add_node("response_formatting", response_formatting_node)
     
     # 定义边和路由
@@ -59,34 +59,34 @@ def create_math_agent_graph():
                 return "lesson_plan_generation"
             # 其次处理可视化意图
             elif any(i.get("type") == "visualization" for i in high_confidence_intents):
-                return "visualization_suggestion"
+                return "visualization_suggestions"
         
         # 根据主要意图路由
         if intent == "generate_lesson_plan":
             return "lesson_plan_generation"
         elif intent == "visualization":
-            return "visualization_suggestion"
+            return "visualization_suggestions"
         elif intent == "search":
-            return "search_result_processing"
+            # 搜索意图直接跳到响应格式化
+            return "response_formatting"
         else:
-            # 默认路由到搜索结果处理
+            # 默认路由到响应格式化
             print(f"⚠️ 未知意图 {intent}，使用默认路由")
-            return "search_result_processing"
+            return "response_formatting"
     
     graph.add_conditional_edges(
         "resource_retrieval",
         route_after_retrieval,
         {
             "lesson_plan_generation": "lesson_plan_generation",
-            "visualization_suggestion": "visualization_suggestion",
-            "search_result_processing": "search_result_processing"
+            "visualization_suggestions": "visualization_suggestions",
+            "response_formatting": "response_formatting"
         }
     )
     
     # 所有处理节点 -> 响应格式化节点
     graph.add_edge("lesson_plan_generation", "response_formatting")
-    graph.add_edge("visualization_suggestion", "response_formatting")
-    graph.add_edge("search_result_processing", "response_formatting")
+    graph.add_edge("visualization_suggestions", "response_formatting")
     
     # 响应格式化节点 -> 结束节点
     graph.add_edge("response_formatting", END)
