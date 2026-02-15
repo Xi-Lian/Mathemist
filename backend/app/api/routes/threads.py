@@ -49,12 +49,20 @@ async def get_thread(thread_id: str):
     """
     获取线程信息
     LangGraph API 标准端点
+    
+    如果线程不存在，自动创建一个新线程
     """
     if thread_id not in threads:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Thread {thread_id} not found"
-        )
+        print(f"⚠️  线程 {thread_id} 不存在，自动创建新线程")
+        now = get_current_timestamp()
+        thread = {
+            "thread_id": thread_id,
+            "created_at": now,
+            "updated_at": now,
+            "metadata": {},
+            "state": None
+        }
+        threads[thread_id] = thread
     
     return Thread(**threads[thread_id])
 
@@ -116,12 +124,22 @@ async def get_thread_history(thread_id: str):
     LangGraph API 标准端点
     
     注意：LangGraph SDK 期望直接返回消息数组，而不是包含 messages 字段的对象
+    
+    如果线程不存在，自动创建一个新线程并返回空消息列表
     """
     if thread_id not in threads:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Thread {thread_id} not found"
-        )
+        print(f"⚠️  线程 {thread_id} 不存在，自动创建新线程")
+        now = get_current_timestamp()
+        thread = {
+            "thread_id": thread_id,
+            "created_at": now,
+            "updated_at": now,
+            "metadata": {},
+            "state": None,
+            "messages": []
+        }
+        threads[thread_id] = thread
+        return []
     
     # 返回线程的历史消息（如果有）
     thread = threads[thread_id]

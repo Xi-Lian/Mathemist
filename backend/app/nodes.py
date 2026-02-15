@@ -17,7 +17,8 @@ from .core import (
     ResourceRetriever,
     LessonPlanGenerator,
     VisualizationAdvisor,
-    ResponseBuilder
+    ResponseBuilder,
+    GGBDesignAdvisor
 )
 from .state import MathAgentState
 
@@ -49,9 +50,20 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
         更新的状态，包含检索到的资源
     """
     retriever = ResourceRetriever()
+    
+    # 获取资源类型（如果用户明确指定了）
+    resource_types = None
+    if hasattr(state, 'resource_types'):
+        resource_types = getattr(state, 'resource_types', None)
+    elif isinstance(state, dict):
+        resource_types = state.get('resource_types', None)
+    
+    # 如果用户没有明确指定资源类型，但意图是搜索，则检索所有类型
+    # 如果用户明确指定了资源类型，则只检索指定类型
     retrieved_resources = retriever.retrieve(
         state.user_input,
-        state.intent
+        state.intent,
+        resource_types=resource_types
     )
     
     return {
@@ -115,6 +127,50 @@ def visualization_suggestions_node(state: MathAgentState) -> Dict[str, Any]:
     return {
         "visualization_suggestions": suggestions,
         "current_step": "visualization_suggestions",
+        "error": None
+    }
+
+
+def ggb_design_advisor_node(state: MathAgentState) -> Dict[str, Any]:
+    """
+    GGB设计建议节点
+    根据检索到的GGB资源生成GeoGebra动态图设计建议
+    
+    Args:
+        state: 状态对象
+    
+    Returns:
+        更新的状态，包含GGB设计建议
+    """
+    advisor = GGBDesignAdvisor()
+    
+    # 提取GGB资源
+    ggb_resources = state.retrieved_resources.get("ggb", [])
+    
+    # 如果没有GGB资源，返回空结果
+    if not ggb_resources:
+        return {
+            "ggb_design_suggestions": None,
+            "current_step": "ggb_design_advisor",
+            "error": "未找到相关GGB资源"
+        }
+    
+    # 生成设计建议
+    all_suggestions = []
+    
+    for ggb_resource in ggb_resources[:3]:  # 最多处理前3个GGB资源
+        suggestion = advisor.generate_design_suggestions(
+            chapter=ggb_resource.get('metadata', {}).get('章节', ''),
+            textbook=ggb_resource.get('metadata', {}).get('教材', ''),
+            ggb_filename=ggb_resource.get('title', ''),
+            teaching_purpose=ggb_resource.get('content', ''),
+            existing_steps=ggb_resource.get('metadata', {}).get('演示步骤', '')
+        )
+        all_suggestions.append(suggestion)
+    
+    return {
+        "ggb_design_suggestions": all_suggestions,
+        "current_step": "ggb_design_advisor",
         "error": None
     }
 

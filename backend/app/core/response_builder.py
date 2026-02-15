@@ -97,10 +97,23 @@ class ResponseBuilder:
         """
         response_parts = []
         
+        # 添加GGB设计建议（优先）
+        ggb_suggestions = self._get_state_value(state, "ggb_design_suggestions", None)
+        if ggb_suggestions:
+            response_parts.append("🎨 **GeoGebra动态图设计建议**\n")
+            for i, suggestion in enumerate(ggb_suggestions, 1):
+                if suggestion.get("error"):
+                    response_parts.append(f"❌ 第{i}个GGB资源设计建议生成失败: {suggestion.get('error')}\n")
+                else:
+                    response_parts.append(f"### {i}. {suggestion.get('metadata', {}).get('ggb_filename', '未知')}\n")
+                    response_parts.append(suggestion.get("design_steps", ""))
+                    response_parts.append("\n")
+                    response_parts.append("---\n")
+        
         # 添加可视化建议
         suggestions = self._get_state_value(state, "visualization_suggestions", "")
         if suggestions:
-            response_parts.append("🎨 **可视化设计建议**\n")
+            response_parts.append("\n🎨 **可视化设计建议**\n")
             response_parts.append(suggestions)
             response_parts.append("\n")
         
@@ -142,73 +155,115 @@ class ResponseBuilder:
         if retrieved_resources is None:
             retrieved_resources = {}
         
+        # 获取用户需求
+        user_needs = self._get_state_value(state, "user_needs", "")
+        resource_types = self._get_state_value(state, "resource_types", [])
+        
+        print(f"📋 用户需求: {user_needs}")
+        print(f"📋 资源类型: {resource_types}")
+        
         response_parts = []
         
-        # 格式化教案资源
-        lesson_plans = retrieved_resources.get("lesson_plan_patterns", [])
-        if lesson_plans:
-            response_parts.append(self._format_resource_category(
-                "教案资源", 
-                lesson_plans,
-                "📚"
-            ))
+        # 如果用户明确指定了资源类型，只输出指定的类型
+        if resource_types:
+            print(f"🎯 用户明确指定了资源类型，只输出指定类型")
+            
+            # 资源类型映射
+            type_mapping = {
+                "习题": ("exercise_resources", "📝"),
+                "教案": ("lesson_plan_patterns", "📚"),
+                "课件": ("courseware_resources", "📊"),
+                "课例": ("lesson_case_resources", "🎬"),
+                "GGB": ("ggb_resources", "🔧"),
+                "教学大纲": ("syllabus_resources", "📋")
+            }
+            
+            # 输出用户指定的资源类型
+            for user_type in resource_types:
+                mapped_type = type_mapping.get(user_type)
+                if mapped_type:
+                    category_key, icon = mapped_type
+                    resources = retrieved_resources.get(category_key, [])
+                    if resources:
+                        response_parts.append(self._format_resource_category(
+                            f"{user_type}资源", 
+                            resources,
+                            icon
+                        ))
+            
+            # 如果没有找到任何资源
+            if not response_parts:
+                response_parts.append(f"未找到{', '.join(resource_types)}相关的资源")
         
-        # 格式化习题资源
-        exercises = retrieved_resources.get("exercise_resources", [])
-        if exercises:
-            response_parts.append(self._format_resource_category(
-                "习题资源",
-                exercises,
-                "📝"
-            ))
-        
-        # 格式化课件资源
-        coursewares = retrieved_resources.get("courseware_resources", [])
-        if coursewares:
-            response_parts.append(self._format_resource_category(
-                "课件资源",
-                coursewares,
-                "📊"
-            ))
-        
-        # 格式化课例资源
-        lesson_cases = retrieved_resources.get("lesson_case_resources", [])
-        if lesson_cases:
-            response_parts.append(self._format_resource_category(
-                "课例资源",
-                lesson_cases,
-                "🎬"
-            ))
-        
-        # 格式化GGB资源
-        ggbs = retrieved_resources.get("ggb_resources", [])
-        if ggbs:
-            response_parts.append(self._format_resource_category(
-                "GGB资源",
-                ggbs,
-                "🔧"
-            ))
-        
-        # 格式化教学大纲
-        syllabi = retrieved_resources.get("syllabus_resources", [])
-        if syllabi:
-            response_parts.append(self._format_resource_category(
-                "教学大纲",
-                syllabi,
-                "📋"
-            ))
-        
-        # 格式化可视化示例
-        visualizations = retrieved_resources.get("visualization_examples", [])
-        if visualizations:
-            response_parts.append(self._format_resource_category(
-                "可视化示例",
-                visualizations,
-                "🎨"
-            ))
-        
-        # 注意：理论资源不推送给用户，仅用于教案生成
-        # 理论资源在教案生成时会被使用，但不会在响应中显示
+        else:
+            # 用户没有明确指定资源类型，输出所有找到的资源
+            print(f"🔍 用户未指定资源类型，输出所有找到的资源")
+            
+            # 格式化教案资源
+            lesson_plans = retrieved_resources.get("lesson_plan_patterns", [])
+            if lesson_plans:
+                response_parts.append(self._format_resource_category(
+                    "教案资源", 
+                    lesson_plans,
+                    "📚"
+                ))
+            
+            # 格式化习题资源
+            exercises = retrieved_resources.get("exercise_resources", [])
+            if exercises:
+                response_parts.append(self._format_resource_category(
+                    "习题资源",
+                    exercises,
+                    "📝"
+                ))
+            
+            # 格式化课件资源
+            coursewares = retrieved_resources.get("courseware_resources", [])
+            if coursewares:
+                response_parts.append(self._format_resource_category(
+                    "课件资源",
+                    coursewares,
+                    "📊"
+                ))
+            
+            # 格式化课例资源
+            lesson_cases = retrieved_resources.get("lesson_case_resources", [])
+            if lesson_cases:
+                response_parts.append(self._format_resource_category(
+                    "课例资源",
+                    lesson_cases,
+                    "🎬"
+                ))
+            
+            # 格式化GGB资源
+            ggbs = retrieved_resources.get("ggb_resources", [])
+            if ggbs:
+                response_parts.append(self._format_resource_category(
+                    "GGB资源",
+                    ggbs,
+                    "🔧"
+                ))
+            
+            # 格式化教学大纲
+            syllabi = retrieved_resources.get("syllabus_resources", [])
+            if syllabi:
+                response_parts.append(self._format_resource_category(
+                    "教学大纲",
+                    syllabi,
+                    "📋"
+                ))
+            
+            # 格式化可视化示例
+            visualizations = retrieved_resources.get("visualization_examples", [])
+            if visualizations:
+                response_parts.append(self._format_resource_category(
+                    "可视化示例",
+                    visualizations,
+                    "🎨"
+                ))
+            
+            # 注意：理论资源不推送给用户，仅用于教案生成
+            # 理论资源在教案生成时会被使用，但不会在响应中显示
         
         return "\n".join(response_parts) if response_parts else "未找到相关资源"
     

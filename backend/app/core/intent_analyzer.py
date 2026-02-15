@@ -115,16 +115,22 @@ class IntentAnalyzer:
             parsed = json.loads(response)
             primary_intent = parsed.get("primary_intent", self.INTENT_SEARCH)
             intents = parsed.get("intents", [])
+            user_needs = parsed.get("user_needs", "")
+            resource_types = parsed.get("resource_types", [])
             
             # 验证intents格式
             if not isinstance(intents, list):
                 intents = [{"type": self.INTENT_SEARCH, "confidence": 1.0}]
             
             print(f"📋 主要意图: {primary_intent}")
+            print(f"📋 用户需求: {user_needs}")
+            print(f"📋 资源类型: {resource_types}")
             print(f"📋 所有意图: {intents}")
             
             return {
                 "intent": primary_intent,
+                "user_needs": user_needs,
+                "resource_types": resource_types,
                 "intents": intents,
                 "current_step": "intent_understanding",
                 "error": None
@@ -152,26 +158,87 @@ class IntentAnalyzer:
         print(f"📋 包含教案关键词: {has_lesson_plan}")
         print(f"📋 包含可视化关键词: {has_visualization}")
         
+        # 提取资源类型
+        resource_types = self._extract_resource_types(user_input)
+        print(f"📋 提取的资源类型: {resource_types}")
+        
+        # 生成用户需求描述
+        user_needs = self._generate_user_needs(user_input, resource_types)
+        print(f"📋 生成的用户需求: {user_needs}")
+        
         # 确定意图
         if has_lesson_plan and has_visualization:
             return self._get_multi_intent_result(
                 self.INTENT_LESSON_PLAN,
                 self.INTENT_VISUALIZATION,
-                "模型返回格式错误，使用关键词匹配"
+                "模型返回格式错误，使用关键词匹配",
+                user_needs,
+                resource_types
             )
         elif has_lesson_plan:
             return self._get_single_intent_result(
                 self.INTENT_LESSON_PLAN,
-                "模型返回格式错误，使用关键词匹配"
+                "模型返回格式错误，使用关键词匹配",
+                user_needs,
+                resource_types
             )
         elif has_visualization:
             return self._get_single_intent_result(
                 self.INTENT_VISUALIZATION,
-                "模型返回格式错误，使用关键词匹配"
+                "模型返回格式错误，使用关键词匹配",
+                user_needs,
+                resource_types
             )
         else:
             print("⚠️ 没有匹配关键词，使用默认意图")
-            return self._get_default_intent("没有匹配关键词")
+            return self._get_default_intent("没有匹配关键词", user_needs, resource_types)
+    
+    def _extract_resource_types(self, user_input: str) -> List[str]:
+        """
+        从用户输入中提取资源类型
+        
+        Args:
+            user_input: 用户输入
+        
+        Returns:
+            资源类型列表
+        """
+        resource_types = []
+        
+        # 资源类型关键词映射
+        type_keywords = {
+            "习题": ["习题", "题目", "练习", "测试", "作业"],
+            "教案": ["教案", "教学设计", "备课", "教学计划"],
+            "课件": ["课件", "PPT", "幻灯片"],
+            "课例": ["课例", "教学案例", "视频课", "课堂实录"],
+            "GGB": ["GGB", "GeoGebra", "动态图", "可视化", "动态演示"],
+            "教学大纲": ["教学大纲", "课程标准", "教学要求"]
+        }
+        
+        user_input_lower = user_input.lower()
+        
+        # 检查每种资源类型
+        for resource_type, keywords in type_keywords.items():
+            if any(keyword in user_input_lower for keyword in keywords):
+                resource_types.append(resource_type)
+        
+        return resource_types
+    
+    def _generate_user_needs(self, user_input: str, resource_types: List[str]) -> str:
+        """
+        生成用户需求描述
+        
+        Args:
+            user_input: 用户输入
+            resource_types: 资源类型列表
+        
+        Returns:
+            用户需求描述
+        """
+        if resource_types:
+            return f"用户想要查找{', '.join(resource_types)}相关的资源"
+        else:
+            return "用户想要查找相关的教学资源"
     
     def _has_keywords(self, text: str, intent_type: str) -> bool:
         """
@@ -190,7 +257,9 @@ class IntentAnalyzer:
     def _get_single_intent_result(
         self, 
         primary_intent: str, 
-        error_msg: str = None
+        error_msg: str = None,
+        user_needs: str = "",
+        resource_types: List[str] = None
     ) -> Dict[str, Any]:
         """
         获取单一意图结果
@@ -198,12 +267,19 @@ class IntentAnalyzer:
         Args:
             primary_intent: 主要意图
             error_msg: 错误信息
+            user_needs: 用户需求描述
+            resource_types: 资源类型列表
         
         Returns:
             意图结果
         """
+        if resource_types is None:
+            resource_types = []
+        
         return {
             "intent": primary_intent,
+            "user_needs": user_needs,
+            "resource_types": resource_types,
             "intents": [
                 {"type": primary_intent, "confidence": 0.9},
                 {"type": self.INTENT_SEARCH, "confidence": 0.1},
@@ -217,7 +293,9 @@ class IntentAnalyzer:
         self, 
         primary_intent: str, 
         secondary_intent: str,
-        error_msg: str = None
+        error_msg: str = None,
+        user_needs: str = "",
+        resource_types: List[str] = None
     ) -> Dict[str, Any]:
         """
         获取多意图结果
@@ -226,12 +304,19 @@ class IntentAnalyzer:
             primary_intent: 主要意图
             secondary_intent: 次要意图
             error_msg: 错误信息
+            user_needs: 用户需求描述
+            resource_types: 资源类型列表
         
         Returns:
             意图结果
         """
+        if resource_types is None:
+            resource_types = []
+        
         return {
             "intent": primary_intent,
+            "user_needs": user_needs,
+            "resource_types": resource_types,
             "intents": [
                 {"type": primary_intent, "confidence": 0.9},
                 {"type": secondary_intent, "confidence": 0.8},
@@ -241,18 +326,25 @@ class IntentAnalyzer:
             "error": error_msg
         }
     
-    def _get_default_intent(self, error_msg: str = None) -> Dict[str, Any]:
+    def _get_default_intent(self, error_msg: str = None, user_needs: str = "", resource_types: List[str] = None) -> Dict[str, Any]:
         """
         获取默认意图结果
         
         Args:
             error_msg: 错误信息
+            user_needs: 用户需求描述
+            resource_types: 资源类型列表
         
         Returns:
             意图结果
         """
+        if resource_types is None:
+            resource_types = []
+        
         return {
             "intent": self.INTENT_SEARCH,
+            "user_needs": user_needs,
+            "resource_types": resource_types,
             "intents": [
                 {"type": self.INTENT_SEARCH, "confidence": 0.9},
                 {"type": self.INTENT_LESSON_PLAN, "confidence": 0.1},
@@ -272,20 +364,77 @@ class IntentAnalyzer:
         return ChatPromptTemplate.from_template("""
 你是一个高中数学教育智能助手的意图理解模块。
 
-请分析用户的输入，判断用户可能的意图类型和置信度。
-可能的意图类型包括：
-1. search: 用户想要搜索数学资源、习题、知识点等
-2. generate_lesson_plan: 用户想要生成教案、教学设计，或者查找教案资源
-3. visualization: 用户想要获取可视化设计建议、GGB动态数学设计
+请仔细分析用户的输入，判断用户的主要需求和次要需求。
 
-用户输入：{user_input}
+## 重要原则
+
+1. **精准识别用户需求**：不要过度扩展，准确识别用户真正需要什么
+2. **避免过度输出**：只输出用户明确需要的资源类型，不要一股脑输出所有资源
+3. **优先级明确**：明确区分主要需求和次要需求
+
+## 意图类型说明
+
+1. **search（资源搜索）**：
+   - 用户想要查找特定的资源（习题、教案、课件等）
+   - 用户询问某个知识点的相关资源
+   - 用户想要了解某个主题的教学内容
+   - 例如："查找指数函数习题"、"三角函数的教学大纲"
+
+2. **generate_lesson_plan（教案生成）**：
+   - 用户明确要求生成教案或教学设计
+   - 用户想要备课或教学计划
+   - 用户询问如何设计某个知识点的教学
+   - 例如："生成指数函数的教案"、"帮我设计三角函数的教学"
+
+3. **visualization（可视化建议/GGB设计）**：
+   - 用户明确要求GGB动态图设计建议
+   - 用户想要可视化设计或动态数学演示
+   - 用户询问如何用GeoGebra制作动态图
+   - 例如："生成二次函数的GGB动态图设计"、"如何用GeoGebra展示函数单调性"
+
+## 用户输入分析要求
+
+请分析用户输入，判断：
+1. **主要需求**：用户最想要什么？
+2. **次要需求**：用户可能还需要什么（但不要过度扩展）？
+3. **资源类型**：用户明确提到了哪些资源类型？
+4. **具体内容**：用户关注的是哪个知识点或主题？
+
+## 输出格式
 
 请输出一个JSON对象，包含以下字段：
 - primary_intent: 主要意图
+- user_needs: 用户的具体需求描述（1-2句话）
+- resource_types: 用户明确提到的资源类型列表（不要过度推断）
 - intents: 一个数组，包含所有可能的意图及其置信度，格式为[{{"type": "意图类型", "confidence": 置信度}}]
 
-示例输出：
-{{"primary_intent": "generate_lesson_plan", "intents": [{{"type": "generate_lesson_plan", "confidence": 0.9}}, {{"type": "visualization", "confidence": 0.8}}, {{"type": "search", "confidence": 0.1}}]}}
+## 示例
+
+### 示例1
+用户输入："查找指数函数习题"
+输出：
+{{"primary_intent": "search", "user_needs": "用户想要查找指数函数相关的习题资源", "resource_types": ["习题"], "intents": [{{"type": "search", "confidence": 0.95}}, {{"type": "generate_lesson_plan", "confidence": 0.1}}, {{"type": "visualization", "confidence": 0.1}}]}}
+
+### 示例2
+用户输入："生成指数函数的教案"
+输出：
+{{"primary_intent": "generate_lesson_plan", "user_needs": "用户想要生成指数函数的教案", "resource_types": ["教案"], "intents": [{{"type": "generate_lesson_plan", "confidence": 0.95}}, {{"type": "search", "confidence": 0.2}}, {{"type": "visualization", "confidence": 0.1}}]}}
+
+### 示例3
+用户输入："生成二次函数的GGB动态图设计"
+输出：
+{{"primary_intent": "visualization", "user_needs": "用户想要生成二次函数的GGB动态图设计建议", "resource_types": ["GGB"], "intents": [{{"type": "visualization", "confidence": 0.95}}, {{"type": "search", "confidence": 0.2}}, {{"type": "generate_lesson_plan", "confidence": 0.1}}]}}
+
+### 示例4
+用户输入："帮我查找指数函数资源"
+输出：
+{{"primary_intent": "search", "user_needs": "用户想要查找指数函数相关的各种教学资源", "resource_types": ["习题", "教案", "课件", "GGB"], "intents": [{{"type": "search", "confidence": 0.9}}, {{"type": "generate_lesson_plan", "confidence": 0.2}}, {{"type": "visualization", "confidence": 0.2}}]}}
+
+## 当前用户输入
+
+用户输入：{user_input}
+
+请根据以上要求，输出JSON格式的分析结果。
 """)
 
 

@@ -18,6 +18,12 @@ class MathAgentState:
     intent: Optional[str] = None  # 可能的值: "search", "generate_lesson_plan", "visualization"
     intents: List[Dict[str, Any]] = field(default_factory=list)  # 多个意图及其置信度
     
+    # 用户需求描述
+    user_needs: Optional[str] = None  # 用户的具体需求描述
+    
+    # 用户明确提到的资源类型
+    resource_types: Optional[List[str]] = field(default_factory=list)  # 用户明确提到的资源类型列表
+    
     # 检索结果
     retrieved_resources: Optional[List[Dict[str, Any]]] = None
     
@@ -26,6 +32,9 @@ class MathAgentState:
     
     # 可视化设计建议
     visualization_suggestions: Optional[str] = None
+    
+    # GGB设计建议
+    ggb_design_suggestions: Optional[List[Dict[str, Any]]] = None
     
     # 搜索结果
     search_results: Optional[str] = None

@@ -108,7 +108,12 @@ class ResourceTableParser:
         data = []
         for line in data_lines:
             row = self._parse_table_row(line)
-            if len(row) == len(headers):
+            
+            # 检查是否是分隔线（包含:---或类似的模式）
+            is_separator = any(':---' in cell or '---' in cell for cell in row)
+            
+            # 如果不是分隔线，且列数匹配，则添加到数据中
+            if not is_separator and len(row) == len(headers):
                 row_dict = {headers[i]: row[i] for i in range(len(headers))}
                 data.append(row_dict)
         
@@ -731,10 +736,65 @@ class ResourceTableParser:
             chapter = resource.get('章节', '')
             filename = resource.get('视频文件名/网址', '')
             analysis = resource.get('分析', '')
-            return f"章节：{chapter}，视频文件名/网址：{filename}，分析：{analysis}"
+            textbook = resource.get('教材', '')
+            
+            # 构建描述，优先使用分析内容，如果为空则使用章节和文件名
+            description_parts = []
+            
+            # 添加资源类型关键词
+            description_parts.append("课例")
+            description_parts.append("教学视频")
+            description_parts.append("课堂实录")
+            
+            if textbook:
+                description_parts.append(f"教材：{textbook}")
+            
+            if chapter:
+                description_parts.append(f"章节：{chapter}")
+            
+            # 尝试从文件名中提取知识点信息
+            if filename and not filename.startswith('http'):
+                # 从文件名中提取关键信息
+                topic_info = self._extract_topic_from_filename(filename)
+                if topic_info:
+                    description_parts.append(f"知识点：{topic_info}")
+            
+            if analysis and analysis.strip():
+                description_parts.append(f"分析：{analysis}")
+            elif filename:
+                # 如果分析为空，从文件名中提取关键信息
+                description_parts.append(f"视频：{filename}")
+            
+            return "，".join(description_parts)
         
         else:
             return str(resource)
+    
+    def _extract_topic_from_filename(self, filename: str) -> str:
+        """
+        从课例文件名中提取知识点信息
+        
+        Args:
+            filename: 文件名，如 "4.2.1指数函数的概念.mp4"
+            
+        Returns:
+            提取的知识点信息
+        """
+        # 移除文件扩展名
+        name = Path(filename).stem
+        
+        # 移除常见的标记
+        name = re.sub(r'【.*?】', '', name)  # 移除【单调性】等标记
+        name = re.sub(r'\(.*?\)', '', name)  # 移除括号内容
+        name = re.sub(r'\（.*?\）', '', name)  # 移除中文括号内容
+        
+        # 提取数字编号后的内容（如 "4.2.1指数函数的概念" -> "指数函数的概念"）
+        match = re.search(r'^[\d\.]+\s*(.+)$', name)
+        if match:
+            return match.group(1).strip()
+        
+        # 如果没有数字编号，直接返回文件名
+        return name
     
     def get_resource_filename(self, resource: Dict[str, str]) -> Optional[str]:
         """

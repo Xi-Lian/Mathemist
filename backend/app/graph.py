@@ -11,6 +11,7 @@ def create_math_agent_graph():
         resource_retrieval_node,
         lesson_plan_generation_node,
         visualization_suggestions_node,
+        ggb_design_advisor_node,
         response_formatting_node
     )
     
@@ -22,6 +23,7 @@ def create_math_agent_graph():
     graph.add_node("resource_retrieval", resource_retrieval_node)
     graph.add_node("lesson_plan_generation", lesson_plan_generation_node)
     graph.add_node("visualization_suggestions", visualization_suggestions_node)
+    graph.add_node("ggb_design_advisor", ggb_design_advisor_node)
     graph.add_node("response_formatting", response_formatting_node)
     
     # 定义边和路由
@@ -41,13 +43,29 @@ def create_math_agent_graph():
         if isinstance(state, dict):
             intent = state.get("intent")
             intents = state.get("intents", [])
+            retrieved_resources = state.get("retrieved_resources", {})
+            resource_types = state.get("resource_types", [])
         else:
             intent = getattr(state, "intent", None)
             intents = getattr(state, "intents", [])
+            retrieved_resources = getattr(state, "retrieved_resources", {})
+            resource_types = getattr(state, "resource_types", [])
         
         print(f"🔀 路由函数: state 类型 = {type(state)}")
         print(f"🔀 路由函数: intent = {intent}")
         print(f"🔀 路由函数: intents = {intents}")
+        print(f"🔀 路由函数: resource_types = {resource_types}")
+        
+        # 如果用户明确指定了资源类型，直接跳到响应格式化
+        if resource_types:
+            print(f"🔀 用户明确指定了资源类型，直接跳到响应格式化")
+            return "response_formatting"
+        
+        # 检查是否有GGB资源，如果有，优先生成GGB设计建议
+        ggb_resources = retrieved_resources.get("ggb_resources", [])
+        if ggb_resources:
+            print(f"🔀 检测到GGB资源: {len(ggb_resources)}个，路由到GGB设计建议节点")
+            return "ggb_design_advisor"
         
         # 检查是否有多个高置信度意图
         high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
@@ -80,6 +98,7 @@ def create_math_agent_graph():
         {
             "lesson_plan_generation": "lesson_plan_generation",
             "visualization_suggestions": "visualization_suggestions",
+            "ggb_design_advisor": "ggb_design_advisor",
             "response_formatting": "response_formatting"
         }
     )
@@ -87,6 +106,7 @@ def create_math_agent_graph():
     # 所有处理节点 -> 响应格式化节点
     graph.add_edge("lesson_plan_generation", "response_formatting")
     graph.add_edge("visualization_suggestions", "response_formatting")
+    graph.add_edge("ggb_design_advisor", "response_formatting")
     
     # 响应格式化节点 -> 结束节点
     graph.add_edge("response_formatting", END)

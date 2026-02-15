@@ -64,14 +64,24 @@ app.add_middleware(
 
 logger.info(f"CORS配置: 允许的源: {allowed_origins}")
 
-# 添加 LangGraph API 路由
-app.include_router(langgraph_api_router)
-
 # 健康检查端点
 @app.get("/health")
 async def health_check():
     """
     健康检查端点
+    """
+    return {
+        "status": "healthy",
+        "service": "math-agent-api",
+        "api_keys_configured": api_keys_valid
+    }
+
+# Info端点（用于前端检查graph状态）
+@app.get("/info")
+async def info_check():
+    """
+    Info端点
+    用于前端检查graph状态
     """
     return {
         "status": "healthy",
@@ -259,7 +269,10 @@ async def stream_math_agent(request: MathAgentRequest):
         logger.error(f"Error streaming request: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-# 添加LangServe路由
+# 添加 LangGraph API 路由（必须在 LangServe 之前）
+app.include_router(langgraph_api_router)
+
+# 添加LangServe路由（必须放在最后）
 add_routes(
     app,
     create_math_agent_graph(),

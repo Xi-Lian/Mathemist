@@ -8,6 +8,7 @@
 - 意图理解
 - 教案生成
 - 可视化建议
+- GGB设计建议
 - 响应构建
 """
 
@@ -45,6 +46,11 @@ from .visualization_advisor import (
     visualization_suggestions_node
 )
 
+from .ggb_design_advisor import (
+    GGBDesignAdvisor,
+    ggb_design_advisor_node
+)
+
 from .response_builder import (
     ResponseBuilder,
     response_formatting_node
@@ -78,6 +84,10 @@ __all__ = [
     # 可视化建议
     "VisualizationAdvisor",
     "visualization_suggestions_node",
+    
+    # GGB设计建议
+    "GGBDesignAdvisor",
+    "ggb_design_advisor_node",
     
     # 响应构建
     "ResponseBuilder",

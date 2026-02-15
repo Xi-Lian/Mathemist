@@ -29,7 +29,7 @@ class ResourceRetriever:
     """资源检索器"""
     
     COLLECTION_NAME = "math_resources"
-    DEFAULT_N_RESULTS = 50
+    DEFAULT_N_RESULTS = 200
     
     def __init__(self, learning_resource_path: str = None):
         """
@@ -53,14 +53,15 @@ class ResourceRetriever:
         self.vector_db_builder = VectorDatabaseBuilder(str(self.learning_resource_path))
         self.parser = ResourceTableParser(str(self.learning_resource_path))
     
-    def retrieve(self, query: str, intent: str = "search", n_results: int = None) -> Dict[str, Any]:
+    def retrieve(self, query: str, intent: str = "search", n_results: int = None, resource_types: List[str] = None) -> Dict[str, Any]:
         """
         根据查询和意图检索相关资源
         
         Args:
             query: 用户查询
             intent: 用户意图
-            n_results: 返回结果数量，默认为20
+            n_results: 返回结果数量，默认为50
+            resource_types: 用户明确提到的资源类型列表（用于精准检索）
         
         Returns:
             检索结果字典，包含各类资源
@@ -69,6 +70,7 @@ class ResourceRetriever:
             print(f"🔍 资源检索开始")
             print(f"📝 查询: {query}")
             print(f"🎯 意图: {intent}")
+            print(f"📋 资源类型: {resource_types}")
             
             # 检查向量数据库是否存在
             if not self._check_vector_db_exists():
@@ -95,7 +97,7 @@ class ResourceRetriever:
             )
             
             # 处理检索结果
-            classified_resources = self._classify_results(results)
+            classified_resources = self._classify_results(results, resource_types)
             
             print(f"✅ 检索完成: {self._get_summary(classified_resources)}")
             
@@ -134,12 +136,13 @@ class ResourceRetriever:
         
         return query_embedding
     
-    def _classify_results(self, results: Dict[str, Any]) -> Dict[str, Any]:
+    def _classify_results(self, results: Dict[str, Any], resource_types: List[str] = None) -> Dict[str, Any]:
         """
         对检索结果进行分类
         
         Args:
             results: ChromaDB查询结果
+            resource_types: 用户明确提到的资源类型列表（用于精准检索）
         
         Returns:
             分类后的资源字典
@@ -166,6 +169,30 @@ class ResourceRetriever:
                 
                 # 获取资源类型
                 resource_type = metadata.get('resource_type', 'theory')
+                
+                # 如果用户明确指定了资源类型，只保留匹配的类型
+                if resource_types:
+                    # 资源类型映射
+                    type_mapping = {
+                        "习题": "exercise",
+                        "教案": "lesson_plan",
+                        "课件": "courseware",
+                        "课例": "lesson_case",
+                        "GGB": "ggb",
+                        "教学大纲": "syllabus"
+                    }
+                    
+                    # 检查当前资源类型是否在用户指定的类型中
+                    matched = False
+                    for user_type in resource_types:
+                        mapped_type = type_mapping.get(user_type, user_type)
+                        if resource_type == mapped_type:
+                            matched = True
+                            break
+                    
+                    # 如果不匹配，跳过这个资源
+                    if not matched:
+                        continue
                 
                 # 创建资源对象
                 resource = self._create_resource(doc, metadata, distance, resource_type)
@@ -349,10 +376,62 @@ class ResourceRetriever:
         chapter = metadata.get('章节', '')
         filename = metadata.get('视频文件名/网址', '')
         analysis = metadata.get('分析', '')
+        textbook = metadata.get('教材', '')
+        
+        # 构建描述，优先使用分析内容，如果为空则使用章节和文件名
+        content_parts = []
+        
+        if textbook:
+            content_parts.append(f"教材：{textbook}")
+        
+        if chapter:
+            content_parts.append(f"章节：{chapter}")
+        
+        # 尝试从文件名中提取知识点信息
+        if filename and not filename.startswith('http'):
+            # 从文件名中提取关键信息
+            topic_info = self._extract_topic_from_filename(filename)
+            if topic_info:
+                content_parts.append(f"知识点：{topic_info}")
+        
+        if analysis and analysis.strip():
+            content_parts.append(f"分析：{analysis}")
+        elif filename:
+            # 如果分析为空，从文件名中提取关键信息
+            content_parts.append(f"视频：{filename}")
         
         resource['title'] = f"课例: {chapter}"
-        resource['content'] = f"章节：{chapter}\n视频文件名/网址：{filename}\n分析：{analysis}"
+        resource['content'] = "\n".join(content_parts)
         resource['filename'] = filename
+    
+    def _extract_topic_from_filename(self, filename: str) -> str:
+        """
+        从课例文件名中提取知识点信息
+        
+        Args:
+            filename: 文件名，如 "4.2.1指数函数的概念.mp4"
+            
+        Returns:
+            提取的知识点信息
+        """
+        import re
+        from pathlib import Path
+        
+        # 移除文件扩展名
+        name = Path(filename).stem
+        
+        # 移除常见的标记
+        name = re.sub(r'【.*?】', '', name)  # 移除【单调性】等标记
+        name = re.sub(r'\(.*?\)', '', name)  # 移除括号内容
+        name = re.sub(r'\（.*?\）', '', name)  # 移除中文括号内容
+        
+        # 提取数字编号后的内容（如 "4.2.1指数函数的概念" -> "指数函数的概念"）
+        match = re.search(r'^[\d\.]+\s*(.+)$', name)
+        if match:
+            return match.group(1).strip()
+        
+        # 如果没有数字编号，直接返回文件名
+        return name
     
     def _add_to_category(
         self, 
