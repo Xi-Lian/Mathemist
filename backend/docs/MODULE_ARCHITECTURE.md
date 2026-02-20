@@ -23,13 +23,17 @@ backend/app/
 │   ├── __init__.py
 │   ├── model_config.py      # 模型配置和管理
 │   ├── resource_classifier.py  # 资源分类
-│   resource_table_parser.py  # 资源汇总表解析
+│   ├── resource_table_parser.py  # 资源汇总表解析
 │   ├── vector_database_builder.py # 向量数据库构建
 │   ├── resource_retriever.py   # 资源检索
 │   ├── intent_analyzer.py      # 意图理解
 │   ├── lesson_plan_generator.py # 教案生成
 │   ├── visualization_advisor.py # 可视化建议
-│   └── response_builder.py     # 响应构建
+│   ├── ggb_design_advisor.py   # GGB设计顾问
+│   ├── response_builder.py     # 响应构建
+│   ├── unified_lesson_plan_system.py # 统一备课系统
+│   ├── lesson_plan_exporter.py  # 教案导出
+│   └── user_system.py          # 用户系统
 ├── api/                     # API层
 │   ├── __init__.py
 │   ├── models.py           # API数据模型
@@ -37,11 +41,13 @@ backend/app/
 │       ├── __init__.py
 │       ├── assistants.py     # 助手相关路由
 │       ├── threads.py       # 线程相关路由
-│       └── runs.py         # 运行相关路由
+│       ├── runs.py         # 运行相关路由
+│       └── users.py        # 用户相关路由
 ├── utils/                   # 工具模块
 │   ├── __init__.py
 │   ├── helpers.py          # 辅助函数
 │   └── constants.py        # 常量定义
+├── smart_content_processor.py # 智能内容处理器
 ├── nodes.py                 # 节点定义
 ├── langgraph_api.py        # API入口
 ├── state.py                # 状态定义
@@ -347,6 +353,7 @@ lesson_cases = results["lesson_case_resources"]
 - 分析用户输入，确定用户意图
 - 支持基于LLM的意图识别
 - 提供关键词匹配作为备用方案
+- 支持多意图识别
 
 **主要类：**
 - `IntentAnalyzer`: 意图分析器
@@ -382,9 +389,10 @@ from app.core.intent_analyzer import IntentAnalyzer
 
 # 分析意图
 analyzer = IntentAnalyzer()
-result = analyzer.analyze("帮我生成一份指数函数的教案")
+result = analyzer.analyze("帮我生成一份指数函数的教案，并提供可视化建议")
 
 print(result["intent"])  # 输出: generate_lesson_plan
+print(f"识别到 {len(result['intents'])} 个意图")
 ```
 
 **依赖：**
@@ -473,12 +481,55 @@ print(suggestions)
 
 ---
 
-### 9. response_builder.py - 响应构建模块
+### 9. ggb_design_advisor.py - GGB设计顾问模块
+
+**职责：**
+- 提供专业的GeoGebra动态数学设计建议
+- 分析GGB资源并提取设计模式
+- 为用户提供GGB文件的使用和修改指导
+
+**主要类：**
+- `GGBDesignAdvisor`: GGB设计顾问
+
+**主要方法：**
+```python
+# 分析GGB资源
+analyze_ggb_resources(ggb_resources: List[Dict[str, Any]]) -> Dict[str, Any]
+
+# 生成GGB设计建议
+generate_design_suggestions(
+    user_input: str,
+    ggb_resources: List[Dict[str, Any]]
+) -> str
+```
+
+**使用示例：**
+```python
+from app.core.ggb_design_advisor import GGBDesignAdvisor
+
+# 生成GGB设计建议
+advisor = GGBDesignAdvisor()
+suggestions = advisor.generate_design_suggestions(
+    user_input="如何设计一个动态的指数函数图像",
+    ggb_resources=[...]
+)
+
+print(suggestions)
+```
+
+**依赖：**
+- model_config (模型配置)
+- langchain (提示词和链)
+
+---
+
+### 10. response_builder.py - 响应构建模块
 
 **职责：**
 - 根据意图和生成的结果构建最终响应
 - 整合教案、可视化建议和检索到的资源
 - 提供结构化的响应输出
+- 支持多意图响应整合
 
 **主要类：**
 - `ResponseBuilder`: 响应构建器
@@ -497,7 +548,12 @@ from app.core.response_builder import ResponseBuilder
 builder = ResponseBuilder()
 response = builder.build({
     "intent": "generate_lesson_plan",
+    "intents": [
+        {"type": "generate_lesson_plan", "confidence": 0.9},
+        {"type": "visualization", "confidence": 0.8}
+    ],
     "lesson_plan": "...",
+    "visualization_suggestions": "...",
     "retrieved_resources": {...}
 })
 
@@ -507,6 +563,192 @@ print(response)
 **依赖：**
 - model_config (模型配置)
 - smart_content_processor (内容处理)
+
+---
+
+### 11. unified_lesson_plan_system.py - 统一备课系统模块
+
+**职责：**
+- 提供完整的备课工作流管理
+- 整合教案生成、资源检索、可视化建议
+- 支持备课过程的分步引导
+
+**主要类：**
+- `UnifiedLessonPlanSystem`: 统一备课系统
+
+**主要方法：**
+```python
+# 启动备课流程
+start_lesson_plan_workflow(user_input: str) -> Dict[str, Any]
+
+# 获取备课步骤
+get_lesson_plan_steps() -> List[str]
+
+# 执行备课步骤
+execute_lesson_plan_step(step: str, state: Dict[str, Any]) -> Dict[str, Any]
+```
+
+**使用示例：**
+```python
+from app.core.unified_lesson_plan_system import UnifiedLessonPlanSystem
+
+# 启动备课流程
+system = UnifiedLessonPlanSystem()
+result = system.start_lesson_plan_workflow("指数函数的教案")
+
+print(result)
+```
+
+**依赖：**
+- intent_analyzer (意图分析)
+- resource_retriever (资源检索)
+- lesson_plan_generator (教案生成)
+- visualization_advisor (可视化建议)
+
+---
+
+### 12. lesson_plan_exporter.py - 教案导出模块
+
+**职责：**
+- 支持将生成的教案导出为多种格式
+- 提供Markdown、Word、PDF等格式的导出
+- 支持教案的本地保存和分享
+
+**主要类：**
+- `LessonPlanExporter`: 教案导出器
+
+**主要方法：**
+```python
+# 导出为Markdown
+export_to_markdown(lesson_plan: str, output_path: str) -> bool
+
+# 导出为HTML
+export_to_html(lesson_plan: str, output_path: str) -> bool
+
+# 导出为Word
+export_to_word(lesson_plan: str, output_path: str) -> bool
+```
+
+**使用示例：**
+```python
+from app.core.lesson_plan_exporter import LessonPlanExporter
+
+# 导出教案
+exporter = LessonPlanExporter()
+exporter.export_to_markdown(
+    lesson_plan="# 指数函数教案...",
+    output_path="/path/to/lesson_plan.md"
+)
+```
+
+**依赖：**
+- python-docx (Word导出)
+- markdown (Markdown处理)
+
+---
+
+### 13. user_system.py - 用户系统模块
+
+**职责：**
+- 用户身份管理和认证
+- 备课历史记录的存储和检索
+- 个人备课数据的管理
+- 支持用户个性化配置
+- JSON文件持久化存储
+
+**主要类：**
+- `UserSystem`: 用户系统管理器
+- `User`: 用户数据模型
+- `LessonPlanHistory`: 备课历史记录模型
+- `LessonPlanStatus`: 教案状态枚举
+
+**主要方法：**
+```python
+# 创建用户
+create_user(username: str, email: str, preferences: Optional[Dict[str, Any]] = None) -> User
+
+# 获取用户
+get_user(user_id: str) -> Optional[User]
+
+# 通过邮箱获取用户
+get_user_by_email(email: str) -> Optional[User]
+
+# 更新用户偏好
+update_user_preferences(user_id: str, preferences: Dict[str, Any]) -> Optional[User]
+
+# 创建备课历史
+create_lesson_plan_history(
+    user_id: str,
+    topic: str,
+    chapter: Optional[str] = None,
+    textbook: Optional[str] = None,
+    teaching_goals: Optional[str] = None,
+    teaching_framework: Optional[str] = None,
+    lesson_plan_content: Optional[str] = None,
+    tags: Optional[List[str]] = None,
+    notes: Optional[str] = None
+) -> LessonPlanHistory
+
+# 获取用户备课历史
+get_user_lesson_plan_history(
+    user_id: str,
+    status: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0
+) -> List[LessonPlanHistory]
+
+# 获取单个备课历史
+get_lesson_plan_history(history_id: str) -> Optional[LessonPlanHistory]
+
+# 搜索备课历史
+search_lesson_plan_history(
+    user_id: str,
+    keyword: str,
+    limit: int = 50
+) -> List[LessonPlanHistory]
+
+# 更新备课历史
+update_lesson_plan_history(
+    history_id: str,
+    **kwargs
+) -> Optional[LessonPlanHistory]
+
+# 删除备课历史
+delete_lesson_plan_history(history_id: str) -> bool
+```
+
+**使用示例：**
+```python
+from app.core.user_system import user_system
+
+# 创建用户
+user = user_system.create_user(
+    username="张老师",
+    email="teacher@example.com",
+    preferences={"theme": "dark", "notifications": True}
+)
+
+# 创建备课历史
+history = user_system.create_lesson_plan_history(
+    user_id=user.user_id,
+    topic="指数函数",
+    chapter="第四章",
+    textbook="人教版高中数学",
+    lesson_plan_content="# 指数函数教案..."
+)
+
+# 获取用户备课历史
+histories = user_system.get_user_lesson_plan_history(user.user_id)
+
+# 搜索备课历史
+results = user_system.search_lesson_plan_history(user.user_id, "函数")
+```
+
+**依赖：**
+- json (数据持久化)
+- pathlib (路径管理)
+- datetime (时间戳)
+- uuid (生成唯一ID)
 
 ---
 
@@ -522,14 +764,24 @@ print(response)
 **主要模型：**
 - `AssistantInfo`: 助手信息
 - `Thread`: 线程模型
+- `ThreadWithUser`: 带用户的线程模型
 - `Run`: 运行模型
+- `RunWithUser`: 带用户的运行模型
 - `Resource`: 资源模型
 - `Message`: 消息模型
+- `UserCreateRequest`: 创建用户请求
+- `UserLoginRequest`: 用户登录请求
+- `UserResponse`: 用户响应
+- `UserPreferencesUpdateRequest`: 更新用户偏好请求
+- `LessonPlanHistoryCreateRequest`: 创建备课历史请求
+- `LessonPlanHistoryUpdateRequest`: 更新备课历史请求
+- `LessonPlanHistoryResponse`: 备课历史响应
+- `SuccessResponse`: 成功响应
 - 等等...
 
 **使用示例：**
 ```python
-from app.api.models import AssistantInfo, Thread
+from app.api.models import AssistantInfo, Thread, UserCreateRequest
 
 # 创建助手信息
 assistant = AssistantInfo(
@@ -543,6 +795,13 @@ thread = Thread(
     thread_id="xxx",
     created_at="2024-01-01T00:00:00Z",
     updated_at="2024-01-01T00:00:00Z"
+)
+
+# 创建用户请求
+user_request = UserCreateRequest(
+    username="test_user",
+    email="test@example.com",
+    preferences={"theme": "dark"}
 )
 ```
 
@@ -583,22 +842,30 @@ curl http://localhost:8000/assistants/math-agent/graph
 **职责：**
 - 处理线程相关的API请求
 - 提供线程创建、查询、搜索接口
+- 支持线程与用户关联
 
 **主要端点：**
-- `POST /threads`: 创建新线程
+- `POST /threads`: 创建新线程（向后兼容）
 - `GET /threads/{thread_id}`: 获取线程信息
 - `POST /threads/search`: 搜索线程
 - `GET /threads`: 列出所有线程
+- `POST /users/{user_id}/threads`: 为用户创建新线程
+- `GET /users/{user_id}/threads`: 获取用户的所有线程
 
 **使用示例：**
 ```bash
-# 创建线程
+# 创建线程（向后兼容）
 curl -X POST http://localhost:8000/threads \
   -H "Content-Type: application/json" \
-  -d '{"metadata": {"user_id": "123"}}'
+  -d '{"metadata": {}}'
 
-# 获取线程信息
-curl http://localhost:8000/threads/{thread_id}
+# 为用户创建线程
+curl -X POST http://localhost:8000/users/{user_id}/threads \
+  -H "Content-Type: application/json" \
+  -d '{"metadata": {"topic": "数学教学"}}'
+
+# 获取用户线程列表
+curl http://localhost:8000/users/{user_id}/threads
 ```
 
 ---
@@ -608,10 +875,12 @@ curl http://localhost:8000/threads/{thread_id}
 **职责：**
 - 处理运行相关的API请求
 - 提供运行创建、查询、流式接口
+- 支持运行与用户关联（通过线程）
 
 **主要端点：**
 - `POST /threads/{thread_id}/runs`: 创建运行（非流式）
 - `POST /threads/{thread_id}/runs/stream`: 创建运行（流式）
+- `GET /users/{user_id}/runs`: 获取用户的所有运行记录
 
 **使用示例：**
 ```bash
@@ -630,6 +899,69 @@ curl -X POST http://localhost:8000/threads/{thread_id}/runs/stream \
     "assistant_id": "math-agent",
     "input": {"messages": [{"role": "user", "content": "Hello"}]}
   }'
+
+# 获取用户运行列表
+curl http://localhost:8000/users/{user_id}/runs
+```
+
+---
+
+#### users.py - 用户相关路由
+
+**职责：**
+- 处理用户管理相关的API请求
+- 处理备课历史相关的API请求
+- 提供用户注册、登录、偏好设置接口
+- 提供备课历史的CRUD操作接口
+
+**主要端点：**
+
+**用户管理：**
+- `POST /users`: 创建用户
+- `POST /users/login`: 用户登录
+- `GET /users/{user_id}`: 获取用户信息
+- `PUT /users/{user_id}/preferences`: 更新用户偏好设置
+
+**备课历史管理：**
+- `POST /users/{user_id}/lesson-plan-history`: 创建备课历史
+- `GET /users/{user_id}/lesson-plan-history`: 获取用户备课历史列表
+- `GET /users/{user_id}/lesson-plan-history/search`: 搜索备课历史
+- `GET /users/{user_id}/lesson-plan-history/{history_id}`: 获取单个备课历史
+- `PUT /users/{user_id}/lesson-plan-history/{history_id}`: 更新备课历史
+- `DELETE /users/{user_id}/lesson-plan-history/{history_id}`: 删除备课历史
+
+**使用示例：**
+```bash
+# 创建用户
+curl -X POST http://localhost:8000/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "张老师",
+    "email": "teacher@example.com",
+    "preferences": {"theme": "dark"}
+  }'
+
+# 用户登录
+curl -X POST http://localhost:8000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "teacher@example.com"}'
+
+# 创建备课历史
+curl -X POST http://localhost:8000/users/{user_id}/lesson-plan-history \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": "指数函数",
+    "chapter": "第四章",
+    "textbook": "人教版高中数学",
+    "lesson_plan_content": "# 指数函数教案...",
+    "tags": ["函数", "指数"]
+  }'
+
+# 获取用户备课历史
+curl http://localhost:8000/users/{user_id}/lesson-plan-history
+
+# 搜索备课历史
+curl "http://localhost:8000/users/{user_id}/lesson-plan-history/search?keyword=函数"
 ```
 
 ---
@@ -752,11 +1084,34 @@ print(INTENT_SEARCH)  # 输出: search
 
 ---
 
+## 其他核心模块
+
+### smart_content_processor.py - 智能内容处理器
+
+**职责：**
+- 智能处理和分析教学内容
+- 提取关键信息和知识点
+- 支持多种内容格式的处理
+
+**主要类：**
+- `SmartContentProcessor`: 智能内容处理器
+
+**使用示例：**
+```python
+from app.smart_content_processor import SmartContentProcessor
+
+processor = SmartContentProcessor()
+result = processor.process_content("这是一段教学内容...")
+```
+
+---
+
 ## 节点定义 (nodes.py)
 
 **职责：**
 - 定义LangGraph工作流的各个节点
 - 协调各个核心模块完成工作流
+- 支持多意图处理
 
 **主要节点：**
 ```python
@@ -771,6 +1126,9 @@ lesson_plan_generation_node(state: MathAgentState) -> Dict[str, Any]
 
 # 可视化建议节点
 visualization_suggestions_node(state: MathAgentState) -> Dict[str, Any]
+
+# 多意图处理节点
+multi_intent_processor_node(state: MathAgentState) -> Dict[str, Any]
 
 # 响应格式化节点
 response_formatting_node(state: MathAgentState) -> Dict[str, Any]
@@ -795,6 +1153,7 @@ result = await graph.ainvoke({"user_input": "Hello"})
 - 提供LangGraph API接口
 - 协调各个路由模块
 - 处理流式和非流式请求
+- 注册所有路由（包括用户路由）
 
 **使用示例：**
 ```python
@@ -813,6 +1172,12 @@ app.include_router(router)
 ┌─────────────────────────────────────────────────────────────┐
 │                    nodes.py                             │
 │              (节点定义和工作流)                          │
+│         - intent_understanding_node                      │
+│         - resource_retrieval_node                        │
+│         - lesson_plan_generation_node                    │
+│         - visualization_suggestions_node                 │
+│         - multi_intent_processor_node                    │
+│         - response_formatting_node                       │
 └──────────────────┬──────────────────────────────────────┘
                    │
                    │ 依赖
@@ -828,10 +1193,15 @@ app.include_router(router)
 │  │database_    │retriever     │generator     │      │
 │  │builder      │              │              │      │
 │  └──────────────┴──────────────┴──────────────┘      │
-│  ┌──────────────┬──────────────┐                    │
-│  │visualization │response_     │                    │
-│  │_advisor     │builder       │                    │
-│  └──────────────┴──────────────┘                    │
+│  ┌──────────────┬──────────────┬──────────────┐      │
+│  │visualization │ggb_design_   │response_     │      │
+│  │_advisor     │advisor       │builder       │      │
+│  └──────────────┴──────────────┴──────────────┘      │
+│  ┌──────────────┬──────────────┬──────────────┐      │
+│  │unified_     │lesson_plan_  │user_system    │      │
+│  │lesson_plan_  │exporter      │              │      │
+│  │system       │              │              │      │
+│  └──────────────┴──────────────┴──────────────┘      │
 └──────────────────┬───────────────────────────────────────┘
                    │
                    │ 依赖
@@ -852,6 +1222,7 @@ app.include_router(router)
 │  │              │assistants    │              │      │
 │  │              │threads       │              │      │
 │  │              │runs          │              │      │
+│  │              │users         │              │      │
 │  └──────────────┴──────────────┴──────────────┘      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -861,6 +1232,7 @@ app.include_router(router)
 #### nodes.py
 - 依赖所有core模块
 - 协调各个核心模块完成工作流
+- 支持多意图处理
 
 #### core/model_config.py
 - 无内部依赖
@@ -882,7 +1254,7 @@ app.include_router(router)
 
 #### core/intent_analyzer.py
 - 依赖 model_config
-- 提供意图分析服务
+- 提供意图分析服务（支持多意图）
 
 #### core/lesson_plan_generator.py
 - 依赖 model_config
@@ -892,9 +1264,28 @@ app.include_router(router)
 - 依赖 model_config
 - 提供可视化建议服务
 
+#### core/ggb_design_advisor.py
+- 依赖 model_config
+- 提供GGB设计顾问服务
+
 #### core/response_builder.py
 - 依赖 model_config
-- 提供响应构建服务
+- 提供响应构建服务（支持多意图整合）
+
+#### core/unified_lesson_plan_system.py
+- 依赖 intent_analyzer
+- 依赖 resource_retriever
+- 依赖 lesson_plan_generator
+- 依赖 visualization_advisor
+- 提供统一备课系统服务
+
+#### core/lesson_plan_exporter.py
+- 无内部依赖
+- 提供教案导出服务
+
+#### core/user_system.py
+- 无内部依赖
+- 提供用户管理和备课历史服务
 
 #### utils/
 - 无内部依赖
@@ -902,6 +1293,7 @@ app.include_router(router)
 
 #### api/
 - 依赖 utils/
+- 依赖 core/user_system
 - 提供API接口
 
 ---
@@ -923,6 +1315,12 @@ app.include_router(router)
 ### 5. 可复用性
 核心功能模块可在其他项目中复用。
 
+### 6. 多意图支持
+新增了多意图识别和处理能力，可以同时处理用户的多个需求。
+
+### 7. 用户系统集成
+完整的用户管理和备课历史系统，支持个性化配置和数据持久化。
+
 ---
 
 ## 新增模块说明
@@ -940,8 +1338,8 @@ app.include_router(router)
 - 解析习题资源汇总表
 - 解析教案资源汇总表
 - 解析理论卡片
-- 解析课件资源汇总表（新增）
-- 解析课例资源汇总表（新增）
+- 解析课件资源汇总表
+- 解析课例资源汇总表
 - 支持多种表格格式（标准markdown表格、Excel导出表格、特殊格式表格）
 
 **解决的问题：**
@@ -949,6 +1347,8 @@ app.include_router(router)
 - 支持了课件和课例资源的解析
 - 修复了Excel导出表格的解析问题
 - 提供了统一的资源信息提取接口
+
+---
 
 ### vector_database_builder.py - 向量数据库构建模块
 
@@ -973,6 +1373,163 @@ app.include_router(router)
 - vector_database_builder负责构建向量数据库
 - resource_retriever使用向量数据库进行检索
 - 两者通过ChromaDB客户端进行交互
+
+---
+
+### intent_analyzer.py - 意图理解模块（多意图增强）
+
+**增强内容：**
+- 新增多意图识别能力
+- 支持同时识别多个高置信度意图
+- 提供意图列表和置信度评分
+
+**新增原因：**
+- 用户经常在一个查询中表达多个需求
+- 例如："帮我生成指数函数教案，并提供可视化建议"
+- 需要同时处理多个意图，提供更全面的响应
+
+**主要功能：**
+- 识别主要意图
+- 识别所有可能的意图及其置信度
+- 支持多意图的并行处理
+
+**解决的问题：**
+- 可以同时满足用户的多个需求
+- 提高了系统的智能性和用户体验
+- 支持更复杂的查询场景
+
+---
+
+### response_builder.py - 响应构建模块（多意图整合）
+
+**增强内容：**
+- 新增多意图响应整合能力
+- 支持同时整合多个意图的处理结果
+- 提供结构化的多意图响应
+
+**新增原因：**
+- 当识别到多个意图时，需要整合各个意图的处理结果
+- 需要提供连贯、完整的响应
+- 需要保持各个意图结果的独立性和完整性
+
+**主要功能：**
+- 整合教案生成结果
+- 整合可视化建议结果
+- 整合资源检索结果
+- 提供统一的响应格式
+
+**解决的问题：**
+- 可以同时呈现多个意图的处理结果
+- 保持了响应的连贯性和完整性
+- 提供了更好的用户体验
+
+---
+
+### user_system.py - 用户系统模块
+
+**新增原因：**
+- 项目需要支持多用户使用
+- 需要管理用户的身份信息和偏好设置
+- 需要记录和管理用户的备课历史
+- 需要数据持久化存储
+
+**主要功能：**
+- 用户注册和登录
+- 用户偏好设置管理
+- 备课历史的创建、查询、搜索、更新、删除
+- JSON文件持久化存储
+- 支持用户数据的安全访问
+
+**解决的问题：**
+- 实现了完整的用户管理功能
+- 提供了备课历史的全生命周期管理
+- 支持数据的持久化存储
+- 为未来的用户个性化推荐奠定了基础
+
+**与其他模块的关系：**
+- 被api/routes/users.py调用，提供用户和备课历史API
+- 可以与unified_lesson_plan_system.py集成，支持个人备课工作流
+- 可以与threads.py和runs.py集成，支持用户的线程和运行记录
+
+---
+
+### ggb_design_advisor.py - GGB设计顾问模块
+
+**新增原因：**
+- GeoGebra是数学教学中重要的动态数学工具
+- 需要专门的模块来提供GGB设计建议
+- 需要分析GGB资源并提取设计模式
+
+**主要功能：**
+- 分析GGB资源
+- 提取GGB设计模式
+- 提供GGB文件使用和修改建议
+- 支持GGB动态数学设计指导
+
+**解决的问题：**
+- 提供了专业的GGB设计建议
+- 帮助教师更好地使用GGB资源
+- 提高了GGB资源的利用效率
+
+---
+
+### unified_lesson_plan_system.py - 统一备课系统模块
+
+**新增原因：**
+- 需要整合所有备课相关的功能
+- 需要提供完整的备课工作流
+- 需要分步引导教师完成备课
+
+**主要功能：**
+- 启动完整的备课工作流
+- 提供备课步骤指导
+- 整合意图分析、资源检索、教案生成、可视化建议
+- 支持备课过程的状态管理
+
+**解决的问题：**
+- 提供了一站式的备课解决方案
+- 简化了教师的备课流程
+- 提高了备课效率和质量
+
+---
+
+### lesson_plan_exporter.py - 教案导出模块
+
+**新增原因：**
+- 生成的教案需要导出为多种格式
+- 需要支持教案的本地保存和分享
+- 需要提供专业的文档格式
+
+**主要功能：**
+- 导出为Markdown格式
+- 导出为HTML格式
+- 导出为Word格式
+- 支持教案的格式化和美化
+
+**解决的问题：**
+- 提供了灵活的教案导出选项
+- 支持教案的保存和分享
+- 提高了教案的实用性
+
+---
+
+### users.py - 用户路由模块
+
+**新增原因：**
+- 需要提供用户管理的API接口
+- 需要提供备课历史的API接口
+- 需要与前端进行用户数据交互
+
+**主要功能：**
+- 用户注册、登录、信息查询、偏好设置API
+- 备课历史的CRUD API
+- 备课历史搜索API
+- 用户认证和授权
+
+**解决的问题：**
+- 提供了完整的用户管理API
+- 提供了完整的备课历史管理API
+- 支持前端与后端的用户数据交互
 
 ---
 
@@ -1005,12 +1562,12 @@ app.include_router(router)
    - 汇总表：理论卡片文件夹中的markdown文件
    - 特殊处理：不推送给用户，仅用于教案生成
 
-6. **courseware** - 课件资源（新增）
+6. **courseware** - 课件资源
    - 文件位置：learning_resource/课件/
    - 汇总表：课件汇总（必修一2.3-5.md
    - 特殊处理：显示文件名
 
-7. **lesson_case** - 课例资源（新增）
+7. **lesson_case** - 课例资源
    - 文件位置：learning_resource/课例视频/
    - 汇总表：优秀课例视频信息汇总.md
    - 特殊处理：显示视频文件名/网址
@@ -1036,6 +1593,32 @@ app.include_router(router)
 
 ---
 
+## 多意图处理流程
+
+### 多意图识别
+
+1. 用户输入包含多个需求（如"生成指数函数教案，并提供可视化建议"）
+2. IntentAnalyzer分析输入，识别多个意图
+3. 返回意图列表，每个意图包含类型和置信度
+4. 按置信度排序，确定主要意图和次要意图
+
+### 多意图处理
+
+1. multi_intent_processor_node接收状态
+2. 检查是否有多个高置信度意图
+3. 并行处理各个意图
+4. 收集各个意图的处理结果
+5. 传递给response_builder进行整合
+
+### 多意图响应整合
+
+1. response_builder接收多个意图的处理结果
+2. 按照逻辑顺序组织响应内容
+3. 保持各个意图结果的完整性
+4. 提供连贯、统一的响应格式
+
+---
+
 ## 最佳实践
 
 ### 1. 导入规范
@@ -1043,6 +1626,7 @@ app.include_router(router)
 # 推荐：从模块导入具体的类或函数
 from app.core.model_config import ModelConfig
 from app.core.resource_classifier import ResourceClassifier
+from app.core.user_system import user_system
 
 # 不推荐：导入整个模块
 from app.core import model_config
@@ -1073,6 +1657,22 @@ logger.error(f"处理失败: {error}")
 # 推荐：使用类型提示
 def analyze(user_input: str) -> Dict[str, Any]:
     ...
+```
+
+### 5. 用户系统使用
+```python
+# 推荐：使用user_system单例
+from app.core.user_system import user_system
+
+# 创建用户
+user = user_system.create_user("username", "email@example.com")
+
+# 创建备课历史
+history = user_system.create_lesson_plan_history(
+    user_id=user.user_id,
+    topic="课题",
+    lesson_plan_content="内容"
+)
 ```
 
 ---
@@ -1146,8 +1746,41 @@ builder = VectorDatabaseBuilder("/path/to/learning_resource")
 success = builder.build_vector_database(force_rebuild=True)
 ```
 
+#### 7. 用户系统
+```python
+# 新代码
+from app.core.user_system import user_system
+
+# 创建用户
+user = user_system.create_user("username", "email@example.com")
+
+# 创建备课历史
+history = user_system.create_lesson_plan_history(
+    user_id=user.user_id,
+    topic="课题",
+    lesson_plan_content="内容"
+)
+```
+
 ---
 
 ## 总结
 
-重构后的模块架构遵循单一职责原则，将原来的两个大文件拆分为多个职责明确的小模块。这种架构提高了代码的可维护性、可测试性和可扩展性，为未来的功能扩展奠定了良好的基础。
+重构后的模块架构遵循单一职责原则，将原来的两个大文件拆分为多个职责明确的小模块。新增了多意图处理能力、用户系统、统一备课系统等重要功能。这种架构提高了代码的可维护性、可测试性和可扩展性，为未来的功能扩展奠定了良好的基础。
+
+### 主要新增功能
+
+1. **多意图处理**：支持同时识别和处理用户的多个意图
+2. **用户系统**：完整的用户管理和备课历史系统
+3. **统一备课系统**：整合所有备课功能的一站式解决方案
+4. **GGB设计顾问**：专业的GeoGebra设计建议
+5. **教案导出**：支持多种格式的教案导出
+6. **用户API**：完整的用户管理和备课历史API接口
+
+### 架构优势
+
+- 模块化设计，职责清晰
+- 易于测试和维护
+- 支持灵活的功能扩展
+- 提供完整的文档和示例
+- 支持多用户和数据持久化
