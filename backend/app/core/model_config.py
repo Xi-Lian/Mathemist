@@ -14,6 +14,9 @@
 """
 
 import os
+# 设置 HuggingFace 镜像源，避免连接超时
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+
 from pathlib import Path
 from typing import Optional
 from langchain_deepseek import ChatDeepSeek
@@ -52,7 +55,10 @@ class ModelConfig:
         # 路径配置
         self.SCRIPT_DIR = Path(__file__).parent.parent.parent.parent
         self.CHROMA_DB_DIR = self.SCRIPT_DIR / "backend" / "chroma_db"
-        self.EMBEDDING_MODEL_PATH = r"C:\Users\15137\.cache\huggingface\hub\models--sentence-transformers--paraphrase-multilingual-MiniLM-L12-v2\snapshots\e8f8c211226b894fcb81acc59f3b34ba3efd5f42"
+        self.EMBEDDING_MODEL_PATH = os.getenv(
+            "EMBEDDING_MODEL_PATH", 
+            "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        )
         
         # 初始化DeepSeek模型
         self._init_deepseek_model()

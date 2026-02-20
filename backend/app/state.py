@@ -25,10 +25,13 @@ class MathAgentState:
     resource_types: Optional[List[str]] = field(default_factory=list)  # 用户明确提到的资源类型列表
     
     # 检索结果
-    retrieved_resources: Optional[List[Dict[str, Any]]] = None
+    retrieved_resources: Optional[Dict[str, Any]] = None
     
-    # 教案生成
-    lesson_plan: Optional[str] = None
+    # 统一教案系统状态
+    lesson_plan_session_id: Optional[str] = None  # 教案会话ID
+    lesson_plan_status: Optional[str] = None  # 教案状态: guiding/completed
+    lesson_plan_collected_info: Optional[Dict[str, Any]] = None  # 已收集的教案信息
+    lesson_plan: Optional[str] = None  # 最终生成的教案
     
     # 可视化设计建议
     visualization_suggestions: Optional[str] = None

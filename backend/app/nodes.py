@@ -20,6 +20,7 @@ from .core import (
     ResponseBuilder,
     GGBDesignAdvisor
 )
+from .core.unified_lesson_plan_system import unified_lesson_plan_system
 from .state import MathAgentState
 
 
@@ -73,9 +74,53 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
     }
 
 
+def unified_lesson_plan_node(state: MathAgentState) -> Dict[str, Any]:
+    """
+    统一教案生成节点
+    智能判断用户输入完整度，自动选择生成或引导方式
+    
+    Args:
+        state: 状态对象
+    
+    Returns:
+        更新的状态
+    """
+    print(f"\n📝 统一教案生成节点启动")
+    print(f"📝 用户输入: {state.user_input}")
+    print(f"📝 现有会话ID: {state.lesson_plan_session_id}")
+    
+    # 调用统一教案系统
+    result = unified_lesson_plan_system.process_lesson_plan_request(
+        state.user_input,
+        session_id=state.lesson_plan_session_id
+    )
+    
+    print(f"📝 统一教案系统结果: {result.get('status', 'unknown')}")
+    
+    # 构建返回的状态更新
+    updates = {
+        "current_step": "unified_lesson_plan",
+        "error": None
+    }
+    
+    if result.get("success"):
+        updates["lesson_plan_session_id"] = result.get("session_id")
+        updates["lesson_plan_status"] = result.get("status")
+        updates["lesson_plan_collected_info"] = result.get("collected_info")
+        updates["response"] = result.get("response")
+        
+        if result.get("status") == "completed" and "lesson_plan" in result:
+            updates["lesson_plan"] = result.get("lesson_plan")
+    else:
+        updates["error"] = result.get("error")
+        updates["response"] = f"抱歉，教案生成过程中出现问题：{result.get('error')}"
+    
+    return updates
+
+
 def lesson_plan_generation_node(state: MathAgentState) -> Dict[str, Any]:
     """
-    教案生成节点
+    教案生成节点（向后兼容）
     根据用户需求和检索到的资源生成教案
     
     Args:

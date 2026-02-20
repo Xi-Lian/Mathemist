@@ -1,14 +1,25 @@
 import os
 import logging
-from typing import Dict, Any, Optional
+
+# 首先设置 HuggingFace 镜像源，避免连接超时
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+
+# 首先加载环境变量（必须在导入 app.core 之前！）
+from dotenv import load_dotenv
+load_dotenv()
+
+from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from langserve import add_routes
 from langgraph.types import StreamMode
 from app.graph import create_math_agent_graph
 from app.state import MathAgentState
 from app.langgraph_api import router as langgraph_api_router
+from app.core import generate_ggb_innovation_suggestions
 
 # 配置日志
 logging.basicConfig(
@@ -16,10 +27,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# 加载环境变量
-from dotenv import load_dotenv
-load_dotenv()
 
 # 验证API密钥配置
 def validate_api_keys():
@@ -112,6 +119,13 @@ async def get_models_status():
             "default": "DeepSeek"
         }
     }
+
+# GGB创新设计建议请求模型
+class GGBInnovationRequest(BaseModel):
+    chapter: str
+    topic: str
+    teaching_purpose: str
+    existing_ggb_info: Optional[str] = None
 
 # 数学智能体API端点
 class MathAgentRequest(BaseModel):
@@ -272,6 +286,60 @@ async def stream_math_agent(request: MathAgentRequest):
 # 添加 LangGraph API 路由（必须在 LangServe 之前）
 app.include_router(langgraph_api_router)
 
+# ============================================
+# GGB创新设计建议 API
+# ============================================
+@app.post("/ggb/innovation-suggestions")
+async def get_ggb_innovation_suggestions(request: GGBInnovationRequest):
+    """
+    获取GGB创新设计建议
+    
+    Args:
+        request: 包含章节、主题、教学目的的请求
+    
+    Returns:
+        GGB创新设计建议
+    """
+    try:
+        result = generate_ggb_innovation_suggestions(
+            chapter=request.chapter,
+            topic=request.topic,
+            teaching_purpose=request.teaching_purpose,
+            existing_ggb_info=request.existing_ggb_info
+        )
+        return {"status": "success", "data": result}
+    except Exception as e:
+        logger.error(f"Error generating GGB suggestions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# 挂载静态文件服务
+app.mount("/static", StaticFiles(directory="."), name="static")
+
+# 图形库页面
+@app.get("/geometry-library")
+async def geometry_library():
+    """
+    几何图形库页面
+    """
+    return FileResponse("ggb_complete.html")
+
+# 演示页面：设计建议展示
+@app.get("/demo-suggestions")
+async def demo_suggestions():
+    """
+    设计建议展示演示页面
+    """
+    return FileResponse("demo_suggestions.html")
+
+# 组合页面：画图建议 + 图形库
+@app.get("/geometry-with-suggestions")
+@app.get("/combined-geometry")
+async def geometry_with_suggestions():
+    """
+    画图建议 + 图形库组合页面
+    """
+    return FileResponse("geometry_with_suggestions.html")
+
 # 添加LangServe路由（必须放在最后）
 add_routes(
     app,
@@ -289,9 +357,16 @@ async def root():
         "message": "高中数学资源智能体 API",
         "endpoints": {
             "/health": "健康检查",
+            "/info": "信息检查",
+            "/models/status": "模型配置状态",
             "/math-agent/invoke": "调用数学智能体",
             "/math-agent/stream": "流式调用数学智能体",
-            "/langserve/math-agent": "LangServe API"
+            "/ggb/innovation-suggestions": "获取GGB创新设计建议",
+            "/langserve/math-agent": "LangServe API",
+            "/geometry-library": "几何图形库",
+            "/geometry-with-suggestions": "画图建议 + 图形库",
+            "/combined-geometry": "画图建议 + 图形库（别名）",
+            "/demo-suggestions": "设计建议演示"
         }
     }
 

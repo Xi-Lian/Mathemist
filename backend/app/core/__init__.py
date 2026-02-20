@@ -48,12 +48,28 @@ from .visualization_advisor import (
 
 from .ggb_design_advisor import (
     GGBDesignAdvisor,
-    ggb_design_advisor_node
+    generate_ggb_innovation_suggestions
 )
 
 from .response_builder import (
     ResponseBuilder,
     response_formatting_node
+)
+
+from .unified_lesson_plan_system import (
+    UnifiedLessonPlanSystem,
+    unified_lesson_plan_system
+)
+
+from .lesson_plan_exporter import (
+    LessonPlanExporter,
+    lesson_plan_exporter,
+    export_lesson_plan_all
+)
+
+from .user_system import (
+    UserSystem,
+    user_system
 )
 
 __all__ = [
@@ -77,9 +93,13 @@ __all__ = [
     "IntentAnalyzer",
     "intent_understanding_node",
     
-    # 教案生成
+    # 教案生成（核心引擎，向后兼容）
     "LessonPlanGenerator",
     "lesson_plan_generation_node",
+    
+    # 统一教案系统
+    "UnifiedLessonPlanSystem",
+    "unified_lesson_plan_system",
     
     # 可视化建议
     "VisualizationAdvisor",
@@ -87,9 +107,18 @@ __all__ = [
     
     # GGB设计建议
     "GGBDesignAdvisor",
-    "ggb_design_advisor_node",
+    "generate_ggb_innovation_suggestions",
     
     # 响应构建
     "ResponseBuilder",
-    "response_formatting_node"
+    "response_formatting_node",
+    
+    # 教案导出
+    "LessonPlanExporter",
+    "lesson_plan_exporter",
+    "export_lesson_plan_all",
+    
+    # 用户系统
+    "UserSystem",
+    "user_system"
 ]

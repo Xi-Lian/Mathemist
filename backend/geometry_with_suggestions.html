@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画图建议 + 图形库</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 30px;
+            min-height: 880px;
+        }
+        
+        .left-panel {
+            flex: 0 0 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .right-panel {
+            flex: 1;
+            min-height: 880px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .form-section {
+            background: #fafafa;
+            border-radius: 4px;
+            padding: 24px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+        }
+        
+        input:focus, textarea:focus {
+            outline: 1px solid #999;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: white;
+            color: #666;
+        }
+        
+        .btn:hover {
+            background: #f5f5f5;
+        }
+        
+        .btn-primary {
+            background: #666;
+            color: white;
+            border-color: #666;
+        }
+        
+        .btn-primary:hover {
+            background: #555;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .suggestions-output {
+            background: #fafafa;
+            border-radius: 4px;
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 540px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .suggestions-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #555;
+        }
+        
+        .suggestions-content h1 {
+            font-size: 20px;
+            font-weight: 500;
+            color: #444;
+            margin: 0 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        
+        .suggestions-content h2 {
+            font-size: 17px;
+            font-weight: 500;
+            color: #555;
+            margin: 20px 0 12px 0;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 3px;
+            border-left: 3px solid #999;
+        }
+        
+        .suggestions-content h3 {
+            font-size: 15px;
+            font-weight: 500;
+            color: #555;
+            margin: 16px 0 10px 0;
+        }
+        
+        .suggestions-content p {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .suggestions-content ul {
+            margin: 12px 0 12px 28px;
+            color: #666;
+        }
+        
+        .suggestions-content ol {
+            margin: 12px 0 12px 28px;
+            color: #666;
+        }
+        
+        .suggestions-content li {
+            margin: 6px 0;
+            line-height: 1.7;
+        }
+        
+        .suggestions-content strong {
+            color: #444;
+            font-weight: 500;
+        }
+        
+        .suggestions-content code {
+            background: #f0f0f0;
+            color: #555;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 13px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #888;
+            padding: 40px;
+            font-size: 14px;
+        }
+        
+        .error {
+            color: #777;
+            background: #fafafa;
+            padding: 18px;
+            border-radius: 4px;
+            border-left: 3px solid #999;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        
+        .error strong {
+            color: #555;
+        }
+        
+        .ggb-frame {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        
+        .placeholder-text {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.7;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .suggestions-output::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .suggestions-output::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+        
+        .suggestions-output::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+        
+        .suggestions-output::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>画图建议 + 图形库</h1>
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="form-section">
+                    <div class="panel-title">获取画图建议</div>
+                    <div class="form-group">
+                        <label for="chapter">章节</label>
+                        <input type="text" id="chapter" placeholder="例如：三角函数">
+                    </div>
+                    <div class="form-group">
+                        <label for="topic">主题</label>
+                        <input type="text" id="topic" placeholder="例如：正弦函数图像">
+                    </div>
+                    <div class="form-group">
+                        <label for="teaching_purpose">教学用途</label>
+                        <textarea id="teaching_purpose" placeholder="例如：帮助学生理解正弦函数的周期性和相位变化"></textarea>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="getSuggestions()">获取建议</button>
+                        <button class="btn" onclick="clearSuggestions()">清空</button>
+                    </div>
+                </div>
+                <div class="suggestions-output" id="suggestions-output">
+                    <div class="suggestions-content" id="suggestions-content">
+                        <div class="placeholder-text">填写上方表单，点击"获取建议"按钮来获取画图建议。建议将显示在这里，您可以根据建议在右侧的图形库中画图。</div>
+                    </div>
+                </div>
+            </div>
+            <div class="right-panel">
+                <div class="panel-title">图形库</div>
+                <iframe class="ggb-frame" id="ggb-frame" src="/geometry-library"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function simpleMarkdown(text) {
+            if (!text) return "";
+            
+            let html = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+            
+            html = html.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+            html = html.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+            html = html.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+            
+            html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+            html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+            
+            const lines = html.split("\n");
+            let result = [];
+            let inList = false;
+            let listType = null;
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                if (!line) {
+                    if (inList) {
+                        result.push("</" + listType + ">");
+                        inList = false;
+                        listType = null;
+                    }
+                    continue;
+                }
+                
+                if (line.match(/^<h[1-3]>/)) {
+                    if (inList) {
+                        result.push("</" + listType + ">");
+                        inList = false;
+                        listType = null;
+                    }
+                    result.push(line);
+                } else if (line.match(/^\d+\.\s+/)) {
+                    if (!inList || listType !== "ol") {
+                        if (inList) {
+                            result.push("</" + listType + ">");
+                        }
+                        result.push("<ol>");
+                        inList = true;
+                        listType = "ol";
+                    }
+                    result.push("<li>" + line.replace(/^\d+\.\s+/, "") + "</li>");
+                } else if (line.match(/^[-+]\s+/)) {
+                    if (!inList || listType !== "ul") {
+                        if (inList) {
+                            result.push("</" + listType + ">");
+                        }
+                        result.push("<ul>");
+                        inList = true;
+                        listType = "ul";
+                    }
+                    result.push("<li>" + line.replace(/^[-+]\s+/, "") + "</li>");
+                } else {
+                    if (inList) {
+                        result.push("</" + listType + ">");
+                        inList = false;
+                        listType = null;
+                    }
+                    result.push("<p>" + line + "</p>");
+                }
+            }
+            
+            if (inList) {
+                result.push("</" + listType + ">");
+            }
+            
+            return result.join("\n");
+        }
+
+        async function getSuggestions() {
+            const chapter = document.getElementById("chapter").value.trim();
+            const topic = document.getElementById("topic").value.trim();
+            const teaching_purpose = document.getElementById("teaching_purpose").value.trim();
+            
+            if (!chapter || !topic || !teaching_purpose) {
+                alert("请填写所有字段！");
+                return;
+            }
+            
+            const outputDiv = document.getElementById("suggestions-content");
+            outputDiv.innerHTML = '<div class="loading">正在获取画图建议...</div>';
+            
+            try {
+                const response = await fetch("/ggb/innovation-suggestions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chapter: chapter,
+                        topic: topic,
+                        teaching_purpose: teaching_purpose
+                    })
+                });
+                
+                if (!response.ok) throw new Error("HTTP error! status: " + response.status);
+                
+                const data = await response.json();
+                
+                if (data.status === "success" && data.data) {
+                    let content = data.data.suggestions || "未能获取到详细建议，请稍后重试。";
+                    outputDiv.innerHTML = simpleMarkdown(content);
+                } else {
+                    throw new Error(data.error || "获取建议失败");
+                }
+            } catch (error) {
+                outputDiv.innerHTML = '<div class="error">' +
+                    '<strong>获取画图建议功能需要 FastAPI 后端</strong><br><br>' +
+                    '当前使用的是简单的 HTTP 服务器，不支持后端 API 调用。<br><br>' +
+                    '<strong>说明：</strong><br>' +
+                    '• 右侧的图形库功能可以正常使用<br>' +
+                    '• 要获取 AI 画图建议，需要启动 FastAPI 后端<br>' +
+                    '• 图形库可以独立使用，您可以根据需要自由画图！' +
+                '</div>';
+            }
+        }
+        
+        function clearSuggestions() {
+            document.getElementById("chapter").value = "";
+            document.getElementById("topic").value = "";
+            document.getElementById("teaching_purpose").value = "";
+            document.getElementById("suggestions-content").innerHTML = '<div class="placeholder-text">填写上方表单，点击"获取建议"按钮来获取画图建议。建议将显示在这里，您可以根据建议在右侧的图形库中画图。</div>';
+        }
+    </script>
+</body>
+</html>

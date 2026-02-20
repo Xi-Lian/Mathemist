@@ -4,11 +4,13 @@ from .state import MathAgentState
 def create_math_agent_graph():
     """
     创建高中数学资源智能体的LangGraph状态机
+    支持多意图处理
     """
     # 动态导入节点函数，确保使用最新的代码
     from .nodes import (
         intent_understanding_node,
         resource_retrieval_node,
+        unified_lesson_plan_node,
         lesson_plan_generation_node,
         visualization_suggestions_node,
         ggb_design_advisor_node,
@@ -21,9 +23,11 @@ def create_math_agent_graph():
     # 添加节点
     graph.add_node("intent_understanding", intent_understanding_node)
     graph.add_node("resource_retrieval", resource_retrieval_node)
+    graph.add_node("unified_lesson_plan", unified_lesson_plan_node)
     graph.add_node("lesson_plan_generation", lesson_plan_generation_node)
     graph.add_node("visualization_suggestions", visualization_suggestions_node)
     graph.add_node("ggb_design_advisor", ggb_design_advisor_node)
+    graph.add_node("multi_intent_processor", multi_intent_processor_node)
     graph.add_node("response_formatting", response_formatting_node)
     
     # 定义边和路由
@@ -45,21 +49,37 @@ def create_math_agent_graph():
             intents = state.get("intents", [])
             retrieved_resources = state.get("retrieved_resources", {})
             resource_types = state.get("resource_types", [])
+            lesson_plan_session_id = state.get("lesson_plan_session_id")
         else:
             intent = getattr(state, "intent", None)
             intents = getattr(state, "intents", [])
             retrieved_resources = getattr(state, "retrieved_resources", {})
             resource_types = getattr(state, "resource_types", [])
+            lesson_plan_session_id = getattr(state, "lesson_plan_session_id", None)
         
         print(f"🔀 路由函数: state 类型 = {type(state)}")
         print(f"🔀 路由函数: intent = {intent}")
         print(f"🔀 路由函数: intents = {intents}")
         print(f"🔀 路由函数: resource_types = {resource_types}")
+        print(f"🔀 路由函数: lesson_plan_session_id = {lesson_plan_session_id}")
         
-        # 如果用户明确指定了资源类型，直接跳到响应格式化
+        # 检查是否有多个高置信度意图
+        high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
+        
+        if len(high_confidence_intents) > 1:
+            print(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
+            # 有多个意图，使用多意图处理器
+            return "multi_intent_processor"
+        
+        # 如果用户明确指定了资源类型，检查是否是教案生成意图
         if resource_types:
-            print(f"🔀 用户明确指定了资源类型，直接跳到响应格式化")
-            return "response_formatting"
+            print(f"🔀 检测到资源类型: {resource_types}")
+            if intent == "generate_lesson_plan" or any(i.get("type") == "generate_lesson_plan" for i in intents):
+                print(f"🔀 检测到教案生成意图，继续走统一教案流程")
+                return "unified_lesson_plan"
+            else:
+                print(f"🔀 非教案生成资源类型，直接跳到响应格式化")
+                return "response_formatting"
         
         # 检查是否有GGB资源，如果有，优先生成GGB设计建议
         ggb_resources = retrieved_resources.get("ggb_resources", [])
@@ -67,28 +87,14 @@ def create_math_agent_graph():
             print(f"🔀 检测到GGB资源: {len(ggb_resources)}个，路由到GGB设计建议节点")
             return "ggb_design_advisor"
         
-        # 检查是否有多个高置信度意图
-        high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
-        
-        if len(high_confidence_intents) > 1:
-            print(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
-            # 优先处理教案生成意图
-            if any(i.get("type") == "generate_lesson_plan" for i in high_confidence_intents):
-                return "lesson_plan_generation"
-            # 其次处理可视化意图
-            elif any(i.get("type") == "visualization" for i in high_confidence_intents):
-                return "visualization_suggestions"
-        
         # 根据主要意图路由
         if intent == "generate_lesson_plan":
-            return "lesson_plan_generation"
+            return "unified_lesson_plan"
         elif intent == "visualization":
             return "visualization_suggestions"
         elif intent == "search":
-            # 搜索意图直接跳到响应格式化
             return "response_formatting"
         else:
-            # 默认路由到响应格式化
             print(f"⚠️ 未知意图 {intent}，使用默认路由")
             return "response_formatting"
     
@@ -96,12 +102,41 @@ def create_math_agent_graph():
         "resource_retrieval",
         route_after_retrieval,
         {
+            "unified_lesson_plan": "unified_lesson_plan",
             "lesson_plan_generation": "lesson_plan_generation",
             "visualization_suggestions": "visualization_suggestions",
             "ggb_design_advisor": "ggb_design_advisor",
+            "multi_intent_processor": "multi_intent_processor",
             "response_formatting": "response_formatting"
         }
     )
+    
+    # 统一教案节点 -> 检查是否需要响应格式化
+    def route_after_unified_lesson_plan(state):
+        """
+        统一教案处理后的路由
+        """
+        if isinstance(state, dict):
+            response = state.get("response")
+        else:
+            response = getattr(state, "response", None)
+        
+        if response:
+            print(f"🔀 统一教案已生成响应，直接结束")
+            return "response_formatting"
+        
+        return "response_formatting"
+    
+    graph.add_conditional_edges(
+        "unified_lesson_plan",
+        route_after_unified_lesson_plan,
+        {
+            "response_formatting": "response_formatting"
+        }
+    )
+    
+    # 多意图处理器 -> 响应格式化
+    graph.add_edge("multi_intent_processor", "response_formatting")
     
     # 所有处理节点 -> 响应格式化节点
     graph.add_edge("lesson_plan_generation", "response_formatting")
@@ -115,3 +150,72 @@ def create_math_agent_graph():
     compiled_graph = graph.compile()
     
     return compiled_graph
+
+
+def multi_intent_processor_node(state) -> dict:
+    """
+    多意图处理器节点
+    同时处理多个高置信度意图
+    
+    Args:
+        state: 状态对象
+    
+    Returns:
+        更新的状态
+    """
+    from .nodes import (
+        unified_lesson_plan_node,
+        visualization_suggestions_node,
+        ggb_design_advisor_node
+    )
+    
+    print(f"\n🔄 多意图处理器启动")
+    
+    # 获取高置信度意图
+    if isinstance(state, dict):
+        intents = state.get("intents", [])
+    else:
+        intents = getattr(state, "intents", [])
+    
+    high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
+    print(f"🎯 待处理的高置信度意图: {high_confidence_intents}")
+    
+    updates = {
+        "current_step": "multi_intent_processor",
+        "error": None,
+        "processed_intents": []
+    }
+    
+    # 按优先级处理各个意图
+    intent_types = [i.get("type") for i in high_confidence_intents]
+    
+    # 1. 处理教案生成意图
+    if "generate_lesson_plan" in intent_types:
+        print(f"📝 处理教案生成意图")
+        lesson_plan_result = unified_lesson_plan_node(state)
+        updates.update(lesson_plan_result)
+        updates["processed_intents"].append("generate_lesson_plan")
+    
+    # 2. 处理可视化意图
+    if "visualization" in intent_types:
+        print(f"🎨 处理可视化意图")
+        viz_result = visualization_suggestions_node(state)
+        updates.update(viz_result)
+        updates["processed_intents"].append("visualization")
+    
+    # 3. 检查是否有GGB资源并处理
+    if isinstance(state, dict):
+        retrieved_resources = state.get("retrieved_resources", {})
+    else:
+        retrieved_resources = getattr(state, "retrieved_resources", {})
+    
+    ggb_resources = retrieved_resources.get("ggb_resources", [])
+    if ggb_resources and "visualization" in intent_types:
+        print(f"🔧 处理GGB设计建议")
+        ggb_result = ggb_design_advisor_node(state)
+        updates.update(ggb_result)
+        updates["processed_intents"].append("ggb_design")
+    
+    print(f"✅ 多意图处理完成，已处理: {updates['processed_intents']}")
+    
+    return updates

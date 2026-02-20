@@ -1,0 +1,154 @@
+[
+  {
+    "history_id": "ad360ee4-d249-425e-8ddf-1d63312fce8d",
+    "user_id": "6a18a13b-244f-4053-8124-4b4bb8d6c7fb",
+    "topic": "函数的概念",
+    "chapter": "第一章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "理解函数的概念，掌握函数的定义域和值域",
+    "teaching_framework": "情境引入 -> 概念讲解 -> 例题分析 -> 练习巩固",
+    "lesson_plan_content": "# 函数的概念\n\n## 教学目标\n...",
+    "status": "completed",
+    "created_at": "2026-02-20T17:06:53.707047",
+    "updated_at": "2026-02-20T17:07:03.955541",
+    "tags": [
+      "函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "已修改，增加了更多例题"
+  },
+  {
+    "history_id": "e852c0d9-49ae-4ead-af15-591bc59446d0",
+    "user_id": "6a18a13b-244f-4053-8124-4b4bb8d6c7fb",
+    "topic": "二次函数的图像与性质",
+    "chapter": "第二章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "掌握二次函数的图像和性质",
+    "teaching_framework": "复习引入 -> 图像绘制 -> 性质分析 -> 应用练习",
+    "lesson_plan_content": "# 二次函数的图像与性质\n\n## 教学目标\n...",
+    "status": "draft",
+    "created_at": "2026-02-20T17:06:55.737598",
+    "updated_at": "2026-02-20T17:06:55.737598",
+    "tags": [
+      "二次函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "需要准备PPT展示图像"
+  },
+  {
+    "history_id": "5e9687c3-e36f-4534-bab8-739e15b596f7",
+    "user_id": "9d74e240-7077-4b0b-afa5-ef7f0eaa3571",
+    "topic": "函数的概念",
+    "chapter": "第一章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "理解函数的概念，掌握函数的定义域和值域",
+    "teaching_framework": "情境引入 -> 概念讲解 -> 例题分析 -> 练习巩固",
+    "lesson_plan_content": "# 函数的概念\n\n## 教学目标\n...",
+    "status": "completed",
+    "created_at": "2026-02-20T17:12:17.968262",
+    "updated_at": "2026-02-20T17:12:28.198592",
+    "tags": [
+      "函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "已修改，增加了更多例题"
+  },
+  {
+    "history_id": "99d27a2d-d61b-4814-b0c6-6c78a2cac406",
+    "user_id": "9d74e240-7077-4b0b-afa5-ef7f0eaa3571",
+    "topic": "二次函数的图像与性质",
+    "chapter": "第二章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "掌握二次函数的图像和性质",
+    "teaching_framework": "复习引入 -> 图像绘制 -> 性质分析 -> 应用练习",
+    "lesson_plan_content": "# 二次函数的图像与性质\n\n## 教学目标\n...",
+    "status": "draft",
+    "created_at": "2026-02-20T17:12:20.016484",
+    "updated_at": "2026-02-20T17:12:20.016484",
+    "tags": [
+      "二次函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "需要准备PPT展示图像"
+  },
+  {
+    "history_id": "e9c5106d-bcb6-4df0-903a-889acdb59cb7",
+    "user_id": "2423f7c2-bf82-44dd-87c9-b060cbe6649a",
+    "topic": "函数的概念",
+    "chapter": "第一章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "理解函数的概念，掌握函数的定义域和值域",
+    "teaching_framework": "情境引入 -> 概念讲解 -> 例题分析 -> 练习巩固",
+    "lesson_plan_content": "# 函数的概念\n\n## 教学目标\n...",
+    "status": "completed",
+    "created_at": "2026-02-20T17:25:47.148744",
+    "updated_at": "2026-02-20T17:25:57.359391",
+    "tags": [
+      "函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "已修改，增加了更多例题"
+  },
+  {
+    "history_id": "edc2f4c5-f228-4157-b4cd-59dcb2f444ac",
+    "user_id": "2423f7c2-bf82-44dd-87c9-b060cbe6649a",
+    "topic": "二次函数的图像与性质",
+    "chapter": "第二章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "掌握二次函数的图像和性质",
+    "teaching_framework": "复习引入 -> 图像绘制 -> 性质分析 -> 应用练习",
+    "lesson_plan_content": "# 二次函数的图像与性质\n\n## 教学目标\n...",
+    "status": "draft",
+    "created_at": "2026-02-20T17:25:49.174475",
+    "updated_at": "2026-02-20T17:25:49.174475",
+    "tags": [
+      "二次函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "需要准备PPT展示图像"
+  },
+  {
+    "history_id": "0492655d-9d31-44f8-94fe-f782c0448031",
+    "user_id": "10dd9d83-0f44-4954-80ad-ee900cc5c7a7",
+    "topic": "函数的概念",
+    "chapter": "第一章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "理解函数的概念，掌握函数的定义域和值域",
+    "teaching_framework": "情境引入 -> 概念讲解 -> 例题分析 -> 练习巩固",
+    "lesson_plan_content": "# 函数的概念\n\n## 教学目标\n...",
+    "status": "completed",
+    "created_at": "2026-02-20T17:38:46.995816",
+    "updated_at": "2026-02-20T17:38:57.208709",
+    "tags": [
+      "函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "已修改，增加了更多例题"
+  },
+  {
+    "history_id": "b0053aa0-da1e-4b91-87de-18acb908743f",
+    "user_id": "10dd9d83-0f44-4954-80ad-ee900cc5c7a7",
+    "topic": "二次函数的图像与性质",
+    "chapter": "第二章",
+    "textbook": "人教版高中数学必修一",
+    "teaching_goals": "掌握二次函数的图像和性质",
+    "teaching_framework": "复习引入 -> 图像绘制 -> 性质分析 -> 应用练习",
+    "lesson_plan_content": "# 二次函数的图像与性质\n\n## 教学目标\n...",
+    "status": "draft",
+    "created_at": "2026-02-20T17:38:49.044703",
+    "updated_at": "2026-02-20T17:38:49.044703",
+    "tags": [
+      "二次函数",
+      "必修一",
+      "高一"
+    ],
+    "notes": "需要准备PPT展示图像"
+  }
+]

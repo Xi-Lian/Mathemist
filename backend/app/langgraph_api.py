@@ -14,7 +14,7 @@ LangGraph API模块
 
 import logging
 from fastapi import APIRouter
-from app.api.routes import assistants, threads, runs
+from app.api.routes import assistants, threads, runs, users
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ router = APIRouter(prefix="", tags=["LangGraph API"])
 router.include_router(assistants.router)
 router.include_router(threads.router)
 router.include_router(runs.router)
+router.include_router(users.router)
 
 # 导出路由器供main.py使用
 __all__ = ["router"]

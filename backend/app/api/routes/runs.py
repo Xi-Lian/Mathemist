@@ -4,6 +4,7 @@
 职责：
 - 处理运行相关的API请求
 - 提供运行创建、查询、流式接口
+- 支持运行与用户关联
 
 依赖：
 - fastapi
@@ -11,18 +12,20 @@
 - app.utils (工具函数)
 - app.graph (图实例)
 - app.api.routes.threads (线程存储)
+- app.core.user_system (用户系统)
 """
 
 import json
 import logging
 import uuid
-from typing import Dict, Any, AsyncGenerator
-from fastapi import APIRouter, HTTPException, Body
+from typing import Dict, Any, AsyncGenerator, Optional
+from fastapi import APIRouter, HTTPException, Body, Query
 from fastapi.responses import StreamingResponse
-from app.api.models import Run, RunCreateRequest
+from app.api.models import Run, RunCreateRequest, RunWithUser
 from app.utils import generate_id, get_current_timestamp, CustomJSONEncoder
 from app.graph import create_math_agent_graph
 from app.api.routes import threads as threads_module
+from app.core.user_system import user_system
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +57,17 @@ async def create_run(thread_id: str, request: RunCreateRequest):
             detail=f"Thread {thread_id} not found"
         )
     
+    # 获取线程关联的用户ID（如果有）
+    thread = threads[thread_id]
+    user_id = thread.get("user_id")
+    
     run_id = generate_id()
     now = get_current_timestamp()
     
     run = {
         "run_id": run_id,
         "thread_id": thread_id,
+        "user_id": user_id,
         "assistant_id": request.assistant_id,
         "created_at": now,
         "updated_at": now,
@@ -99,6 +107,46 @@ async def create_run(thread_id: str, request: RunCreateRequest):
     return Run(**run)
 
 
+@router.get("/users/{user_id}/runs", response_model=list[RunWithUser])
+async def get_user_runs(
+    user_id: str,
+    limit: int = Query(50, ge=1, le=100, description="返回数量限制"),
+    offset: int = Query(0, ge=0, description="偏移量"),
+    status: Optional[str] = Query(None, description="状态过滤")
+):
+    """
+    获取用户的所有运行记录
+    """
+    # 验证用户是否存在
+    user = user_system.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    
+    # 过滤用户的运行记录
+    user_runs = [
+        r for r in runs.values()
+        if r.get("user_id") == user_id
+    ]
+    
+    # 状态过滤
+    if status:
+        user_runs = [
+            r for r in user_runs
+            if r.get("status") == status
+        ]
+    
+    # 按更新时间倒序排列
+    user_runs.sort(
+        key=lambda x: x["updated_at"],
+        reverse=True
+    )
+    
+    # 分页
+    user_runs = user_runs[offset:offset + limit]
+    
+    return [RunWithUser(**r) for r in user_runs]
+
+
 @router.post("/threads/{thread_id}/runs/stream")
 async def create_run_stream(thread_id: str, request: RunCreateRequest):
     """
@@ -118,12 +166,17 @@ async def create_run_stream(thread_id: str, request: RunCreateRequest):
         }
         logger.info(f"自动创建线程: {thread_id}")
     
+    # 获取线程关联的用户ID（如果有）
+    thread = threads[thread_id]
+    user_id = thread.get("user_id")
+    
     run_id = generate_id()
     now = get_current_timestamp()
     
     run = {
         "run_id": run_id,
         "thread_id": thread_id,
+        "user_id": user_id,
         "assistant_id": request.assistant_id,
         "created_at": now,
         "updated_at": now,
