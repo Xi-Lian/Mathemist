@@ -22,6 +22,7 @@ import {
   LoaderCircle,
   PanelRightOpen,
   PanelRightClose,
+  Shapes,
   SquarePen,
   XIcon,
   Plus,
@@ -514,6 +515,16 @@ export function Thread() {
                           accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
                           className="hidden"
                         />
+                        <a
+                          href="http://localhost:8000/combined-geometry"
+                          target="_blank"
+                          className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap"
+                        >
+                          <Shapes className="size-5 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            {t.openGeometryTool}
+                          </span>
+                        </a>
                         {stream.isLoading ? (
                           <Button
                             key="stop"

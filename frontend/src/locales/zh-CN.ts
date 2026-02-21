@@ -1,6 +1,7 @@
 export const zhCN = {
   // Navigation / Header
   openGitHubRepo: "打开 GitHub 仓库",
+  openGeometryTool: "画图建议 & 图形库",
   newThread: "新对话线程",
   switchToPaper: "切换到纸张主题",
   switchToBasalt: "切换到深色主题",

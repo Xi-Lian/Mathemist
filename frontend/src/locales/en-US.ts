@@ -1,6 +1,7 @@
 export const enUS = {
   // Navigation / Header
   openGitHubRepo: "Open GitHub repo",
+  openGeometryTool: "Drawing Suggestions & Geometry Library",
   newThread: "New thread",
   switchToPaper: "Switch to paper",
   switchToBasalt: "Switch to basalt",
