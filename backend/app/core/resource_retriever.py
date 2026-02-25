@@ -89,6 +89,28 @@ class ResourceRetriever:
             # 生成查询向量
             query_embedding = self._generate_query_embedding(query, embedding_model)
             
+            # 提取核心主题（通用化支持）
+            core_theme = ""
+            theme_keywords = {
+                "指数函数": ["指数函数", "指数与指数函数", "2^x", "a^x", "e^", "指数增长", "指数衰减"],
+                "对数函数": ["对数函数", "对数与对数函数", "log", "ln", "对数增长", "对数衰减"],
+                "幂函数": ["幂函数", "x^a", "x的幂", "幂运算"],
+                "二次函数": ["二次函数", "x²", "x^2", "一元二次", "抛物线", "顶点式", "一般式"],
+                "一次函数": ["一次函数", "线性函数", "y=kx+b", "斜率", "截距", "直线"],
+                "三角函数": ["三角函数", "sin", "cos", "tan", "正弦", "余弦", "正切", "cot", "sec", "csc", "任意角", "诱导公式", "三角恒等变换"],
+                "分段函数": ["分段函数", "分段", "绝对值函数", "取整函数", "符号函数"],
+                "函数应用": ["函数应用", "函数的应用", "应用", "建模", "实际问题", "数学建模"]
+            }
+            priority_order = ["指数函数", "对数函数", "幂函数", "二次函数", "一次函数", "三角函数", "分段函数", "函数应用"]
+            for theme in priority_order:
+                for keyword in theme_keywords[theme]:
+                    if keyword in query:
+                        core_theme = theme
+                        break
+                if core_theme:
+                    break
+            print(f"🧠 识别核心主题: {core_theme}")
+            
             # 执行查询
             results = collection.query(
                 query_embeddings=query_embedding,
@@ -97,7 +119,16 @@ class ResourceRetriever:
             )
             
             # 处理检索结果
-            classified_resources = self._classify_results(results, resource_types)
+            classified_resources = self._classify_results(results, resource_types, core_theme)
+            
+            # 所有资源类型按相似度降序排序（通用化）
+            for category in classified_resources:
+                if classified_resources[category] and core_theme:
+                    print(f"\n🔍 {category}资源排序（核心主题: {core_theme}）...")
+                    classified_resources[category].sort(
+                        key=lambda x: -x.get('relevance', 0)
+                    )
+                    print(f"   ✅ {category}资源排序完成，按相似度降序排列")
             
             print(f"✅ 检索完成: {self._get_summary(classified_resources)}")
             
@@ -136,13 +167,14 @@ class ResourceRetriever:
         
         return query_embedding
     
-    def _classify_results(self, results: Dict[str, Any], resource_types: List[str] = None) -> Dict[str, Any]:
+    def _classify_results(self, results: Dict[str, Any], resource_types: List[str] = None, core_theme: str = "") -> Dict[str, Any]:
         """
         对检索结果进行分类
         
         Args:
             results: ChromaDB查询结果
             resource_types: 用户明确提到的资源类型列表（用于精准检索）
+            core_theme: 核心主题
         
         Returns:
             分类后的资源字典
@@ -195,7 +227,7 @@ class ResourceRetriever:
                         continue
                 
                 # 创建资源对象
-                resource = self._create_resource(doc, metadata, distance, resource_type)
+                resource = self._create_resource(doc, metadata, distance, resource_type, core_theme)
                 
                 # 分类资源
                 self._add_to_category(classified, resource_type, resource)
@@ -234,27 +266,70 @@ class ResourceRetriever:
                 return results["distances"][0][index]
         return 0.0
     
-    def _create_resource(self, doc: str, metadata: Dict[str, Any], distance: float, resource_type: str) -> Dict[str, Any]:
+    def _create_resource(self, doc: str, metadata: Dict[str, Any], distance: float, resource_type: str, core_theme: str = "") -> Dict[str, Any]:
         """
-        创建资源对象
+        创建资源对象（带主题匹配）
         
         Args:
             doc: 文档内容
             metadata: 元数据
             distance: 距离
             resource_type: 资源类型
+            core_theme: 核心主题
         
         Returns:
             资源字典
         """
-        # 基本资源信息
+        # 基本资源信息 - 保留原始相似度作为基础分！
+        base_relevance = 1 - distance
         resource = {
             "title": metadata.get('title', '未知'),
             "content": doc,
             "source": metadata.get('source_file', ''),
-            "relevance": 1 - distance,
-            "metadata": metadata
+            "relevance": base_relevance,
+            "metadata": metadata,
+            "base_relevance": base_relevance,
+            "theme_match": False,
+            "conflict_theme": False
         }
+        
+        # 使用主题匹配器进行主题匹配
+        if core_theme:
+            from .theme_matcher import get_theme_matcher
+            theme_matcher = get_theme_matcher()
+            match_result = theme_matcher.match_theme(
+                core_theme=core_theme,
+                metadata=metadata,
+                document=doc,
+                verbose=True
+            )
+            
+            # 保留基础分，只在基础分上加减！
+            final_relevance = base_relevance
+            
+            # 应用主题匹配加分
+            if match_result["is_theme_match"]:
+                final_relevance += match_result["relevance_boost"]
+                resource["theme_match"] = True
+                resource["theme_boost"] = match_result["relevance_boost"]
+            
+            # 应用冲突主题减分
+            if match_result["is_conflict_theme"]:
+                final_relevance -= match_result["relevance_penalty"]
+                resource["conflict_theme"] = True
+                resource["conflict_penalty"] = match_result["relevance_penalty"]
+            
+            # 设置最终相似度，确保在0到1之间
+            final_relevance = max(0.0, min(1.0, final_relevance))
+            resource["relevance"] = final_relevance
+            
+            # 输出分数变化
+            print(f"   📊 基础分: {base_relevance:.1%}")
+            if match_result["is_theme_match"]:
+                print(f"   ➕ 主题匹配加分: +{match_result['relevance_boost']:.1%}")
+            if match_result["is_conflict_theme"]:
+                print(f"   ➖ 冲突主题减分: -{match_result['relevance_penalty']:.1%}")
+            print(f"   🎯 最终相似度: {final_relevance:.1%} (基础分: {base_relevance:.1%})")
         
         # 根据资源类型进行特殊处理
         if resource_type == 'exercise':

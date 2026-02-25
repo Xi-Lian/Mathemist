@@ -20,6 +20,7 @@ from app.graph import create_math_agent_graph
 from app.state import MathAgentState
 from app.langgraph_api import router as langgraph_api_router
 from app.core import generate_ggb_innovation_suggestions
+from app.api.routes import feedback_router
 
 # 配置日志
 logging.basicConfig(
@@ -285,6 +286,9 @@ async def stream_math_agent(request: MathAgentRequest):
 
 # 添加 LangGraph API 路由（必须在 LangServe 之前）
 app.include_router(langgraph_api_router)
+
+# 添加反馈 API 路由
+app.include_router(feedback_router)
 
 # ============================================
 # GGB创新设计建议 API
