@@ -1,45 +1,44 @@
-<<<<<<< HEAD
-# database/Vector DB
-chroma_db/
-
-# Models，模型缓存
-# model_cache/
-paraphrase-multilingual-MiniLM-L12-v2/           # 如果模型通过其他方式分发
-
-# Python临时文件
-=======
+# Node
 node_modules/
->>>>>>> 8ab2b4c3f4db6a981b70dcfc3239993237578de1
-__pycache__/
-*.pyc
-.venv/
-venv/
-<<<<<<< HEAD
-.env
-
-# OS（系统文件）
-.DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-*.swp
-=======
-backend/chroma_db/
-.env
-.env.local
+frontend/node_modules/
 frontend/.next/
 frontend/out/
 frontend/build/
 dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Env
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Database / model cache
+chroma_db/
+backend/chroma_db/
+paraphrase-multilingual-MiniLM-L12-v2/
+
+# Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Editors / local tools
+.vscode/
+.idea/
+*.swp
 .claude
 .claude.md
 .iflow
 iflow.md
->>>>>>> 8ab2b4c3f4db6a981b70dcfc3239993237578de1

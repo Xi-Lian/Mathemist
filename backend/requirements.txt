@@ -1,32 +1,26 @@
-langgraph==0.1.8
-langserve==0.3.3
-fastapi>=0.129.0
+langgraph==0.2.24
+# Keep langserve on 0.2.x to stay compatible with langchain-core<0.3
+langserve==0.2.2
+fastapi>=0.110.0,<1.0.0
 uvicorn[standard]>=0.24.0
 python-dotenv>=1.0.0
+jieba>=0.42.1
+markdown>=3.6
 
-langchain>=0.3.0
-langchain-core>=0.3.0
-langchain-community>=0.3.0
-langchain-deepseek>=1.0.0
-langchain-openai>=1.0.0
+# Keep LangChain stack compatible with langgraph 0.2.x
+langchain>=0.2.0,<0.3.0
+langchain-core>=0.2.15,<0.3.0
+langchain-community>=0.2.0,<0.3.0
+langchain-openai>=0.1.0,<0.2.0
+# Optional: install if you need native ChatDeepSeek class
+# langchain-deepseek
 
-chromadb==0.5.23
+# Use prebuilt wheel on Windows/Py3.12 to avoid local C++ build tool requirement
+chromadb==1.4.1
 sentence-transformers>=2.7.0
 
 pydantic>=2.0.0
 pydantic-settings>=2.0.0
 
-httpx>=0.25.0
+httpx>=0.25.0,<0.28.0
 sse-starlette>=3.0.0
-
-numpy>=1.26.0
-pandas>=2.0.0
-transformers>=4.35.0
-
-black>=23.0.0
-isort>=5.0.0
-flake8>=6.0.0
-mypy>=1.0.0
-
-pytest>=7.0.0
-pytest-asyncio>=0.21.0

@@ -12,7 +12,8 @@ import {
   DO_NOT_RENDER_ID_PREFIX,
   ensureToolCallsHaveResponses,
 } from "@/lib/ensure-tool-responses";
-import { LangGraphLogoSVG, MathemistLogoWithText } from "../icons/langgraph";
+import { getContentString } from "./utils";
+import { MathemistLogoWithText } from "../icons/langgraph";
 import { TooltipIconButton } from "./tooltip-icon-button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LangToggle } from "@/components/lang-toggle";
@@ -49,6 +50,7 @@ import {
   ArtifactTitle,
   useArtifactContext,
 } from "./artifact";
+import { ImprovementSuggestionBox } from "@/components/feedback/ImprovementSuggestionBox";
 
 function StickyToBottomContent(props: {
   content: ReactNode;
@@ -120,6 +122,7 @@ export function Thread() {
   const [artifactOpen, closeArtifact] = useArtifactOpen();
 
   const [threadId, _setThreadId] = useQueryState("threadId");
+  const [apiUrl] = useQueryState("apiUrl");
   const [chatHistoryOpen, setChatHistoryOpen] = useQueryState(
     "chatHistoryOpen",
     parseAsBoolean.withDefault(false),
@@ -258,6 +261,21 @@ export function Thread() {
   const hasNoAIOrToolMessages = !messages.find(
     (m) => m.type === "ai" || m.type === "tool",
   );
+  const feedbackApiBaseUrl =
+    apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const geometryToolUrl = `/combined-geometry?apiUrl=${encodeURIComponent(feedbackApiBaseUrl)}`;
+  const visibleMessages = messages.filter(
+    (m) => !m.id?.startsWith(DO_NOT_RENDER_ID_PREFIX),
+  );
+
+  let latestHumanQuery = "";
+  const messageEntries = visibleMessages.map((message) => {
+    if (message.type === "human") {
+      const query = getContentString(message.content).trim();
+      if (query) latestHumanQuery = query;
+    }
+    return { message, query: latestHumanQuery };
+  });
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -401,24 +419,24 @@ export function Thread() {
               contentClassName="pt-8 pb-16 mx-auto flex w-full max-w-[min(960px,100%)] flex-col gap-4"
               content={
                 <>
-                  {messages
-                    .filter((m) => !m.id?.startsWith(DO_NOT_RENDER_ID_PREFIX))
-                    .map((message, index) =>
-                      message.type === "human" ? (
-                        <HumanMessage
-                          key={message.id || `${message.type}-${index}`}
-                          message={message}
-                          isLoading={isLoading}
-                        />
-                      ) : (
-                        <AssistantMessage
-                          key={message.id || `${message.type}-${index}`}
-                          message={message}
-                          isLoading={isLoading}
-                          handleRegenerate={handleRegenerate}
-                        />
-                      ),
-                    )}
+                  {messageEntries.map(({ message, query }, index) =>
+                    message.type === "human" ? (
+                      <HumanMessage
+                        key={message.id || `${message.type}-${index}`}
+                        message={message}
+                        isLoading={isLoading}
+                      />
+                    ) : (
+                      <AssistantMessage
+                        key={message.id || `${message.type}-${index}`}
+                        message={message}
+                        isLoading={isLoading}
+                        handleRegenerate={handleRegenerate}
+                        apiBaseUrl={feedbackApiBaseUrl}
+                        queryForFeedback={query}
+                      />
+                    ),
+                  )}
                   {/* Special rendering case where there are no AI/tool messages, but there is an interrupt.
                     We need to render it outside of the messages list, since there are no messages to render */}
                   {hasNoAIOrToolMessages && !!stream.interrupt && (
@@ -427,6 +445,8 @@ export function Thread() {
                       message={undefined}
                       isLoading={isLoading}
                       handleRegenerate={handleRegenerate}
+                      apiBaseUrl={feedbackApiBaseUrl}
+                      queryForFeedback={latestHumanQuery}
                     />
                   )}
                   {isLoading && !firstTokenReceived && (
@@ -440,6 +460,13 @@ export function Thread() {
                     <div className="flex items-center gap-3">
                       <MathemistLogoWithText width={180} height={40} className="flex-shrink-0" />
                     </div>
+                  )}
+
+                  {chatStarted && (
+                    <ImprovementSuggestionBox
+                      apiBaseUrl={feedbackApiBaseUrl}
+                      query={latestHumanQuery || input.trim()}
+                    />
                   )}
 
                   <ScrollToBottom className="animate-in fade-in-0 zoom-in-95 absolute bottom-full left-1/2 mb-4 -translate-x-1/2" />
@@ -516,8 +543,9 @@ export function Thread() {
                           className="hidden"
                         />
                         <a
-                          href="http://localhost:8000/combined-geometry"
+                          href={geometryToolUrl}
                           target="_blank"
+                          rel="noreferrer"
                           className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap"
                         >
                           <Shapes className="size-5 text-muted-foreground" />
