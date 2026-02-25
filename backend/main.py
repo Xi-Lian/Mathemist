@@ -20,6 +20,7 @@ from app.graph import create_math_agent_graph
 from app.state import MathAgentState
 from app.langgraph_api import router as langgraph_api_router
 from app.core import generate_ggb_innovation_suggestions
+from app.core.model_config import model_config
 
 # 配置日志
 logging.basicConfig(
@@ -33,12 +34,24 @@ def validate_api_keys():
     """
     验证API密钥配置
     """
-    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
+    deepseek_key = os.getenv("DEEPSEEK_API_KEY", "")
+    openai_compat_key = os.getenv("OPENAI_COMPAT_API_KEY") or os.getenv("OPENAI_API_KEY", "")
+    provider = os.getenv("LLM_PROVIDER", "auto").strip().lower()
     
     warnings = []
+    deepseek_ready = bool(deepseek_key and deepseek_key != "your-api-key-here")
+    openai_compat_ready = bool(openai_compat_key and openai_compat_key != "your-api-key-here")
     
-    if not deepseek_key or deepseek_key == "your-api-key-here":
-        warnings.append("DeepSeek API密钥未配置")
+    if provider not in {"auto", "deepseek", "openai_compatible"}:
+        warnings.append(f"未知 LLM_PROVIDER={provider}，应为 auto/deepseek/openai_compatible")
+        provider = "auto"
+
+    if provider == "deepseek" and not deepseek_ready:
+        warnings.append("LLM_PROVIDER=deepseek 但 DEEPSEEK_API_KEY 未配置")
+    elif provider == "openai_compatible" and not openai_compat_ready:
+        warnings.append("LLM_PROVIDER=openai_compatible 但 OPENAI_COMPAT_API_KEY/OPENAI_API_KEY 未配置")
+    elif provider == "auto" and not (deepseek_ready or openai_compat_ready):
+        warnings.append("未检测到可用模型密钥（DEEPSEEK_API_KEY 或 OPENAI_COMPAT_API_KEY/OPENAI_API_KEY）")
     
     if warnings:
         logger.warning(f"API密钥配置警告: {', '.join(warnings)}")
@@ -105,18 +118,32 @@ async def get_models_status():
     Returns:
         各模型的配置状态信息
     """
-    deepseek_key = os.getenv("DEEPSEEK_API_KEY")
+    deepseek_key = os.getenv("DEEPSEEK_API_KEY", "")
+    openai_compat_key = os.getenv("OPENAI_COMPAT_API_KEY") or os.getenv("OPENAI_API_KEY", "")
+    openai_compat_base_url = os.getenv("OPENAI_COMPAT_BASE_URL") or os.getenv("OPENAI_BASE_URL", "")
+    provider = os.getenv("LLM_PROVIDER", "auto").strip().lower()
     
     return {
+        "provider": {
+            "configured": provider,
+            "resolved": model_config.get_llm_provider()
+        },
         "deepseek": {
             "configured": bool(deepseek_key and deepseek_key != "your-api-key-here"),
-            "purpose": "统一模型，用于所有任务：意图理解、教案生成、可视化建议"
+            "model": os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+            "purpose": "可用于所有任务：意图理解、教案生成、可视化建议"
+        },
+        "openai_compatible": {
+            "configured": bool(openai_compat_key and openai_compat_key != "your-api-key-here"),
+            "model": os.getenv("OPENAI_COMPAT_MODEL") or os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+            "base_url_configured": bool(openai_compat_base_url),
+            "purpose": "可用于 OpenAI 格式兼容服务（含第三方网关）"
         },
         "model_assignment": {
-            "intent_understanding": "DeepSeek",
-            "lesson_plan_generation": "DeepSeek",
-            "visualization_suggestions": "DeepSeek",
-            "default": "DeepSeek"
+            "intent_understanding": "统一模型",
+            "lesson_plan_generation": "统一模型",
+            "visualization_suggestions": "统一模型",
+            "default": model_config.get_llm_provider()
         }
     }
 

@@ -6,9 +6,10 @@
 import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional
+import logging
+
 import chromadb
 from chromadb.config import Settings
-import logging
 
 from .resource_table_parser import ResourceTableParser
 from .model_config import ModelConfig

@@ -49,9 +49,9 @@ Mathemist 是一个基于 LangGraph 和 LangChain 构建的智能教学辅助系
   │             │
 ┌─▼────────┐  ┌─▼──────────┐
 │ LLM服务层  │  │  学习资源库  │
-│(DeepSeek) │  │  (教案/习题/ │
-└───────────┘  │   教学大纲/  │
-              │   GGB资源)   │
+│(DeepSeek /│  │  (教案/习题/ │
+│ OpenAI兼容)│  │   教学大纲/  │
+└───────────┘  │   GGB资源)   │
               └──────────────┘
 ```
 
@@ -67,8 +67,9 @@ Mathemist/
 │   ├── scripts/
 │   │   └── ingest.py       # 向量数据库构建脚本
 │   ├── main.py              # FastAPI 应用入口
+│   ├── run_local.py         # 本地启动兼容入口（不改业务代码）
 │   ├── requirements.txt      # Python 依赖
-│   └── .env               # 后端环境变量配置
+│   └── ...
 ├── frontend/                   # 前端应用
 │   ├── src/
 │   │   ├── app/            # Next.js App Router
@@ -78,13 +79,15 @@ Mathemist/
 │   │   ├── lib/            # 工具函数库
 │   │   └── locales/        # 国际化配置
 │   ├── package.json        # Node.js 依赖
-│   └── .env              # 前端环境变量配置
+│   └── ...
 ├── learning_resource/          # 学习资源库
 │   ├── 教案/             # 教案资源
 │   ├── 习题/             # 习题库
 │   ├── 教学大纲/          # 教学大纲
 │   └── ggb/              # GeoGebra 资源
-└── README.md                 # 项目说明文档
+├── .env                        # 根目录统一环境变量（本地启动）
+├── start-local.ps1             # 一键本地启动脚本
+└── README.md                   # 项目说明文档
 ```
 
 ## 🚀 快速开始
@@ -95,60 +98,88 @@ Mathemist/
 - Node.js 18+
 - pnpm 或 npm
 
-### 后端设置
+### 1. 安装依赖
 
-1. **安装依赖**
 ```bash
 cd backend
 pip install -r requirements.txt
+
+cd ../frontend
+pnpm install
 ```
 
-2. **配置环境变量**
+### 2. 配置根目录环境变量（统一管理）
 
-复制 `backend/.env` 文件并配置以下变量：
+项目本地启动读取根目录 `.env`（不是分开的前后端 `.env`）。
+
+可先从模板复制：
+
+```bash
+cp .env.example .env
+```
+
 ```env
+# 模型提供商: auto / deepseek / openai_compatible
+LLM_PROVIDER=auto
+
+# DeepSeek（官方）
 DEEPSEEK_API_KEY=your-api-key-here
+DEEPSEEK_MODEL=deepseek-chat
+
+# OpenAI 兼容（第三方 OpenAI 格式网关也可）
+OPENAI_COMPAT_API_KEY=
+OPENAI_COMPAT_BASE_URL=
+OPENAI_COMPAT_MODEL=gpt-4o-mini
+
+# Backend
 HOST=0.0.0.0
 PORT=8000
 CORS_ORIGINS=*
 LOG_LEVEL=INFO
-```
+PYTHONIOENCODING=utf-8
+PYTHONUTF8=1
 
-3. **构建知识库**
-```bash
-python scripts/ingest.py
-```
-
-4. **启动后端服务**
-```bash
-python main.py
-```
-
-服务将在 `http://localhost:8000` 启动
-
-### 前端设置
-
-1. **安装依赖**
-```bash
-cd frontend
-pnpm install
-```
-
-2. **配置环境变量**
-
-复制 `frontend/.env` 文件并配置以下变量：
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000/langserve/math-agent
-NEXT_PUBLIC_ASSISTANT_ID=math_agent_graph
+# Frontend
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_ASSISTANT_ID=math-agent
 LANGSMITH_API_KEY=
 ```
 
-3. **启动前端服务**
+说明：
+- `LLM_PROVIDER=auto`：优先使用 DeepSeek；若未配置 DeepSeek Key，则自动切换到 OpenAI 兼容配置。
+- 若你只用 DeepSeek，只填 `DEEPSEEK_API_KEY` 即可。
+- 若你只用第三方 OpenAI 格式接口，填 `OPENAI_COMPAT_API_KEY`（通常还要 `OPENAI_COMPAT_BASE_URL`）。
+
+### 3. 构建知识库（首次必做）
+
 ```bash
-pnpm dev
+cd backend
+python scripts/ingest.py
 ```
 
-服务将在 `http://localhost:3000` 启动
+### 4. 一键本地启动（推荐）
+
+在项目根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\start-local.ps1
+```
+
+脚本会同时启动：
+- 后端：`http://localhost:8000`
+- 前端：`http://localhost:3000`
+
+### 5. 手动双终端启动（可选）
+
+```bash
+# 终端1
+cd backend
+python run_local.py
+
+# 终端2
+cd frontend
+pnpm dev
+```
 
 ## 📚 学习资源
 
@@ -180,7 +211,7 @@ pnpm dev
 - **Web 框架**: FastAPI
 - **状态机**: LangGraph
 - **LLM 框架**: LangChain
-- **模型**: DeepSeek
+- **模型**: DeepSeek / OpenAI 兼容接口
 - **向量数据库**: ChromaDB
 - **Embedding**: SentenceTransformer
 
@@ -227,7 +258,12 @@ POST /math-agent/stream
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
+| `LLM_PROVIDER` | 模型提供商（`auto`/`deepseek`/`openai_compatible`） | auto |
 | `DEEPSEEK_API_KEY` | DeepSeek API 密钥 | 必填 |
+| `DEEPSEEK_MODEL` | DeepSeek 模型名 | deepseek-chat |
+| `OPENAI_COMPAT_API_KEY` | OpenAI 兼容 API 密钥（含第三方） | 可选 |
+| `OPENAI_COMPAT_BASE_URL` | OpenAI 兼容基地址 | 可选 |
+| `OPENAI_COMPAT_MODEL` | OpenAI 兼容模型名 | gpt-4o-mini |
 | `HOST` | 服务监听地址 | 0.0.0.0 |
 | `PORT` | 服务端口 | 8000 |
 | `CORS_ORIGINS` | 允许的跨域源 | * |
@@ -237,8 +273,8 @@ POST /math-agent/stream
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
-| `NEXT_PUBLIC_API_URL` | 后端 API 地址 | http://localhost:8000/langserve/math-agent |
-| `NEXT_PUBLIC_ASSISTANT_ID` | 助手 ID | math_agent_graph |
+| `NEXT_PUBLIC_API_URL` | 后端 API 地址 | http://localhost:8000 |
+| `NEXT_PUBLIC_ASSISTANT_ID` | 助手 ID | math-agent |
 | `LANGSMITH_API_KEY` | LangSmith API 密钥 | 可选 |
 
 ## 🧪 测试
