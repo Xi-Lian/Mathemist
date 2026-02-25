@@ -27,6 +27,48 @@ class ThemeMatcher:
     #     }
     # }
     THEME_KEYWORD_MAP = {
+        "函数的概念": {
+            "core_keywords": ["函数的概念", "函数概念", "函数定义"],
+            "related_keywords": ["什么是函数", "函数意义", "函数本质"],
+            "chapter_indicators": ["3.1", "3.2"],
+            "conflict_themes": ["函数的应用", "函数的性质", "函数的表示法"],
+            "path_keywords": ["概念", "定义"]
+        },
+        "指数函数的概念": {
+            "core_keywords": ["指数函数的概念", "指数函数概念"],
+            "related_keywords": ["指数函数", "指数"],
+            "chapter_indicators": ["4.2.1"],
+            "conflict_themes": ["对数函数", "幂函数", "三角函数", "二次函数", "一次函数", "分段函数"],
+            "path_keywords": ["指数函数"]
+        },
+        "对数函数的概念": {
+            "core_keywords": ["对数函数的概念", "对数函数概念"],
+            "related_keywords": ["对数函数", "对数"],
+            "chapter_indicators": ["4.4.1"],
+            "conflict_themes": ["指数函数", "幂函数", "三角函数", "二次函数", "一次函数", "分段函数"],
+            "path_keywords": ["对数函数"]
+        },
+        "函数的应用": {
+            "core_keywords": ["函数应用", "函数的应用"],
+            "related_keywords": ["应用", "建模", "实际问题", "数学建模"],
+            "chapter_indicators": ["4.5"],
+            "conflict_themes": ["函数的概念", "函数的性质", "函数的表示法"],
+            "path_keywords": ["应用"]
+        },
+        "函数的性质": {
+            "core_keywords": ["函数的性质", "函数性质"],
+            "related_keywords": ["单调性", "奇偶性", "周期性", "对称性"],
+            "chapter_indicators": ["3.2", "3.3"],
+            "conflict_themes": ["函数的概念", "函数的应用", "函数的表示法"],
+            "path_keywords": ["性质"]
+        },
+        "函数的表示法": {
+            "core_keywords": ["函数的表示法", "函数表示法"],
+            "related_keywords": ["解析法", "图像法", "列表法", "映射"],
+            "chapter_indicators": ["3.1", "3.2"],
+            "conflict_themes": ["函数的概念", "函数的应用", "函数的性质"],
+            "path_keywords": ["表示法"]
+        },
         "指数函数": {
             "core_keywords": ["指数函数", "指数与指数函数", "指数"],
             "related_keywords": ["2^x", "a^x", "e^", "指数增长", "指数衰减"],
@@ -75,13 +117,6 @@ class ThemeMatcher:
             "chapter_indicators": ["3.1", "3.2"],
             "conflict_themes": ["指数函数", "对数函数", "三角函数", "幂函数", "二次函数", "一次函数"],
             "path_keywords": ["分段"]
-        },
-        "函数应用": {
-            "core_keywords": ["函数应用", "函数的应用"],
-            "related_keywords": ["应用", "建模", "实际问题", "数学建模"],
-            "chapter_indicators": ["4.5"],
-            "conflict_themes": [],
-            "path_keywords": ["应用"]
         }
     }
     
@@ -185,7 +220,41 @@ class ThemeMatcher:
         elif verbose and tags and not result["is_theme_match"]:
             match_log.append(f"✗ 知识点标签不匹配: {tags}")
         
-        # 4. 检查章节标识（强匹配）
+        # 4. 检查题干（中匹配）
+        if not result["is_theme_match"] and stem and self._check_keywords_in_text(stem, theme_config["core_keywords"] + theme_config["related_keywords"]):
+            result["is_theme_match"] = True
+            result["relevance_boost"] = self.BOOST_CONFIG["related_keyword_match"]
+            match_evidence.append(("题干", stem))
+            match_log.append(f"✓ 题干匹配 (+{self.BOOST_CONFIG['related_keyword_match']:.0%})")
+        
+        # 5. 检查文件名是否包含幂函数相关关键词（针对幂函数特殊处理）
+        if not result["is_theme_match"] and core_theme == "幂函数" and filename:
+            power_function_keywords = ["幂函数", "3-3", "3.3"]
+            if any(keyword in filename for keyword in power_function_keywords):
+                result["is_theme_match"] = True
+                result["relevance_boost"] = self.BOOST_CONFIG["filename_core_keyword_match"]
+                match_evidence.append(("文件名", filename))
+                match_log.append(f"✓ 幂函数文件名匹配: {filename} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
+        
+        # 6. 检查源文件路径是否包含幂函数相关关键词（针对幂函数特殊处理）
+        if not result["is_theme_match"] and core_theme == "幂函数" and source_file:
+            power_function_keywords = ["幂函数", "3-3", "3.3"]
+            if any(keyword in source_file for keyword in power_function_keywords):
+                result["is_theme_match"] = True
+                result["relevance_boost"] = self.BOOST_CONFIG["filename_core_keyword_match"]
+                match_evidence.append(("源文件路径", source_file))
+                match_log.append(f"✓ 幂函数源文件路径匹配: {source_file} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
+        
+        # 7. 检查知识点标签是否包含幂函数相关关键词（针对幂函数特殊处理）
+        if not result["is_theme_match"] and core_theme == "幂函数" and tags:
+            power_function_keywords = ["幂函数"]
+            if any(keyword in tags for keyword in power_function_keywords):
+                result["is_theme_match"] = True
+                result["relevance_boost"] = self.BOOST_CONFIG["filename_core_keyword_match"]
+                match_evidence.append(("知识点标签", tags))
+                match_log.append(f"✓ 幂函数知识点标签匹配: {tags} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
+        
+        # 6. 检查章节标识（强匹配）
         if not result["is_theme_match"] and self._check_keywords_in_text(chapter, theme_config["chapter_indicators"]):
             result["is_theme_match"] = True
             result["relevance_boost"] = self.BOOST_CONFIG["chapter_indicator_match"]
@@ -194,7 +263,7 @@ class ThemeMatcher:
         elif verbose and chapter and not result["is_theme_match"]:
             match_log.append(f"✗ 章节标识不匹配: {chapter}")
         
-        # 5. 检查路径关键词 + 章节标识（中匹配）
+        # 6. 检查路径关键词 + 章节标识（中匹配）
         if not result["is_theme_match"]:
             path_has_keyword = self._check_keywords_in_text(source_file, theme_config["path_keywords"])
             path_has_chapter = self._check_keywords_in_text(source_file, theme_config["chapter_indicators"])
@@ -208,19 +277,12 @@ class ThemeMatcher:
             elif verbose:
                 match_log.append(f"✗ 路径+章节不匹配 (路径关键词={path_has_keyword}, 章节标识={path_has_chapter or metadata_has_chapter})")
         
-        # 6. 检查标题相关关键词（中匹配）
+        # 7. 检查标题相关关键词（中匹配）
         if not result["is_theme_match"] and self._check_keywords_in_text(title, theme_config["related_keywords"]):
             result["is_theme_match"] = True
             result["relevance_boost"] = self.BOOST_CONFIG["related_keyword_match"]
             match_evidence.append(("文件标题（相关词）", title))
             match_log.append(f"✓ 标题相关词匹配: {title} (+{self.BOOST_CONFIG['related_keyword_match']:.0%})")
-        
-        # 7. 检查题干（中匹配）
-        if not result["is_theme_match"] and self._check_keywords_in_text(stem, theme_config["core_keywords"] + theme_config["related_keywords"]):
-            result["is_theme_match"] = True
-            result["relevance_boost"] = self.BOOST_CONFIG["related_keyword_match"]
-            match_evidence.append(("题干", stem))
-            match_log.append(f"✓ 题干匹配 (+{self.BOOST_CONFIG['related_keyword_match']:.0%})")
         
         # 8. 检查内容（弱匹配）
         if not result["is_theme_match"] and self._check_keywords_in_text(document, theme_config["core_keywords"] + theme_config["related_keywords"]):

@@ -50,18 +50,26 @@ def create_math_agent_graph():
             retrieved_resources = state.get("retrieved_resources", {})
             resource_types = state.get("resource_types", [])
             lesson_plan_session_id = state.get("lesson_plan_session_id")
+            user_input = state.get("user_input", "")
         else:
             intent = getattr(state, "intent", None)
             intents = getattr(state, "intents", [])
             retrieved_resources = getattr(state, "retrieved_resources", {})
             resource_types = getattr(state, "resource_types", [])
             lesson_plan_session_id = getattr(state, "lesson_plan_session_id", None)
+            user_input = getattr(state, "user_input", "")
         
         print(f"🔀 路由函数: state 类型 = {type(state)}")
         print(f"🔀 路由函数: intent = {intent}")
         print(f"🔀 路由函数: intents = {intents}")
         print(f"🔀 路由函数: resource_types = {resource_types}")
         print(f"🔀 路由函数: lesson_plan_session_id = {lesson_plan_session_id}")
+        
+        # 检查指令词，避免生成教案和推送资源的场景混淆
+        resource_retrieval_keywords = ["推送", "给", "找", "推荐", "有没有", "我要", "帮我找", "想要", "需要"]
+        has_resource_retrieval = any(keyword in user_input for keyword in resource_retrieval_keywords)
+        
+        print(f"🔀 包含资源获取指令词: {has_resource_retrieval}")
         
         # 检查是否有多个高置信度意图
         high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
@@ -70,6 +78,11 @@ def create_math_agent_graph():
             print(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
             # 有多个意图，使用多意图处理器
             return "multi_intent_processor"
+        
+        # 如果包含资源获取指令词，强制使用响应格式化，不生成教案
+        if has_resource_retrieval:
+            print(f"🔀 检测到资源获取指令词，强制使用响应格式化，不生成教案")
+            return "response_formatting"
         
         # 如果用户明确指定了资源类型，检查是否是教案生成意图
         if resource_types:

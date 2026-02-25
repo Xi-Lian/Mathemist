@@ -14,6 +14,12 @@
 from typing import Dict, Any, List
 from .model_config import model_config
 from ..smart_content_processor import SmartContentProcessor
+from ..config.resource_type_config import (
+    get_response_field,
+    get_icon,
+    get_standard_name,
+    get_resource_type_mapping
+)
 
 
 class ResponseBuilder:
@@ -138,15 +144,28 @@ class ResponseBuilder:
         """
         response_parts = []
         
+        # 优先检查是否有引导响应（当信息不完整时）
+        response = self._get_state_value(state, "response", "")
+        if response:
+            # 如果有引导响应，直接返回引导信息
+            return response
+        
         # 添加教案
         lesson_plan = self._get_state_value(state, "lesson_plan", "")
         if lesson_plan:
-            response_parts.append("📚 **生成的教案**\n")
+            response_parts.append("="*50)
+            response_parts.append("📚 **生成的教案**")
+            response_parts.append("="*50)
             response_parts.append(lesson_plan)
             response_parts.append("\n")
         
         # 添加检索到的资源
-        response_parts.append(self._format_resources(state))
+        resources = self._format_resources(state)
+        if resources:
+            response_parts.append("="*50)
+            response_parts.append("📋 **相关教学资源**")
+            response_parts.append("="*50)
+            response_parts.append(resources)
         
         return "\n".join(response_parts)
     
@@ -165,25 +184,33 @@ class ResponseBuilder:
         # 添加GGB设计建议（优先）
         ggb_suggestions = self._get_state_value(state, "ggb_design_suggestions", None)
         if ggb_suggestions:
-            response_parts.append("🎨 **GeoGebra动态图设计建议**\n")
+            response_parts.append("="*50)
+            response_parts.append("🎨 **GeoGebra动态图设计建议**")
+            response_parts.append("="*50)
             for i, suggestion in enumerate(ggb_suggestions, 1):
                 if suggestion.get("error"):
                     response_parts.append(f"❌ 第{i}个GGB资源设计建议生成失败: {suggestion.get('error')}\n")
                 else:
-                    response_parts.append(f"### {i}. {suggestion.get('metadata', {}).get('ggb_filename', '未知')}\n")
+                    response_parts.append(f"\n### {i}. {suggestion.get('metadata', {}).get('ggb_filename', '未知')}")
                     response_parts.append(suggestion.get("design_steps", ""))
-                    response_parts.append("\n")
-                    response_parts.append("---\n")
+                    response_parts.append("\n---")
         
         # 添加可视化建议
         suggestions = self._get_state_value(state, "visualization_suggestions", "")
         if suggestions:
-            response_parts.append("\n🎨 **可视化设计建议**\n")
+            response_parts.append("\n" + "="*50)
+            response_parts.append("🎨 **可视化设计建议**")
+            response_parts.append("="*50)
             response_parts.append(suggestions)
             response_parts.append("\n")
         
         # 添加检索到的资源
-        response_parts.append(self._format_resources(state))
+        resources = self._format_resources(state)
+        if resources:
+            response_parts.append("="*50)
+            response_parts.append("📋 **相关教学资源**")
+            response_parts.append("="*50)
+            response_parts.append(resources)
         
         return "\n".join(response_parts)
     
@@ -197,6 +224,8 @@ class ResponseBuilder:
         Returns:
             搜索响应文本
         """
+        # 对于搜索意图，只显示检索到的资源，不显示生成的内容
+        # 确保主次分明，避免生成内容干扰用户对检索结果的判断
         return self._format_resources(state)
     
     def _format_resources(self, state: Any) -> str:
@@ -229,40 +258,43 @@ class ResponseBuilder:
         
         response_parts = []
         
+        # 检查用户是否指定了"资料"或"资源"（表示要所有资源）
+        is_all_resources = any(rt in ["资料", "资源"] for rt in resource_types)
+        
         # 如果用户明确指定了资源类型，只输出指定的类型
-        if resource_types:
+        if resource_types and not is_all_resources:
             print(f"🎯 用户明确指定了资源类型，只输出指定类型")
-            
-            # 资源类型映射
-            type_mapping = {
-                "习题": ("exercise_resources", "📝"),
-                "教案": ("lesson_plan_patterns", "📚"),
-                "课件": ("courseware_resources", "📊"),
-                "课例": ("lesson_case_resources", "🎬"),
-                "GGB": ("ggb_resources", "🔧"),
-                "教学大纲": ("syllabus_resources", "📋")
-            }
+            print(f"   用户指定类型: {resource_types}")
             
             # 输出用户指定的资源类型
             for user_type in resource_types:
-                mapped_type = type_mapping.get(user_type)
-                if mapped_type:
-                    category_key, icon = mapped_type
+                # 使用统一的资源类型映射
+                mapping = get_resource_type_mapping(user_type)
+                if mapping:
+                    standard_name, db_type, category_key, icon = mapping
                     resources = retrieved_resources.get(category_key, [])
                     if resources:
                         response_parts.append(self._format_resource_category(
-                            f"{user_type}资源", 
+                            f"{standard_name}资源", 
                             resources,
                             icon
                         ))
+                        print(f"   ✓ 处理类型: {user_type} -> {standard_name} ({len(resources)}条)")
+                    else:
+                        print(f"   ⚠️ 类型: {user_type} -> {standard_name}，无资源")
+                else:
+                    print(f"   ⚠️ 未知类型: {user_type}，跳过")
             
             # 如果没有找到任何资源
             if not response_parts:
                 response_parts.append(f"未找到{', '.join(resource_types)}相关的资源")
         
         else:
-            # 用户没有明确指定资源类型，输出所有找到的资源
-            print(f"🔍 用户未指定资源类型，输出所有找到的资源")
+            # 用户没有明确指定资源类型，或者指定了"资料"/"资源"，输出所有找到的资源
+            if is_all_resources:
+                print(f"🎯 用户指定了'资料'或'资源'，输出所有找到的资源")
+            else:
+                print(f"🔍 用户未指定资源类型，输出所有找到的资源")
             
             # 格式化教案资源
             lesson_plans = retrieved_resources.get("lesson_plan_patterns", [])
@@ -351,7 +383,13 @@ class ResponseBuilder:
         """
         response_parts = [f"\n【{category_name}】\n"]
         
-        for resource in resources:
+        if not resources:
+            return "\n".join(response_parts)
+        
+        # 过滤掉相似度过低的资源
+        filtered_resources = self._filter_by_relevance(resources)
+        
+        for resource in filtered_resources:
             title = resource.get("title", "未知")
             content = resource.get("content", "")
             relevance = resource.get("relevance", 0)
@@ -370,7 +408,58 @@ class ResponseBuilder:
             response_parts.append(f"   文件路径: {source}")
             response_parts.append("")
         
+        # 如果过滤掉了资源，添加提示
+        if len(filtered_resources) < len(resources):
+            filtered_count = len(resources) - len(filtered_resources)
+            response_parts.append(f"\n💡 已隐藏{filtered_count}条相似度较低的资源")
+        
         return "\n".join(response_parts)
+    
+    def _filter_by_relevance(self, resources: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        根据相似度过滤资源，当相似度突然下跌时停止
+        
+        Args:
+            resources: 资源列表
+        
+        Returns:
+            过滤后的资源列表
+        """
+        if not resources:
+            return []
+        
+        # 如果资源少于3个，不过滤
+        if len(resources) < 3:
+            return resources
+        
+        filtered_resources = []
+        relevance_threshold = None
+        
+        for i, resource in enumerate(resources):
+            relevance = resource.get("relevance", 0)
+            
+            # 第一个资源，记录基准相似度
+            if i == 0:
+                filtered_resources.append(resource)
+                relevance_threshold = relevance * 0.6  # 设置阈值为第一个资源相似度的60%
+                continue
+            
+            # 检查相似度是否突然下跌
+            if i > 0:
+                prev_relevance = resources[i-1].get("relevance", 0)
+                
+                # 如果相似度低于阈值，停止
+                if relevance < relevance_threshold:
+                    break
+                
+                # 如果相似度突然下跌超过40%，也停止（这是主要判断条件）
+                drop_ratio = (prev_relevance - relevance) / prev_relevance
+                if drop_ratio > 0.4:  # 下跌超过40%
+                    break
+            
+            filtered_resources.append(resource)
+        
+        return filtered_resources
     
     def _process_resource_content(
         self, 

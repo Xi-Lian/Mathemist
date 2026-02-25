@@ -23,6 +23,14 @@ from .model_config import model_config
 from .resource_classifier import ResourceClassifier
 from .vector_database_builder import VectorDatabaseBuilder
 from .resource_table_parser import ResourceTableParser
+from .theme_matcher import get_theme_matcher
+from ..config.resource_type_config import (
+    get_db_type,
+    get_resource_type_mapping,
+    get_standard_name,
+    get_all_user_types,
+    get_all_db_types
+)
 
 
 class ResourceRetriever:
@@ -89,26 +97,8 @@ class ResourceRetriever:
             # 生成查询向量
             query_embedding = self._generate_query_embedding(query, embedding_model)
             
-            # 提取核心主题（通用化支持）
-            core_theme = ""
-            theme_keywords = {
-                "指数函数": ["指数函数", "指数与指数函数", "2^x", "a^x", "e^", "指数增长", "指数衰减"],
-                "对数函数": ["对数函数", "对数与对数函数", "log", "ln", "对数增长", "对数衰减"],
-                "幂函数": ["幂函数", "x^a", "x的幂", "幂运算"],
-                "二次函数": ["二次函数", "x²", "x^2", "一元二次", "抛物线", "顶点式", "一般式"],
-                "一次函数": ["一次函数", "线性函数", "y=kx+b", "斜率", "截距", "直线"],
-                "三角函数": ["三角函数", "sin", "cos", "tan", "正弦", "余弦", "正切", "cot", "sec", "csc", "任意角", "诱导公式", "三角恒等变换"],
-                "分段函数": ["分段函数", "分段", "绝对值函数", "取整函数", "符号函数"],
-                "函数应用": ["函数应用", "函数的应用", "应用", "建模", "实际问题", "数学建模"]
-            }
-            priority_order = ["指数函数", "对数函数", "幂函数", "二次函数", "一次函数", "三角函数", "分段函数", "函数应用"]
-            for theme in priority_order:
-                for keyword in theme_keywords[theme]:
-                    if keyword in query:
-                        core_theme = theme
-                        break
-                if core_theme:
-                    break
+            # 提取核心主题（支持完整主题识别）
+            core_theme = self._extract_core_theme(query)
             print(f"🧠 识别核心主题: {core_theme}")
             
             # 执行查询
@@ -118,21 +108,39 @@ class ResourceRetriever:
                 include=["documents", "metadatas", "distances"]
             )
             
-            # 处理检索结果
-            classified_resources = self._classify_results(results, resource_types, core_theme)
-            
-            # 所有资源类型按相似度降序排序（通用化）
-            for category in classified_resources:
-                if classified_resources[category] and core_theme:
-                    print(f"\n🔍 {category}资源排序（核心主题: {core_theme}）...")
-                    classified_resources[category].sort(
-                        key=lambda x: -x.get('relevance', 0)
-                    )
-                    print(f"   ✅ {category}资源排序完成，按相似度降序排列")
-            
-            print(f"✅ 检索完成: {self._get_summary(classified_resources)}")
-            
-            return classified_resources
+            # 打印查询结果的基本信息
+            if results.get("documents") and results["documents"][0]:
+                print(f"📊 查询返回 {len(results['documents'][0])} 条结果")
+                # 检查是否包含幂函数相关资源
+                power_function_count = 0
+                for i, metadata in enumerate(results.get("metadatas", [[]])[0]):
+                    source_file = metadata.get('source_file', '')
+                    if '幂函数' in source_file or '3-3' in source_file:
+                        power_function_count += 1
+                        distance = results.get("distances", [[]])[0][i]
+                        relevance = 1 - distance
+                        print(f"   🎯 找到幂函数资源: {source_file}, 距离: {distance:.3f}, 相似度: {relevance:.1%}")
+                print(f"   幂函数相关资源数量: {power_function_count}")
+                
+                # 处理检索结果
+                classified_resources = self._classify_results(results, resource_types, core_theme)
+                
+                # 所有资源类型按相似度和主题匹配度降序排序（通用化）
+                for category in classified_resources:
+                    if classified_resources[category] and core_theme:
+                        print(f"\n🔍 {category}资源排序（核心主题: {core_theme}）...")
+                        # 排序规则：主题匹配优先，然后按相似度
+                        classified_resources[category].sort(
+                            key=lambda x: (
+                                -x.get('theme_match', False),  # 主题匹配优先
+                                -x.get('relevance', 0)         # 然后按相似度
+                            )
+                        )
+                        print(f"   ✅ {category}资源排序完成，主题匹配优先，然后按相似度降序排列")
+                
+                print(f"✅ 检索完成: {self._get_summary(classified_resources)}")
+                
+                return classified_resources
             
         except Exception as e:
             print(f"❌ 资源检索失败: {str(e)}")
@@ -203,27 +211,32 @@ class ResourceRetriever:
                 resource_type = metadata.get('resource_type', 'theory')
                 
                 # 如果用户明确指定了资源类型，只保留匹配的类型
-                if resource_types:
-                    # 资源类型映射
-                    type_mapping = {
-                        "习题": "exercise",
-                        "教案": "lesson_plan",
-                        "课件": "courseware",
-                        "课例": "lesson_case",
-                        "GGB": "ggb",
-                        "教学大纲": "syllabus"
-                    }
+                # 特殊处理：如果用户指定了"资料"或"资源"，则保留所有资源
+                if resource_types and not any(rt in ["资料", "资源"] for rt in resource_types):
+                    print(f"\n🔍 资源类型过滤 - 用户指定类型: {resource_types}")
                     
-                    # 检查当前资源类型是否在用户指定的类型中
+                    # 使用统一的资源类型映射
                     matched = False
                     for user_type in resource_types:
-                        mapped_type = type_mapping.get(user_type, user_type)
-                        if resource_type == mapped_type:
-                            matched = True
-                            break
+                        # 获取映射后的数据库类型
+                        mapped_db_type = get_db_type(user_type)
+                        
+                        if mapped_db_type:
+                            if resource_type == mapped_db_type:
+                                matched = True
+                                print(f"   ✓ 用户类型 '{user_type}' 映射为 '{mapped_db_type}'，匹配当前资源类型")
+                                break
+                        else:
+                            # 如果找不到映射，尝试用原始词进行模糊匹配
+                            print(f"   ⚠️ 未知的资源类型: '{user_type}'，尝试模糊匹配...")
+                            if user_type.lower() in resource_type.lower():
+                                matched = True
+                                print(f"   ✓ 模糊匹配成功: '{user_type}' ≈ '{resource_type}'")
+                                break
                     
                     # 如果不匹配，跳过这个资源
                     if not matched:
+                        print(f"   ✗ 跳过资源: 类型 '{resource_type}' 不匹配")
                         continue
                 
                 # 创建资源对象
@@ -297,39 +310,70 @@ class ResourceRetriever:
         if core_theme:
             from .theme_matcher import get_theme_matcher
             theme_matcher = get_theme_matcher()
-            match_result = theme_matcher.match_theme(
-                core_theme=core_theme,
-                metadata=metadata,
-                document=doc,
-                verbose=True
-            )
+            
+            # 支持多个核心主题（用逗号分隔）
+            core_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
+            
+            # 对每个核心主题进行匹配，取最高的加分
+            max_relevance_boost = 0.0
+            max_conflict_penalty = 0.0
+            is_theme_match = False
+            is_conflict_theme = False
+            
+            for theme in core_themes:
+                match_result = theme_matcher.match_theme(
+                    core_theme=theme,
+                    metadata=metadata,
+                    document=doc,
+                    verbose=False  # 不输出详细日志，避免过多输出
+                )
+                
+                # 记录最高的加分
+                if match_result["is_theme_match"] and match_result["relevance_boost"] > max_relevance_boost:
+                    max_relevance_boost = match_result["relevance_boost"]
+                    is_theme_match = True
+                
+                # 记录最高的冲突减分
+                if match_result["is_conflict_theme"] and match_result["relevance_penalty"] > max_conflict_penalty:
+                    max_conflict_penalty = match_result["relevance_penalty"]
+                    is_conflict_theme = True
             
             # 保留基础分，只在基础分上加减！
             final_relevance = base_relevance
             
             # 应用主题匹配加分
-            if match_result["is_theme_match"]:
-                final_relevance += match_result["relevance_boost"]
+            if is_theme_match:
+                final_relevance += max_relevance_boost
                 resource["theme_match"] = True
-                resource["theme_boost"] = match_result["relevance_boost"]
+                resource["theme_boost"] = max_relevance_boost
             
-            # 应用冲突主题减分
-            if match_result["is_conflict_theme"]:
-                final_relevance -= match_result["relevance_penalty"]
+            # 应用冲突主题减分（但不低于基础分的50%，保留最低相关性）
+            if is_conflict_theme:
+                final_relevance -= max_conflict_penalty
                 resource["conflict_theme"] = True
-                resource["conflict_penalty"] = match_result["relevance_penalty"]
+                resource["conflict_penalty"] = max_conflict_penalty
+                # 确保不低于基础分的50%，避免完全消失
+                final_relevance = max(base_relevance * 0.5, final_relevance)
             
             # 设置最终相似度，确保在0到1之间
             final_relevance = max(0.0, min(1.0, final_relevance))
             resource["relevance"] = final_relevance
             
-            # 输出分数变化
-            print(f"   📊 基础分: {base_relevance:.1%}")
-            if match_result["is_theme_match"]:
-                print(f"   ➕ 主题匹配加分: +{match_result['relevance_boost']:.1%}")
-            if match_result["is_conflict_theme"]:
-                print(f"   ➖ 冲突主题减分: -{match_result['relevance_penalty']:.1%}")
-            print(f"   🎯 最终相似度: {final_relevance:.1%} (基础分: {base_relevance:.1%})")
+            # 输出分数变化（只输出第一个主题的详细信息）
+            first_theme = core_themes[0] if core_themes else ""
+            if first_theme:
+                match_result = theme_matcher.match_theme(
+                    core_theme=first_theme,
+                    metadata=metadata,
+                    document=doc,
+                    verbose=True
+                )
+                print(f"   📊 基础分: {base_relevance:.1%}")
+                if is_theme_match:
+                    print(f"   ➕ 主题匹配加分: +{max_relevance_boost:.1%} (主题: {core_themes})")
+                if is_conflict_theme:
+                    print(f"   ➖ 冲突主题减分: -{max_conflict_penalty:.1%}")
+                print(f"   🎯 最终相似度: {final_relevance:.1%} (基础分: {base_relevance:.1%})")
         
         # 根据资源类型进行特殊处理
         if resource_type == 'exercise':
@@ -363,6 +407,7 @@ class ResourceRetriever:
         """
         # 获取题目文件名
         filename = metadata.get('题目文件名', '')
+        source_file = metadata.get('source_file', '')
         
         if filename:
             # 有文件名，说明是图片题目
@@ -370,6 +415,7 @@ class ResourceRetriever:
             resource['content'] = f"题目类型：{metadata.get('题目类型', '')}\n题目描述：{metadata.get('题干', '')}\n知识点：{metadata.get('知识点标签', '')}\n难度：{metadata.get('难度（1-5）', '')}"
             resource['is_image_exercise'] = True
             resource['filename'] = filename
+            resource['source'] = source_file
         else:
             # 文字题目，显示完整题目
             question = metadata.get('题干', '')
@@ -378,6 +424,7 @@ class ResourceRetriever:
             resource['title'] = f"习题: {metadata.get('题目类型', '')}"
             resource['content'] = f"题目：{question}\n\n解析：{answer}"
             resource['is_image_exercise'] = False
+            resource['source'] = source_file
     
     def _process_ggb_resource(self, resource: Dict[str, Any], metadata: Dict[str, Any]):
         """
@@ -585,6 +632,66 @@ class ResourceRetriever:
             summary_parts.append(f"教学大纲{len(classified['syllabus_resources'])}条")
         
         return ", ".join(summary_parts) if summary_parts else "无结果"
+    
+    def _extract_core_theme(self, query: str) -> str:
+        """
+        提取核心主题（支持完整主题识别，支持多个主题）
+        
+        Args:
+            query: 用户查询
+            
+        Returns:
+            核心主题字符串（多个主题用逗号分隔）
+        """
+        # 完整主题定义（按长度降序排序，优先匹配更长的主题）
+        complete_themes = [
+            # 函数相关主题
+            "函数的概念", "函数的表示法", "函数的性质", "函数的应用",
+            "指数函数的概念", "指数函数的图像和性质", "指数函数的应用",
+            "对数函数的概念", "对数函数的图像和性质", "对数函数的应用",
+            "三角函数的概念", "三角函数的图像与性质", "三角函数的应用",
+            "幂函数的图像和性质", "幂函数的应用",
+            "二次函数的图像和性质", "二次函数的应用",
+            "诱导公式", "三角恒等变换", "函数的零点", "二分法",
+            "任意角", "弧度制", "同角三角函数的基本关系", "函数模型的应用",
+            
+            # 基础主题
+            "指数函数", "对数函数", "三角函数", "幂函数", "二次函数",
+            "一次函数", "分段函数", "函数"
+        ]
+        
+        # 收集所有匹配的主题
+        matched_themes = []
+        
+        # 优先匹配完整主题
+        for theme in complete_themes:
+            if theme in query and theme not in matched_themes:
+                matched_themes.append(theme)
+        
+        # 如果没有匹配到完整主题，使用关键词匹配
+        if not matched_themes:
+            # 备用：关键词匹配
+            theme_keywords = {
+                "函数的概念": ["函数概念", "函数的定义", "什么是函数", "函数的意义"],
+                "函数的应用": ["函数应用", "函数的应用", "应用", "建模", "实际问题", "数学建模"],
+                "指数函数": ["指数函数", "指数与指数函数", "2^x", "a^x", "e^", "指数增长", "指数衰减"],
+                "对数函数": ["对数函数", "对数与对数函数", "log", "ln", "对数增长", "对数衰减"],
+                "三角函数": ["三角函数", "三角", "sin", "cos", "tan", "正弦", "余弦", "正切"],
+                "二次函数": ["二次函数", "x²", "x^2", "一元二次", "抛物线", "顶点式", "一般式"],
+                "幂函数": ["幂函数", "x^a", "x的幂", "幂运算"]
+            }
+            
+            # 按优先级排序
+            priority_order = ["函数的概念", "函数的应用", "指数函数", "对数函数", "三角函数", "二次函数", "幂函数"]
+            
+            for theme in priority_order:
+                for keyword in theme_keywords.get(theme, []):
+                    if keyword in query and theme not in matched_themes:
+                        matched_themes.append(theme)
+                        break
+        
+        # 返回匹配的主题（多个主题用逗号分隔）
+        return ",".join(matched_themes) if matched_themes else ""
     
     def get_theory_resources(self) -> List[Dict[str, Any]]:
         """

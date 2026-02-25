@@ -31,10 +31,16 @@ class IntentAnalyzer:
     INTENT_LESSON_PLAN = "generate_lesson_plan"
     INTENT_VISUALIZATION = "visualization"
     
+    # 指令词配置
+    INSTRUCTION_KEYWORDS = {
+        "resource_retrieval": ["推送", "给", "找", "推荐", "有没有", "我要", "帮我找", "想要", "需要"],
+        "content_generation": ["生成", "设计", "写", "创作", "帮我做", "制作", "创建", "编写"]
+    }
+    
     # 关键词配置
     KEYWORDS = {
         INTENT_LESSON_PLAN: [
-            "教案", "教学设计", "生成教案", "教学计划", "备课"
+            "教案", "教学设计", "教学计划", "备课"
         ],
         INTENT_VISUALIZATION: [
             "ggb", "可视化", "动态数学", "几何画板", "图形设计"
@@ -151,6 +157,13 @@ class IntentAnalyzer:
         """
         user_input_lower = user_input.lower()
         
+        # 检查指令词
+        has_resource_retrieval = any(keyword in user_input for keyword in self.INSTRUCTION_KEYWORDS["resource_retrieval"])
+        has_content_generation = any(keyword in user_input for keyword in self.INSTRUCTION_KEYWORDS["content_generation"])
+        
+        print(f"📋 包含资源获取指令词: {has_resource_retrieval}")
+        print(f"📋 包含内容生成指令词: {has_content_generation}")
+        
         # 检查关键词
         has_lesson_plan = self._has_keywords(user_input_lower, self.INTENT_LESSON_PLAN)
         has_visualization = self._has_keywords(user_input_lower, self.INTENT_VISUALIZATION)
@@ -167,7 +180,44 @@ class IntentAnalyzer:
         print(f"📋 生成的用户需求: {user_needs}")
         
         # 确定意图
-        if has_lesson_plan and has_visualization:
+        # 优先级：内容生成+教案 > 内容生成 > 资源获取+教案 > 资源获取 > 关键词
+        if has_content_generation and has_lesson_plan:
+            # 同时有内容生成指令词和教案关键词，优先识别为教案生成
+            print("🎯 识别到内容生成指令词和教案关键词，使用generate_lesson_plan意图")
+            return self._get_single_intent_result(
+                self.INTENT_LESSON_PLAN,
+                "识别到内容生成指令词和教案关键词",
+                user_needs,
+                resource_types
+            )
+        elif has_content_generation:
+            # 内容生成指令词，使用generate_lesson_plan意图
+            print("🎯 识别到内容生成指令词，使用generate_lesson_plan意图")
+            return self._get_single_intent_result(
+                self.INTENT_LESSON_PLAN,
+                "识别到内容生成指令词",
+                user_needs,
+                resource_types
+            )
+        elif has_resource_retrieval and has_lesson_plan:
+            # 资源获取指令词+教案关键词，优先识别为教案生成（用户可能想要教案示例）
+            print("🎯 识别到资源获取指令词和教案关键词，使用generate_lesson_plan意图")
+            return self._get_single_intent_result(
+                self.INTENT_LESSON_PLAN,
+                "识别到资源获取指令词和教案关键词",
+                user_needs,
+                resource_types
+            )
+        elif has_resource_retrieval:
+            # 资源获取指令词，使用search意图
+            print("🎯 识别到资源获取指令词，使用search意图")
+            return self._get_single_intent_result(
+                self.INTENT_SEARCH,
+                "识别到资源获取指令词",
+                user_needs,
+                resource_types
+            )
+        elif has_lesson_plan and has_visualization:
             return self._get_multi_intent_result(
                 self.INTENT_LESSON_PLAN,
                 self.INTENT_VISUALIZATION,
@@ -207,6 +257,7 @@ class IntentAnalyzer:
         
         # 资源类型关键词映射
         type_keywords = {
+            "资料": ["资料", "资源"],
             "习题": ["习题", "题目", "练习", "测试", "作业"],
             "教案": ["教案", "教学设计", "备课", "教学计划"],
             "课件": ["课件", "PPT", "幻灯片"],
@@ -428,9 +479,23 @@ class IntentAnalyzer:
 ### 示例4
 用户输入："帮我查找指数函数资源"
 输出：
-{{"primary_intent": "search", "user_needs": "用户想要查找指数函数相关的各种教学资源", "resource_types": ["习题", "教案", "课件", "GGB"], "intents": [{{"type": "search", "confidence": 0.9}}, {{"type": "generate_lesson_plan", "confidence": 0.2}}, {{"type": "visualization", "confidence": 0.2}}]}}
+{{"primary_intent": "search", "user_needs": "用户想要查找指数函数相关的各种教学资源", "resource_types": ["资料"], "intents": [{{"type": "search", "confidence": 0.9}}, {{"type": "generate_lesson_plan", "confidence": 0.2}}, {{"type": "visualization", "confidence": 0.2}}]}}
 
-## 当前用户输入
+### 示例5
+用户输入："给我指数函数的资料"
+输出：
+{{"primary_intent": "search", "user_needs": "用户想要获取指数函数相关的所有教学资料", "resource_types": ["资料"], "intents": [{{"type": "search", "confidence": 0.9}}, {{"type": "generate_lesson_plan", "confidence": 0.2}}, {{"type": "visualization", "confidence": 0.2}}]}}
+
+### 示例6
+用户输入："给我幂函数的习题"
+输出：
+{{"primary_intent": "search", "user_needs": "用户想要查找幂函数相关的习题资源", "resource_types": ["习题"], "intents": [{{"type": "search", "confidence": 0.95}}, {{"type": "generate_lesson_plan", "confidence": 0.1}}, {{"type": "visualization", "confidence": 0.1}}]}}
+
+## 特殊说明
+
+- 当用户说"资料"或"资源"时，表示用户想要所有类型的教学资源（习题、教案、课件、GGB、教学大纲等）
+- 当用户明确指定某种资源类型时（如"习题"、"教案"），只返回该类型
+- 不要过度推断用户需求，只输出用户明确提到的资源类型
 
 用户输入：{user_input}
 

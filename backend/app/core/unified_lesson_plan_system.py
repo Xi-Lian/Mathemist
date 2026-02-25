@@ -83,6 +83,23 @@ class UnifiedLessonPlanSystem:
         Returns:
             处理结果
         """
+        # 检查是否包含内容生成指令词，如果有，优先处理教案生成
+        content_generation_keywords = ["生成", "设计", "写", "创作", "帮我做", "制作", "创建", "编写"]
+        has_content_generation = any(keyword in user_input for keyword in content_generation_keywords)
+        
+        # 检查是否包含资源获取指令词（排除"帮我"等礼貌用语）
+        resource_retrieval_keywords = ["推送", "找", "推荐", "有没有", "帮我找", "我要找", "想要", "需要"]
+        has_resource_retrieval = any(keyword in user_input for keyword in resource_retrieval_keywords)
+        
+        # 优先级：内容生成 > 资源获取
+        if has_resource_retrieval and not has_content_generation:
+            print(f"⚠️ 检测到资源获取指令词，拒绝生成教案")
+            return {
+                "status": "error",
+                "message": "您使用了资源获取指令词（如'推送'、'找'、'推荐'等），系统将为您检索相关资源，而不是生成新的教案。",
+                "session_id": session_id
+            }
+        
         # 1. 获取或创建会话
         if not session_id:
             session_id = f"lp_{uuid.uuid4().hex[:8]}"

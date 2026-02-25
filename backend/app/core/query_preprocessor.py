@@ -14,6 +14,11 @@
 import re
 from typing import List, Dict, Any, Set
 import logging
+from ..config.resource_type_config import (
+    get_all_user_types,
+    get_standard_name,
+    normalize_resource_types
+)
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +165,24 @@ class QueryPreprocessor:
             "极限": ["极限", "趋近", "无穷小", "无穷大"],
             "几何": ["几何", "图形", "形状", "位置", "距离", "角度"]
         }
+        
+        # 指令词定义
+        self.instruction_words = {
+            "resource_retrieval": ["推送", "给", "找", "推荐", "有没有", "我要", "帮我找", "想要", "需要"],
+            "content_generation": ["生成", "设计", "写", "创作", "帮我做", "制作", "创建", "编写"]
+        }
+        
+        # 完整主题词定义
+        self.complete_themes = [
+            "函数的概念", "函数的表示法", "函数的性质", "函数的应用",
+            "指数函数", "指数函数的概念", "指数函数的图像和性质", "指数函数的应用",
+            "对数函数", "对数函数的概念", "对数函数的图像和性质", "对数函数的应用",
+            "三角函数", "三角函数的概念", "三角函数的图像与性质", "三角函数的应用",
+            "幂函数", "幂函数的图像和性质", "幂函数的应用",
+            "二次函数", "二次函数的图像和性质", "二次函数的应用",
+            "诱导公式", "三角恒等变换", "函数的零点", "二分法",
+            "任意角", "弧度制", "同角三角函数的基本关系", "函数模型的应用"
+        ]
     
     def preprocess(self, query: str) -> Dict[str, Any]:
         """
@@ -315,6 +338,87 @@ class QueryPreprocessor:
         
         return min(1.0, clarity)
     
+    def _identify_instruction_type(self, query: str) -> str:
+        """
+        识别指令类型
+        
+        Args:
+            query: 查询文本
+            
+        Returns:
+            指令类型: "resource_retrieval", "content_generation", 或空字符串
+        """
+        # 优先识别资源获取类指令
+        for keyword in self.instruction_words["resource_retrieval"]:
+            if keyword in query:
+                logger.info(f"识别到资源获取指令: {keyword}")
+                return "resource_retrieval"
+        
+        # 然后识别内容生成类指令
+        for keyword in self.instruction_words["content_generation"]:
+            if keyword in query:
+                logger.info(f"识别到内容生成指令: {keyword}")
+                return "content_generation"
+        
+        # 没有识别到明确指令
+        return ""
+    
+    def _extract_complete_theme(self, query: str) -> str:
+        """
+        提取完整主题
+        
+        Args:
+            query: 查询文本
+            
+        Returns:
+            完整主题字符串
+        """
+        # 按长度降序排序，优先匹配更长的主题
+        sorted_themes = sorted(self.complete_themes, key=len, reverse=True)
+        
+        for theme in sorted_themes:
+            if theme in query:
+                logger.info(f"识别到完整主题: {theme}")
+                return theme
+        
+        # 如果没有识别到完整主题，返回空
+        return ""
+    
+    def _extract_topic_after_instruction(self, query: str, instruction_type: str) -> str:
+        """
+        提取指令词后的主题
+        
+        Args:
+            query: 查询文本
+            instruction_type: 指令类型
+            
+        Returns:
+            提取的主题
+        """
+        # 移除指令词
+        processed_query = query
+        
+        if instruction_type == "resource_retrieval":
+            for keyword in self.instruction_words["resource_retrieval"]:
+                if keyword in processed_query:
+                    processed_query = processed_query.replace(keyword, "").strip()
+        elif instruction_type == "content_generation":
+            for keyword in self.instruction_words["content_generation"]:
+                if keyword in processed_query:
+                    processed_query = processed_query.replace(keyword, "").strip()
+        
+        # 提取完整主题
+        complete_theme = self._extract_complete_theme(processed_query)
+        if complete_theme:
+            return complete_theme
+        
+        # 如果没有完整主题，提取核心概念
+        concepts = self._extract_core_concepts(processed_query)
+        if concepts:
+            return concepts[0]
+        
+        return ""
+    
     def _extract_intent(self, original_query: str, cleaned_query: str, core_concepts: List[str]) -> Dict[str, Any]:
         """
         提取查询意图 - 四维分析
@@ -323,29 +427,75 @@ class QueryPreprocessor:
             "topic": "",
             "resource_types": [],
             "operation": "",
-            "quality": ""
+            "quality": "",
+            "instruction_type": ""
         }
         
-        if core_concepts:
-            intent["topic"] = core_concepts[0]
+        # 1. 识别指令类型
+        instruction_type = self._identify_instruction_type(original_query)
+        intent["instruction_type"] = instruction_type
         
-        resource_type_patterns = {
-            "courseware": ["课件", "ppt", "幻灯片"],
-            "lesson_plan": ["教案", "教学设计", "导学案"],
-            "exercise": ["习题", "题目", "练习题", "试题", "题"],
-            "lesson_case": ["课例", "视频", "课堂实录", "公开课"],
-            "ggb": ["ggb", "GGB", "geogebra", "几何画板"],
-            "syllabus": ["教学大纲", "大纲", "课程标准"],
-            "theory": ["理论", "知识点", "概念"]
-        }
+        # 2. 提取主题（排除指令词的影响）
+        if instruction_type:
+            # 从指令词后的内容中提取主题
+            topic = self._extract_topic_after_instruction(original_query, instruction_type)
+        else:
+            # 没有指令词，直接提取主题
+            complete_theme = self._extract_complete_theme(original_query)
+            if complete_theme:
+                topic = complete_theme
+            elif core_concepts:
+                topic = core_concepts[0]
+            else:
+                topic = ""
         
-        for resource_type, keywords in resource_type_patterns.items():
-            for keyword in keywords:
-                if keyword in original_query:
-                    if resource_type not in intent["resource_types"]:
-                        intent["resource_types"].append(resource_type)
-                    break
+        intent["topic"] = topic
         
+        # 3. 提取资源类型
+        # 首先，使用统一的资源类型配置来提取资源类型
+        all_user_types = get_all_user_types()
+        
+        for user_type in all_user_types:
+            if user_type in original_query:
+                # 规范化为标准名称
+                standard_name = get_standard_name(user_type)
+                if standard_name not in intent["resource_types"]:
+                    intent["resource_types"].append(standard_name)
+                    logger.info(f"识别到资源类型: {user_type} -> {standard_name}")
+        
+        # 如果统一配置中没有找到，再用备用的模式匹配（保持兼容性）
+        if not intent["resource_types"]:
+            resource_type_patterns = {
+                "courseware": ["课件", "ppt", "幻灯片"],
+                "lesson_plan": ["教案", "教学设计", "导学案"],
+                "exercise": ["习题", "题目", "练习题", "试题", "题"],
+                "lesson_case": ["课例", "视频", "课堂实录", "公开课"],
+                "ggb": ["ggb", "GGB", "geogebra", "几何画板"],
+                "syllabus": ["教学大纲", "大纲", "课程标准"],
+                "theory": ["理论", "知识点", "概念"]
+            }
+            
+            for resource_type, keywords in resource_type_patterns.items():
+                for keyword in keywords:
+                    if keyword in original_query:
+                        # 这里提取的是数据库类型，我们需要将它映射到标准名称
+                        # 从DB类型到标准名称的映射
+                        db_to_std = {
+                            "lesson_plan": "教案",
+                            "courseware": "课件",
+                            "lesson_case": "课例",
+                            "exercise": "习题",
+                            "ggb": "GGB",
+                            "syllabus": "教学大纲",
+                            "theory": "理论"
+                        }
+                        standard_name = db_to_std.get(resource_type, resource_type)
+                        if standard_name not in intent["resource_types"]:
+                            intent["resource_types"].append(standard_name)
+                            logger.info(f"备用模式识别资源类型: {resource_type} -> {standard_name}")
+                        break
+        
+        # 4. 提取操作类型
         operation_patterns = {
             "学习": ["学习", "学", "了解", "理解", "掌握"],
             "备课": ["备课", "准备", "教学设计"],
@@ -363,6 +513,7 @@ class QueryPreprocessor:
             if intent["operation"]:
                 break
         
+        # 5. 提取质量要求
         quality_patterns = {
             "基础": ["基础", "简单", "容易", "入门"],
             "中等": ["中等", "一般", "普通"],

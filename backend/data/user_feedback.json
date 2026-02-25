@@ -10,6 +10,16 @@
         "metadata": {
           "chapter": "第一章"
         }
+      },
+      {
+        "timestamp": "2026-02-25T20:57:36.699287",
+        "query": "三角函数",
+        "resource_type": "theory",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {
+          "chapter": "第一章"
+        }
       }
     ]
   },
@@ -19,15 +29,21 @@
       "query": "二次函数",
       "suggestion": "希望增加更多的练习题",
       "contact": "user@example.com"
+    },
+    {
+      "timestamp": "2026-02-25T20:57:38.739512",
+      "query": "二次函数",
+      "suggestion": "希望增加更多的练习题",
+      "contact": "user@example.com"
     }
   ],
   "statistics": {
-    "total_likes": 1,
+    "total_likes": 2,
     "total_dislikes": 0,
     "feedback_by_theme": {},
     "feedback_by_type": {
       "theory": {
-        "likes": 1,
+        "likes": 2,
         "dislikes": 0
       }
     }

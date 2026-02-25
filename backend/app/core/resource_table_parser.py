@@ -89,20 +89,56 @@ class ResourceTableParser:
             if '|' in line:
                 table_lines.append(line)
         
-        # 检查是否是Excel导出的表格（第一行是标题，第二行是分隔线，第三行是表头）
+        # 检查是否是Excel导出的表格（第一行是标题，第二行是空白/分隔线，第三行是表头）
+        is_excel_table = False
         if len(table_lines) >= 3:
-            first_line = table_lines[0].strip()
-            # 检查第一行是否包含".xlsx"或看起来像Excel标题
-            if '.xlsx' in first_line or ('Unnamed' in first_line):
-                # 跳过Excel标题行和分隔线，从第三行开始解析
-                table_lines = table_lines[2:]
+            # 检查文件第一行是否包含".xlsx"（Excel导出的文件通常在第一行有.xlsx文件名）
+            # 注意：这里检查的是原始文件的第一行，而不是表格的第一行
+            if len(lines) > 0:
+                file_first_line = lines[0].strip()
+                if '.xlsx' in file_first_line or ('Unnamed' in file_first_line):
+                    # 检测到Excel导出的表格
+                    is_excel_table = True
+        
+        # 如果是Excel导出的表格，跳过原始文件的第2行（Excel导出的文件名），保留表头行
+        if is_excel_table:
+            # 重新提取表格行，跳过原始文件的第2行
+            table_lines = []
+            for i in range(table_start, table_end):
+                # 跳过第2行（Excel导出的文件名）
+                if i == 1:
+                    continue
+                line = lines[i]
+                if '|' in line:
+                    table_lines.append(line)
         
         # 解析表头
         header_line = table_lines[0]
         headers = self._parse_table_row(header_line)
         
-        # 跳过分隔线（第二行）
+        # 跳过分隔线（第二行），数据行从第三行开始
         data_lines = table_lines[1:] if len(table_lines) > 1 else []
+        
+        # 过滤掉分隔线行，并合并多行表格单元格
+        filtered_data_lines = []
+        for i in range(len(data_lines)):
+            line = data_lines[i]
+            
+            # 检查是否是分隔线（包含:---或类似的模式）
+            row = self._parse_table_row(line)
+            is_separator = any(':---' in cell or '---' in cell for cell in row)
+            if is_separator:
+                continue
+            
+            # 检查这一行是否是表格行的延续（第一列为空）
+            if len(row) > 0 and not row[0].strip() and filtered_data_lines:
+                # 这是表格行的延续，合并到上一行
+                filtered_data_lines[-1] += " " + line.strip()
+            else:
+                # 这是一个新的表格行
+                filtered_data_lines.append(line.strip())
+        
+        data_lines = filtered_data_lines
         
         # 解析数据行
         data = []
@@ -113,9 +149,20 @@ class ResourceTableParser:
             is_separator = any(':---' in cell or '---' in cell for cell in row)
             
             # 如果不是分隔线，且列数匹配，则添加到数据中
-            if not is_separator and len(row) == len(headers):
-                row_dict = {headers[i]: row[i] for i in range(len(headers))}
-                data.append(row_dict)
+            if not is_separator:
+                # 如果列数不匹配，尝试调整
+                if len(row) != len(headers):
+                    # 如果列数比表头多，且最后一列为空，则去掉最后一列
+                    if len(row) > len(headers) and not row[-1].strip():
+                        row = row[:-1]
+                    # 如果列数还是不匹配，跳过这一行
+                    if len(row) != len(headers):
+                        continue
+                
+                # 如果列数匹配，则添加到数据中
+                if len(row) == len(headers):
+                    row_dict = {headers[i]: row[i] for i in range(len(headers))}
+                    data.append(row_dict)
         
         return data
     
@@ -507,25 +554,15 @@ class ResourceTableParser:
                 with open(md_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
-                # 检查是否包含表格
-                if '|' not in content:
-                    # 如果没有表格，创建一个简单的记录
-                    item = {
-                        'resource_type': 'lesson_plan',
-                        'source_file': str(md_file.relative_to(self.learning_resource_path)),
-                        'title': md_file.stem,
-                        'content': content[:500]  # 只取前500个字符作为预览
-                    }
-                    all_lesson_plans.append(item)
-                else:
-                    data = self.parse_markdown_table(content)
-                    
-                    # 添加资源类型和文件路径
-                    for item in data:
-                        item['resource_type'] = 'lesson_plan'
-                        item['source_file'] = str(md_file.relative_to(self.learning_resource_path))
-                    
-                    all_lesson_plans.extend(data)
+                # 对于教案文件，始终使用完整内容，不解析表格
+                # 教案文件中的表格是教学设计的一部分，不应该被单独解析
+                item = {
+                    'resource_type': 'lesson_plan',
+                    'source_file': str(md_file.relative_to(self.learning_resource_path)),
+                    'title': md_file.stem,
+                    'content': content  # 使用完整内容
+                }
+                all_lesson_plans.append(item)
                 
                 logger.info(f"解析教案汇总表: {md_file.name}")
                 
@@ -732,13 +769,14 @@ class ResourceTableParser:
             # 习题资源特殊处理
             question = resource.get('题干', '')
             filename = resource.get('题目文件名', '')
+            source_file = resource.get('source_file', '')
             
             # 如果有文件名，说明是图片题目
             if filename:
-                return f"题目类型：{resource.get('题目类型', '')}，题目描述：{question}，知识点：{resource.get('知识点标签', '')}"
+                return f"题目类型：{resource.get('题目类型', '')}，题目描述：{question}，知识点：{resource.get('知识点标签', '')}，来源：{source_file}"
             else:
                 # 文字题目，显示完整题目
-                return f"题目类型：{resource.get('题目类型', '')}，题目：{question}，知识点：{resource.get('知识点标签', '')}"
+                return f"题目类型：{resource.get('题目类型', '')}，题目：{question}，知识点：{resource.get('知识点标签', '')}，来源：{source_file}"
         
         elif resource_type == 'lesson_plan':
             return f"标题：{resource.get('title', '')}，内容：{resource.get('content', '')}"
