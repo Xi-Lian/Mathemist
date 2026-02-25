@@ -115,7 +115,7 @@ Write-Host "  PYTHON=$PythonCmd"
 Start-Process -FilePath "powershell.exe" -WorkingDirectory $BackendDir -ArgumentList @(
     "-NoExit",
     "-Command",
-    "$env:PYTHONIOENCODING='utf-8'; $env:PYTHONUTF8='1'; & '$PythonCmd' run_local.py"
+    "& '$PythonCmd' run_local.py"
 )
 
 Start-Process -FilePath "powershell.exe" -WorkingDirectory $FrontendDir -ArgumentList @(
