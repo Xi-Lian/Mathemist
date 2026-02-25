@@ -17,6 +17,7 @@
 """
 
 import json
+import re
 from typing import Dict, Any, List
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -118,7 +119,8 @@ class IntentAnalyzer:
             解析后的意图结果
         """
         try:
-            parsed = json.loads(response)
+            cleaned = self._clean_json_response(response)
+            parsed = json.loads(cleaned)
             primary_intent = parsed.get("primary_intent", self.INTENT_SEARCH)
             intents = parsed.get("intents", [])
             user_needs = parsed.get("user_needs", "")
@@ -144,6 +146,36 @@ class IntentAnalyzer:
         except json.JSONDecodeError as e:
             print(f"⚠️ JSON解析失败: {e}")
             raise
+
+    def _clean_json_response(self, response: str) -> str:
+        """
+        清洗模型输出，兼容 Markdown 代码块与前后说明文本。
+
+        Args:
+            response: 模型原始响应
+
+        Returns:
+            可用于 json.loads 的字符串
+        """
+        content = (response or "").strip()
+        if not content:
+            return content
+
+        # 先处理 ```json ... ``` 或 ``` ... ``` 包裹
+        fence_match = re.match(
+            r"^\s*```(?:json|JSON)?\s*([\s\S]*?)\s*```\s*$",
+            content,
+        )
+        if fence_match:
+            content = fence_match.group(1).strip()
+
+        # 若还有前后说明文本，尝试提取最外层 JSON 对象
+        first_brace = content.find("{")
+        last_brace = content.rfind("}")
+        if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
+            content = content[first_brace:last_brace + 1]
+
+        return content
     
     def _analyze_with_keywords(self, user_input: str) -> Dict[str, Any]:
         """
@@ -458,6 +490,13 @@ class IntentAnalyzer:
 - user_needs: 用户的具体需求描述（1-2句话）
 - resource_types: 用户明确提到的资源类型列表（不要过度推断）
 - intents: 一个数组，包含所有可能的意图及其置信度，格式为[{{"type": "意图类型", "confidence": 置信度}}]
+
+## 严格输出要求（必须遵守）
+
+- 只能输出 JSON 对象本身
+- 不要输出 Markdown 代码块（不要使用 ```json 或 ```）
+- 不要输出任何解释、前缀、后缀、注释
+- 输出必须以 `{{` 开始，以 `}}` 结束
 
 ## 示例
 

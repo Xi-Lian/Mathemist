@@ -38,7 +38,16 @@ function ensureNoTrailingSlash(url: string): string {
 }
 
 async function parseResponse(response: Response): Promise<FeedbackApiResponse> {
-  const data = (await response.json().catch(() => ({}))) as FeedbackApiResponse;
+  const raw = (await response.json().catch(() => ({}))) as
+    | FeedbackApiResponse
+    | [FeedbackApiResponse, number];
+
+  // Backward-compatible parsing for tuple-like payloads such as:
+  // [{ success: false, message: "..." }, 400]
+  const data: FeedbackApiResponse =
+    Array.isArray(raw) && raw.length > 0 && typeof raw[0] === "object"
+      ? (raw[0] as FeedbackApiResponse)
+      : (raw as FeedbackApiResponse);
 
   if (!response.ok || data.success === false) {
     throw new Error(data.message || "请求失败，请稍后重试");

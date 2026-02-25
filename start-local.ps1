@@ -51,6 +51,7 @@ Import-DotEnv -Path $EnvFile
 
 if (-not $env:HOST) { $env:HOST = "0.0.0.0" }
 if (-not $env:PORT) { $env:PORT = "8000" }
+if (-not $env:FRONTEND_PORT) { $env:FRONTEND_PORT = "3000" }
 if (-not $env:NEXT_PUBLIC_API_URL) { $env:NEXT_PUBLIC_API_URL = "http://localhost:$($env:PORT)" }
 if (-not $env:NEXT_PUBLIC_ASSISTANT_ID) { $env:NEXT_PUBLIC_ASSISTANT_ID = "math-agent" }
 if (-not $env:PYTHONIOENCODING) { $env:PYTHONIOENCODING = "utf-8" }
@@ -108,6 +109,7 @@ if ($missingModules.Count -gt 0) {
 Write-Host "Startup config:" -ForegroundColor Cyan
 Write-Host "  HOST=$($env:HOST)"
 Write-Host "  PORT=$($env:PORT)"
+Write-Host "  FRONTEND_PORT=$($env:FRONTEND_PORT)"
 Write-Host "  NEXT_PUBLIC_API_URL=$($env:NEXT_PUBLIC_API_URL)"
 Write-Host "  NEXT_PUBLIC_ASSISTANT_ID=$($env:NEXT_PUBLIC_ASSISTANT_ID)"
 Write-Host "  PYTHON=$PythonCmd"
@@ -121,7 +123,7 @@ Start-Process -FilePath "powershell.exe" -WorkingDirectory $BackendDir -Argument
 Start-Process -FilePath "powershell.exe" -WorkingDirectory $FrontendDir -ArgumentList @(
     "-NoExit",
     "-Command",
-    "pnpm dev"
+    "pnpm dev --port $($env:FRONTEND_PORT)"
 )
 
 Write-Host ""
@@ -130,4 +132,4 @@ Write-Host "  1) backend: python run_local.py"
 Write-Host "  2) frontend: pnpm dev"
 Write-Host ""
 Write-Host "Backend URL: http://localhost:$($env:PORT)"
-Write-Host "Frontend URL: http://localhost:3000"
+Write-Host "Frontend URL: http://localhost:$($env:FRONTEND_PORT)"
