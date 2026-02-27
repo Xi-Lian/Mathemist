@@ -32,6 +32,7 @@ class MathAgentState:
     lesson_plan_status: Optional[str] = None  # 教案状态: guiding/completed
     lesson_plan_collected_info: Optional[Dict[str, Any]] = None  # 已收集的教案信息
     lesson_plan: Optional[str] = None  # 最终生成的教案
+    export_data: Optional[Dict[str, Any]] = None  # 教案导出数据
     
     # 可视化设计建议
     visualization_suggestions: Optional[str] = None

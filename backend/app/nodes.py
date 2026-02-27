@@ -108,6 +108,8 @@ def unified_lesson_plan_node(state: MathAgentState) -> Dict[str, Any]:
         updates["lesson_plan_status"] = result.get("status")
         updates["lesson_plan_collected_info"] = result.get("collected_info")
         updates["response"] = result.get("response")
+        if "export_data" in result and result.get("export_data"):
+            updates["export_data"] = result.get("export_data")
         
         if result.get("status") == "completed" and "lesson_plan" in result:
             updates["lesson_plan"] = result.get("lesson_plan")
@@ -240,6 +242,16 @@ def response_formatting_node(state: MathAgentState) -> Dict[str, Any]:
         "content": response,
         "id": f"msg_{uuid.uuid4().hex}"
     }
+
+    if isinstance(state, dict):
+        export_data = state.get("export_data")
+        lesson_plan_session_id = state.get("lesson_plan_session_id")
+    else:
+        export_data = getattr(state, "export_data", None)
+        lesson_plan_session_id = getattr(state, "lesson_plan_session_id", None)
+
+    if export_data:
+        ai_message["export_data"] = export_data
     
     # 将 AI 消息添加到 messages 列表
     messages = state.messages if state.messages else []
@@ -250,5 +262,7 @@ def response_formatting_node(state: MathAgentState) -> Dict[str, Any]:
         "current_step": "response_formatting",
         "error": None,
         "messages": messages,
-        "message": ai_message
+        "message": ai_message,
+        "lesson_plan_session_id": lesson_plan_session_id,
+        "export_data": export_data,
     }
