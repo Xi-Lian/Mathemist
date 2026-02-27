@@ -1,9 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
-import { ReactNode, useEffect, useRef } from "react";
+import {
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useStreamContext } from "@/providers/Stream";
-import { useState, FormEvent } from "react";
 import { Button } from "../ui/button";
 import { Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
@@ -132,7 +137,6 @@ export function Thread() {
     parseAsBoolean.withDefault(false),
   );
   const [input, setInput] = useState("");
-  const [lessonPlanSessionId, setLessonPlanSessionId] = useState<string | null>(null);
   const {
     contentBlocks,
     setContentBlocks,
@@ -144,29 +148,41 @@ export function Thread() {
     handlePaste,
   } = useFileUpload();
   const [firstTokenReceived, setFirstTokenReceived] = useState(false);
+  const [lessonPlanSessionId, setLessonPlanSessionId] = useState<string | null>(
+    null,
+  );
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   const stream = useStreamContext();
   const messages = stream.messages;
   const isLoading = stream.isLoading;
+  const sessionIdFromState =
+    stream.values?.lesson_plan_session_id ?? stream.values?.session_id;
+  const activeLessonPlanSessionId =
+    lessonPlanSessionId ||
+    (typeof sessionIdFromState === "string" && sessionIdFromState.trim()
+      ? sessionIdFromState
+      : null);
 
   const lastError = useRef<string | undefined>(undefined);
 
-  // 从stream.values中提取lesson_plan_session_id
-  useEffect(() => {
-    if (stream.values?.lesson_plan_session_id) {
-      setLessonPlanSessionId(stream.values.lesson_plan_session_id as string);
-      console.log("💾 保存教案会话ID:", stream.values.lesson_plan_session_id);
-    }
-  }, [stream.values?.lesson_plan_session_id]);
-
   const setThreadId = (id: string | null) => {
     _setThreadId(id);
+    setLessonPlanSessionId(null);
 
     // close artifact and reset artifact context
     closeArtifact();
     setArtifactContext({});
   };
+
+  useEffect(() => {
+    if (typeof sessionIdFromState !== "string" || !sessionIdFromState.trim()) {
+      return;
+    }
+    setLessonPlanSessionId((prev) =>
+      prev === sessionIdFromState ? prev : sessionIdFromState,
+    );
+  }, [sessionIdFromState]);
 
   useEffect(() => {
     if (!stream.error) {
@@ -227,19 +243,27 @@ export function Thread() {
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
 
-    let context =
-      Object.keys(artifactContext).length > 0 ? artifactContext : undefined;
+    const context = {
+      ...(Object.keys(artifactContext).length > 0 ? artifactContext : {}),
+      ...(activeLessonPlanSessionId
+        ? { lesson_plan_session_id: activeLessonPlanSessionId }
+        : {}),
+    };
 
-    // 如果有教案会话ID，添加到context中
-    if (lessonPlanSessionId) {
-      context = {
-        ...context,
-        lesson_plan_session_id: lessonPlanSessionId
-      };
+    const submitPayload: {
+      messages: Message[];
+      context?: Record<string, unknown>;
+      lesson_plan_session_id?: string;
+    } = {
+      messages: [...toolMessages, newHumanMessage],
+      context,
+    };
+    if (activeLessonPlanSessionId) {
+      submitPayload.lesson_plan_session_id = activeLessonPlanSessionId;
     }
 
     stream.submit(
-      { messages: [...toolMessages, newHumanMessage], context },
+      submitPayload,
       {
         streamMode: ["values"],
         streamSubgraphs: true,
@@ -247,6 +271,9 @@ export function Thread() {
         optimisticValues: (prev) => ({
           ...prev,
           context,
+          ...(activeLessonPlanSessionId
+            ? { lesson_plan_session_id: activeLessonPlanSessionId }
+            : {}),
           messages: [
             ...(prev.messages ?? []),
             ...toolMessages,
@@ -479,120 +506,128 @@ export function Thread() {
                     </div>
                   )}
 
-                  {chatStarted && (
-                    <ImprovementSuggestionBox
-                      apiBaseUrl={feedbackApiBaseUrl}
-                      query={latestHumanQuery || input.trim()}
-                    />
-                  )}
-
                   <ScrollToBottom className="animate-in fade-in-0 zoom-in-95 absolute bottom-full left-1/2 mb-4 -translate-x-1/2" />
 
                   <div
-                    ref={dropRef}
                     className={cn(
-                      "bg-muted relative z-10 mx-auto mb-8 w-full max-w-[min(960px,100%)] rounded-2xl shadow-xs transition-all",
-                      dragOver
-                        ? "border-primary border-2 border-dotted"
-                        : "border border-solid",
+                      "mx-auto mb-8 grid w-full max-w-[min(1320px,100%)] gap-4",
+                      chatStarted && "xl:grid-cols-[minmax(0,960px)_320px] xl:items-end",
                     )}
                   >
-                    <form
-                      onSubmit={handleSubmit}
-                      className="grid w-full grid-rows-[1fr_auto] gap-2"
+                    <div
+                      ref={dropRef}
+                      className={cn(
+                        "bg-muted relative z-10 w-full rounded-2xl shadow-xs transition-all",
+                        dragOver
+                          ? "border-primary border-2 border-dotted"
+                          : "border border-solid",
+                      )}
                     >
-                      <ContentBlocksPreview
-                        blocks={contentBlocks}
-                        onRemove={removeBlock}
-                      />
-                      <textarea
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onPaste={handlePaste}
-                        onKeyDown={(e) => {
-                          if (
-                            e.key === "Enter" &&
-                            !e.shiftKey &&
-                            !e.metaKey &&
-                            !e.nativeEvent.isComposing
-                          ) {
-                            e.preventDefault();
-                            const el = e.target as HTMLElement | undefined;
-                            const form = el?.closest("form");
-                            form?.requestSubmit();
-                          }
-                        }}
-                        placeholder={t.typeYourMessage}
-                        className="field-sizing-content resize-none border-none bg-transparent p-3.5 pb-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
-                      />
-
-                      <div className="flex items-center gap-6 p-2 pt-4">
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="render-tool-calls"
-                              checked={hideToolCalls ?? false}
-                              onCheckedChange={setHideToolCalls}
-                            />
-                            <Label
-                              htmlFor="render-tool-calls"
-                              className="text-sm text-muted-foreground"
-                            >
-                              {t.hideToolCalls}
-                            </Label>
-                          </div>
-                        </div>
-                        <Label
-                          htmlFor="file-input"
-                          className="flex cursor-pointer items-center gap-2"
-                        >
-                          <Plus className="size-5 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {t.uploadPdfOrImage}
-                          </span>
-                        </Label>
-                        <input
-                          id="file-input"
-                          type="file"
-                          onChange={handleFileUpload}
-                          multiple
-                          accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
-                          className="hidden"
+                      <form
+                        onSubmit={handleSubmit}
+                        className="grid w-full grid-rows-[1fr_auto] gap-2"
+                      >
+                        <ContentBlocksPreview
+                          blocks={contentBlocks}
+                          onRemove={removeBlock}
                         />
-                        <a
-                          href={geometryToolUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap"
-                        >
-                          <Shapes className="size-5 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {t.openGeometryTool}
-                          </span>
-                        </a>
-                        {stream.isLoading ? (
-                          <Button
-                            key="stop"
-                            onClick={() => stream.stop()}
-                            className="ml-auto"
-                          >
-                            <LoaderCircle className="h-4 w-4 animate-spin" />
-                            {t.cancel}
-                          </Button>
-                        ) : (
-                          <Button
-                            type="submit"
-                            className="ml-auto shadow-md transition-all"
-                            disabled={
-                              isLoading ||
-                              (!input.trim() && contentBlocks.length === 0)
+                        <textarea
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          onPaste={handlePaste}
+                          onKeyDown={(e) => {
+                            if (
+                              e.key === "Enter" &&
+                              !e.shiftKey &&
+                              !e.metaKey &&
+                              !e.nativeEvent.isComposing
+                            ) {
+                              e.preventDefault();
+                              const el = e.target as HTMLElement | undefined;
+                              const form = el?.closest("form");
+                              form?.requestSubmit();
                             }
+                          }}
+                          placeholder={t.typeYourMessage}
+                          className="field-sizing-content resize-none border-none bg-transparent p-3.5 pb-0 shadow-none ring-0 outline-none focus:ring-0 focus:outline-none"
+                        />
+
+                        <div className="flex items-center gap-6 p-2 pt-4">
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="render-tool-calls"
+                                checked={hideToolCalls ?? false}
+                                onCheckedChange={setHideToolCalls}
+                              />
+                              <Label
+                                htmlFor="render-tool-calls"
+                                className="text-sm text-muted-foreground"
+                              >
+                                {t.hideToolCalls}
+                              </Label>
+                            </div>
+                          </div>
+                          <Label
+                            htmlFor="file-input"
+                            className="flex cursor-pointer items-center gap-2"
                           >
-                            {t.send}
-                          </Button>
-                        )}
-                      </div>
-                    </form>
+                            <Plus className="size-5 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {t.uploadPdfOrImage}
+                            </span>
+                          </Label>
+                          <input
+                            id="file-input"
+                            type="file"
+                            onChange={handleFileUpload}
+                            multiple
+                            accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+                            className="hidden"
+                          />
+                          <a
+                            href={geometryToolUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap"
+                          >
+                            <Shapes className="size-5 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              {t.openGeometryTool}
+                            </span>
+                          </a>
+                          {stream.isLoading ? (
+                            <Button
+                              key="stop"
+                              onClick={() => stream.stop()}
+                              className="ml-auto"
+                            >
+                              <LoaderCircle className="h-4 w-4 animate-spin" />
+                              {t.cancel}
+                            </Button>
+                          ) : (
+                            <Button
+                              type="submit"
+                              className="ml-auto shadow-md transition-all"
+                              disabled={
+                                isLoading ||
+                                (!input.trim() && contentBlocks.length === 0)
+                              }
+                            >
+                              {t.send}
+                            </Button>
+                          )}
+                        </div>
+                      </form>
+                    </div>
+
+                    {chatStarted && (
+                      <ImprovementSuggestionBox
+                        apiBaseUrl={feedbackApiBaseUrl}
+                        query={latestHumanQuery || input.trim()}
+                        className="mb-0 h-fit"
+                      />
+                    )}
                   </div>
                 </div>
               }

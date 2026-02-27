@@ -1,5 +1,5 @@
 import { parsePartialJson } from "@langchain/core/output_parsers";
-import { useStreamContext } from "@/providers/Stream";
+import { LessonPlanExportData, useStreamContext } from "@/providers/Stream";
 import { AIMessage, Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { getContentString } from "../utils";
 import { BranchSwitcher, CommandBar } from "./shared";
@@ -15,6 +15,11 @@ import { useQueryState, parseAsBoolean } from "nuqs";
 import { GenericInterruptView } from "./generic-interrupt";
 import { useArtifact } from "../artifact";
 import { ResourceFeedbackList } from "@/components/feedback/ResourceFeedbackList";
+import { LessonPlanDownloadButton } from "../LessonPlanDownloadButton";
+
+type MessageWithExportData = Message & {
+  export_data?: LessonPlanExportData;
+};
 
 function CustomComponent({
   message,
@@ -106,7 +111,7 @@ export function AssistantMessage({
   apiBaseUrl,
   queryForFeedback,
 }: {
-  message: Message | undefined;
+  message: MessageWithExportData | undefined;
   isLoading: boolean;
   handleRegenerate: (parentCheckpoint: Checkpoint | null | undefined) => void;
   apiBaseUrl: string;
@@ -132,6 +137,7 @@ export function AssistantMessage({
   const anthropicStreamedToolCalls = Array.isArray(content)
     ? parseAnthropicStreamedToolCalls(content)
     : undefined;
+  const exportData = message?.type === "ai" ? message.export_data : undefined;
 
   const hasToolCalls =
     message &&
@@ -174,6 +180,7 @@ export function AssistantMessage({
                 />
               </div>
             )}
+            {exportData && <LessonPlanDownloadButton exportData={exportData} />}
 
             {!hideToolCalls && (
               <>

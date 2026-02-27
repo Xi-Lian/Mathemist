@@ -48,13 +48,32 @@ export function HumanMessage({
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState("");
   const contentString = getContentString(message.content);
+  const lessonPlanSessionId =
+    thread.values?.lesson_plan_session_id ?? thread.values?.session_id;
 
   const handleSubmitEdit = () => {
     setIsEditing(false);
 
     const newMessage: Message = { type: "human", content: value };
+    const submitPayload: {
+      messages: Message[];
+      context?: Record<string, unknown>;
+      lesson_plan_session_id?: string;
+    } = {
+      messages: [newMessage],
+    };
+    if (
+      typeof lessonPlanSessionId === "string" &&
+      lessonPlanSessionId.trim().length > 0
+    ) {
+      submitPayload.lesson_plan_session_id = lessonPlanSessionId;
+      submitPayload.context = {
+        lesson_plan_session_id: lessonPlanSessionId,
+      };
+    }
+
     thread.submit(
-      { messages: [newMessage] },
+      submitPayload,
       {
         checkpoint: parentCheckpoint,
         streamMode: ["values"],
@@ -66,6 +85,12 @@ export function HumanMessage({
 
           return {
             ...values,
+            ...(submitPayload.lesson_plan_session_id
+              ? { lesson_plan_session_id: submitPayload.lesson_plan_session_id }
+              : {}),
+            ...(submitPayload.context
+              ? { context: submitPayload.context }
+              : {}),
             messages: [...(values.messages ?? []), newMessage],
           };
         },

@@ -25,10 +25,24 @@ import { getApiKey } from "@/lib/api-key";
 import { useThreads } from "./Thread";
 import { toast } from "sonner";
 
-export type StateType = { 
-  messages: Message[]; 
+export type LessonPlanExportData = {
+  content: string;
+  filename: string;
+  format: string;
+};
+
+export type StateType = {
+  messages: Message[];
   ui?: UIMessage[];
+  export_data?: LessonPlanExportData;
+  session_id?: string;
   lesson_plan_session_id?: string;
+  lesson_plan_status?: string;
+  lesson_plan_collected_info?: Record<string, unknown>;
+  status?: string;
+  response?: string;
+  lesson_plan?: string;
+  collected_info?: Record<string, unknown>;
 };
 
 const useTypedStream = useStream<
@@ -38,6 +52,15 @@ const useTypedStream = useStream<
       messages?: Message[] | Message | string;
       ui?: (UIMessage | RemoveUIMessage)[] | UIMessage | RemoveUIMessage;
       context?: Record<string, unknown>;
+      export_data?: LessonPlanExportData;
+      session_id?: string;
+      lesson_plan_session_id?: string;
+      lesson_plan_status?: string;
+      lesson_plan_collected_info?: Record<string, unknown>;
+      status?: string;
+      response?: string;
+      lesson_plan?: string;
+      collected_info?: Record<string, unknown>;
     };
     CustomEventType: UIMessage | RemoveUIMessage;
   }

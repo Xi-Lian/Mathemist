@@ -6,10 +6,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { submitImprovementSuggestion } from "@/services/feedbackService";
+import { cn } from "@/lib/utils";
 
 interface ImprovementSuggestionBoxProps {
   apiBaseUrl: string;
   query: string;
+  className?: string;
 }
 
 const MIN_SUGGESTION_LENGTH = 10;
@@ -17,6 +19,7 @@ const MIN_SUGGESTION_LENGTH = 10;
 export function ImprovementSuggestionBox({
   apiBaseUrl,
   query,
+  className,
 }: ImprovementSuggestionBoxProps) {
   const [suggestion, setSuggestion] = useState("");
   const [contact, setContact] = useState("");
@@ -56,7 +59,12 @@ export function ImprovementSuggestionBox({
   };
 
   return (
-    <div className="mx-auto mb-4 w-full max-w-[min(960px,100%)] rounded-2xl border bg-card p-4">
+    <div
+      className={cn(
+        "w-full rounded-2xl border bg-card p-4",
+        className ?? "mx-auto mb-4 max-w-[min(960px,100%)]",
+      )}
+    >
       <h3 className="text-sm font-semibold">没有找到想要的资源？告诉我们</h3>
       <div className="mt-3 space-y-3">
         <textarea
