@@ -300,6 +300,9 @@ async def stream_math_agent(request: MathAgentRequest):
             "context": request.context or {}
         }
         
+        # 重新创建math_agent_graph实例，确保使用最新的节点函数
+        math_agent_graph = create_math_agent_graph()
+        
         # 流式调用LangGraph
         async for chunk in math_agent_graph.astream(
             input_state,

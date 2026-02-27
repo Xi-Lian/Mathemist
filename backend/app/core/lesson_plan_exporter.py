@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
 import markdown
+from .config_manager import config_manager
 
 
 class LessonPlanExporter:
@@ -28,12 +29,14 @@ class LessonPlanExporter:
         初始化教案导出器
         
         Args:
-            output_dir: 输出目录，默认为 backend/exports
+            output_dir: 输出目录，默认为配置文件中指定的目录
         """
         if output_dir:
             self.output_dir = Path(output_dir)
         else:
-            self.output_dir = Path(__file__).parent.parent.parent / "backend" / "exports"
+            # 从配置获取导出路径
+            export_path = config_manager.get_export_path()
+            self.output_dir = Path(export_path)
         
         self.output_dir.mkdir(parents=True, exist_ok=True)
     

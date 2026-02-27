@@ -132,6 +132,7 @@ export function Thread() {
     parseAsBoolean.withDefault(false),
   );
   const [input, setInput] = useState("");
+  const [lessonPlanSessionId, setLessonPlanSessionId] = useState<string | null>(null);
   const {
     contentBlocks,
     setContentBlocks,
@@ -150,6 +151,14 @@ export function Thread() {
   const isLoading = stream.isLoading;
 
   const lastError = useRef<string | undefined>(undefined);
+
+  // 从stream.values中提取lesson_plan_session_id
+  useEffect(() => {
+    if (stream.values?.lesson_plan_session_id) {
+      setLessonPlanSessionId(stream.values.lesson_plan_session_id as string);
+      console.log("💾 保存教案会话ID:", stream.values.lesson_plan_session_id);
+    }
+  }, [stream.values?.lesson_plan_session_id]);
 
   const setThreadId = (id: string | null) => {
     _setThreadId(id);
@@ -218,8 +227,16 @@ export function Thread() {
 
     const toolMessages = ensureToolCallsHaveResponses(stream.messages);
 
-    const context =
+    let context =
       Object.keys(artifactContext).length > 0 ? artifactContext : undefined;
+
+    // 如果有教案会话ID，添加到context中
+    if (lessonPlanSessionId) {
+      context = {
+        ...context,
+        lesson_plan_session_id: lessonPlanSessionId
+      };
+    }
 
     stream.submit(
       { messages: [...toolMessages, newHumanMessage], context },

@@ -200,6 +200,23 @@ class IntentAnalyzer:
         has_lesson_plan = self._has_keywords(user_input_lower, self.INTENT_LESSON_PLAN)
         has_visualization = self._has_keywords(user_input_lower, self.INTENT_VISUALIZATION)
         
+        # 检查是否为修改意见
+        revision_keywords = [
+            # 表达不满意或需要修改
+            "觉得", "感觉", "认为", "希望", "想要", "需要", "应该", "建议", "提议",
+            # 具体修改动作
+            "修改", "调整", "改进", "完善", "优化", "补充", "增加", "添加", "减少", "删除", "删除掉",
+            # 疑问式修改请求
+            "能不能", "能否", "可不可以", "是否可以", "能不能够",
+            # 具体修改内容
+            "太短", "太长", "太简单", "太复杂", "不够", "不足", "缺少", "缺乏",
+            # 其他修改相关词汇
+            "改一下", "改改", "调整一下", "完善一下", "优化一下", "补充一下"
+        ]
+        has_revision_request = any(keyword in user_input for keyword in revision_keywords)
+        
+        print(f"📋 包含修改意见关键词: {has_revision_request}")
+        
         print(f"📋 包含教案关键词: {has_lesson_plan}")
         print(f"📋 包含可视化关键词: {has_visualization}")
         
@@ -212,8 +229,17 @@ class IntentAnalyzer:
         print(f"📋 生成的用户需求: {user_needs}")
         
         # 确定意图
-        # 优先级：内容生成+教案 > 内容生成 > 资源获取+教案 > 资源获取 > 关键词
-        if has_content_generation and has_lesson_plan:
+        # 优先级：修改意见 > 内容生成+教案 > 内容生成 > 资源获取+教案 > 资源获取 > 关键词
+        if has_revision_request:
+            # 修改意见请求，使用generate_lesson_plan意图
+            print("🎯 识别到修改意见，使用generate_lesson_plan意图")
+            return self._get_single_intent_result(
+                self.INTENT_LESSON_PLAN,
+                "识别到修改意见",
+                user_needs,
+                resource_types
+            )
+        elif has_content_generation and has_lesson_plan:
             # 同时有内容生成指令词和教案关键词，优先识别为教案生成
             print("🎯 识别到内容生成指令词和教案关键词，使用generate_lesson_plan意图")
             return self._get_single_intent_result(
@@ -467,7 +493,8 @@ class IntentAnalyzer:
    - 用户明确要求生成教案或教学设计
    - 用户想要备课或教学计划
    - 用户询问如何设计某个知识点的教学
-   - 例如："生成指数函数的教案"、"帮我设计三角函数的教学"
+   - 用户提出对现有教案的修改意见
+   - 例如："生成指数函数的教案"、"帮我设计三角函数的教学"、"我觉得教学目标太简单了"、"能不能增加一些应用层面的目标"
 
 3. **visualization（可视化建议/GGB设计）**：
    - 用户明确要求GGB动态图设计建议

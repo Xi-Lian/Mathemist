@@ -394,4 +394,11 @@ def _convert_input_format(input_data: Dict[str, Any]) -> Dict[str, Any]:
                         if isinstance(content_item, dict) and "text" in content_item:
                             graph_input["user_input"] = content_item["text"]
     
+    # 从context中提取lesson_plan_session_id
+    if "context" in graph_input and graph_input["context"]:
+        context = graph_input["context"]
+        if isinstance(context, dict) and "lesson_plan_session_id" in context:
+            graph_input["lesson_plan_session_id"] = context["lesson_plan_session_id"]
+            print(f"💾 从context中提取教案会话ID: {context['lesson_plan_session_id']}")
+    
     return graph_input

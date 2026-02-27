@@ -44,6 +44,13 @@ class ResponseBuilder:
         print(f"📤 响应生成开始")
         
         try:
+            # 优先检查是否已经有响应
+            response = self._get_state_value(state, "response", "")
+            if response:
+                print(f"🔀 发现已有响应，直接返回")
+                print(f"✅ 响应生成成功，长度: {len(response)}字符")
+                return response
+            
             # 检查是否有多个处理过的意图
             processed_intents = self._get_state_value(state, "processed_intents", [])
             
@@ -491,9 +498,9 @@ class ResponseBuilder:
         if category in ["课件资源", "课例资源", "GGB资源"]:
             return "（请查看文件）"
         
-        # 教案和教学大纲，生成摘要
+        # 教案和教学大纲，返回完整内容（不再截断）
         if category in ["教案资源", "教学大纲"]:
-            return self.content_processor.generate_summary(content, max_length=150)
+            return content
         
         # 其他资源，生成摘要
         return self.content_processor.generate_summary(content, max_length=150)

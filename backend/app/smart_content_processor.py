@@ -59,6 +59,17 @@ class SmartContentProcessor:
         content = content.strip()
         return content
     
+    def _clean_lesson_content(self, content: str) -> str:
+        """清理教案内容（保留结构，只移除多余空行）"""
+        # 移除Markdown/HTML标签
+        content = re.sub(r'{[^}]+}', '', content)  # 移除 {width=...} 等标签
+        content = re.sub(r'\|', ' ', content)  # 移除表格分隔符
+        # 移除多余的空行，但保留段落结构
+        content = re.sub(r'\n{3,}', '\n\n', content)  # 将3个或更多连续换行符替换为2个
+        # 移除首尾空白
+        content = content.strip()
+        return content
+    
     def extract_keywords(self, content: str, top_k: int = 5) -> List[str]:
         """提取关键词"""
         try:
@@ -150,29 +161,24 @@ class SmartContentProcessor:
         return questions
     
     def _process_lesson_plan(self, content: str, max_length: int) -> Dict[str, any]:
-        """处理教案内容"""
+        """处理教案内容（返回完整内容，不再截断）"""
         # 提取教案结构
         structure = self._extract_lesson_structure(content)
         
         if structure:
-            # 构建教案摘要
+            # 构建完整教案内容，不再截断
             summary_parts = []
-            total_length = 0
             
             for section, section_content in structure.items():
-                section_summary = f"【{section}】{section_content[:80]}..." if len(section_content) > 80 else f"【{section}】{section_content}"
-                if total_length + len(section_summary) <= max_length:
-                    summary_parts.append(section_summary)
-                    total_length += len(section_summary)
-                else:
-                    break
+                section_summary = f"【{section}】{section_content}"
+                summary_parts.append(section_summary)
             
             summary = "\n".join(summary_parts)
-            has_more = len(structure) > len(summary_parts)
+            has_more = False
         else:
-            # 普通内容处理
-            summary = self.generate_summary(content, max_length)
-            has_more = len(content) > len(summary)
+            # 普通内容处理，返回完整内容
+            summary = content
+            has_more = False
         
         return {
             "summary": summary,
@@ -183,7 +189,7 @@ class SmartContentProcessor:
         }
     
     def _extract_lesson_structure(self, content: str) -> Dict[str, str]:
-        """提取教案结构"""
+        """提取教案结构（保留完整内容，不截断）"""
         structure = {}
         
         # 常见教案 sections
@@ -201,7 +207,8 @@ class SmartContentProcessor:
                 pattern = f"{section}[：:](.*)$"
             matches = re.findall(pattern, content, re.DOTALL)
             if matches:
-                structure[section] = self._clean_content(matches[0].strip())
+                # 使用 _clean_lesson_content 保留结构，不压缩空白
+                structure[section] = self._clean_lesson_content(matches[0].strip())
         
         return structure
     

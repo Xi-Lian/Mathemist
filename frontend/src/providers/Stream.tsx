@@ -25,7 +25,11 @@ import { getApiKey } from "@/lib/api-key";
 import { useThreads } from "./Thread";
 import { toast } from "sonner";
 
-export type StateType = { messages: Message[]; ui?: UIMessage[] };
+export type StateType = { 
+  messages: Message[]; 
+  ui?: UIMessage[];
+  lesson_plan_session_id?: string;
+};
 
 const useTypedStream = useStream<
   StateType,

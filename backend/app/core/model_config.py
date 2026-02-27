@@ -293,6 +293,24 @@ class ModelConfig:
                 "模型未初始化，请检查 .env："
                 "DEEPSEEK_API_KEY（DeepSeek）或 OPENAI_COMPAT_API_KEY（OpenAI兼容）"
             )
+        
+        # 根据任务类型调整max_tokens
+        if task_type == "lesson_plan":
+            # 教案生成需要更大的输出长度
+            if hasattr(self._llm, 'max_tokens'):
+                self._llm.max_tokens = 4000
+                print(f"📝 教案生成任务，设置max_tokens=4000")
+        elif task_type == "info_extraction":
+            # 信息提取任务使用默认值
+            if hasattr(self._llm, 'max_tokens'):
+                self._llm.max_tokens = 2000
+                print(f"🔍 信息提取任务，设置max_tokens=2000")
+        else:
+            # 其他任务使用默认值
+            if hasattr(self._llm, 'max_tokens'):
+                self._llm.max_tokens = 2000
+                print(f"⚙️ 默认任务，设置max_tokens=2000")
+        
         return self._llm
 
 

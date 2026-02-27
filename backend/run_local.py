@@ -72,9 +72,8 @@ def _patch_langgraph_node_alias():
         mapped_end = remap_name(self, end_key)
         return original_add_edge(self, mapped_start, mapped_end)
 
-    def add_conditional_edges_with_alias(self, source, path, path_map=None, then=None):
+    def add_conditional_edges_with_alias(self, source, path, path_map=None):
         mapped_source = remap_name(self, source)
-        mapped_then = remap_name(self, then)
 
         mapped_path_map = path_map
         if isinstance(path_map, dict):
@@ -87,7 +86,6 @@ def _patch_langgraph_node_alias():
             mapped_source,
             path,
             mapped_path_map,
-            mapped_then,
         )
 
     StateGraph.add_node = add_node_with_alias

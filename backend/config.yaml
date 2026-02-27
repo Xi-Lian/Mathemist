@@ -1,0 +1,28 @@
+# 配置文件
+# 路径配置
+paths:
+  # 学习资源目录
+  learning_resource:
+    # 相对路径：从项目根目录开始
+    relative: "learning_resource"
+    # 环境变量名称，用于覆盖默认路径
+    env_var: "LEARNING_RESOURCE_PATH"
+
+# 会话配置
+session:
+  # 会话超时时间（秒）
+  timeout: 3600
+
+# 导出配置
+export:
+  # 导出文件目录
+  directory:
+    relative: "exports"
+    env_var: "EXPORT_PATH"
+
+# 日志配置
+logging:
+  # 日志文件目录
+  directory:
+    relative: "logs"
+    env_var: "LOG_PATH"

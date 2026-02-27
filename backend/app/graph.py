@@ -70,6 +70,38 @@ def create_math_agent_graph():
         has_resource_retrieval = any(keyword in user_input for keyword in resource_retrieval_keywords)
         
         print(f"🔀 包含资源获取指令词: {has_resource_retrieval}")
+        print(f"🔀 用户输入: {user_input}")
+        print(f"🔀 输入类型: {type(user_input)}")
+        
+        # 检查是否为"查看完整教案"请求或修改意见
+        if isinstance(user_input, str):
+            normalized_input = user_input.replace(' ', '')  # 移除所有空格
+            print(f"🔀 归一化输入: {normalized_input}")
+            print(f"🔀 包含'查看完整教案': {'查看完整教案' in normalized_input}")
+            print(f"包含'完整教案': {'完整教案' in normalized_input}")
+            if "查看完整教案" in normalized_input or "完整教案" in normalized_input:
+                print(f"🔀 检测到'查看完整教案'请求，路由到统一教案节点")
+                return "unified_lesson_plan"
+            
+            # 检查是否为修改意见
+            revision_keywords = [
+                # 表达不满意或需要修改
+                "觉得", "感觉", "认为", "希望", "想要", "需要", "应该", "建议", "提议",
+                # 具体修改动作
+                "修改", "调整", "改进", "完善", "优化", "补充", "增加", "添加", "减少", "删除", "删除掉",
+                # 疑问式修改请求
+                "能不能", "能否", "可不可以", "是否可以", "能不能够",
+                # 具体修改内容
+                "太短", "太长", "太简单", "太复杂", "不够", "不足", "缺少", "缺乏",
+                # 其他修改相关词汇
+                "改一下", "改改", "调整一下", "完善一下", "优化一下", "补充一下"
+            ]
+            has_revision_request = any(keyword in user_input for keyword in revision_keywords)
+            if has_revision_request:
+                print(f"🔀 检测到修改意见，路由到统一教案节点（无论是否有session_id）")
+                return "unified_lesson_plan"
+        else:
+            print(f"⚠️ 用户输入不是字符串: {user_input}")
         
         # 检查是否有多个高置信度意图
         high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
