@@ -436,6 +436,7 @@ class UnifiedLessonPlanSystem:
         
         # 1. 首先检查是否是修改意见（在会话创建之前）
         # 修改意见特征：包含各种修改相关的词汇
+        # 注意：要排除生成类请求，如"请生成"、"请帮我生成"等
         revision_keywords = [
             # 表达不满意或需要修改
             "觉得", "感觉", "认为", "希望", "想要", "需要", "应该", "建议", "提议",
@@ -450,11 +451,24 @@ class UnifiedLessonPlanSystem:
             # 新增：替换类词汇
             "替换", "换成", "改为", "改成", "变更", "更改", "更新", "重写", "重新写",
             # 新增：去除类词汇
-            "去掉", "去除", "删除", "删去", "移除", "取消", "不要", "不用",
-            # 新增：通用请求词
-            "请", "帮忙", "帮我", "给我"
+            "去掉", "去除", "删去", "移除", "取消", "不要", "不用",
+            # 注意："请"、"帮忙"、"帮我"、"给我"等词太通用，容易误判正常生成请求
+            # 只有在明确包含其他修改关键词时才认为是修改意见
         ]
+        
+        # 检查是否包含修改关键词
         has_revision_request = any(keyword in user_input for keyword in revision_keywords)
+        
+        # 如果包含"请"、"帮忙"等通用词，需要额外检查是否包含明确的修改意图
+        # 避免将"请生成教案"误判为修改意见
+        if not has_revision_request:
+            # 检查是否包含生成类关键词，如果包含则不是修改意见
+            generation_keywords = ["生成", "创建", "新建", "制作", "写一份", "来一份"]
+            has_generation_intent = any(keyword in user_input for keyword in generation_keywords)
+            
+            # 如果包含生成意图，则不是修改意见
+            if has_generation_intent:
+                has_revision_request = False
         
         # 如果检测到修改意见，需要确保有有效的会话
         if has_revision_request:
@@ -1408,17 +1422,23 @@ class UnifiedLessonPlanSystem:
                     "format": "html"
                 }
             elif export_format == "docx":
-                return {
-                    "success": False,
-                    "error": "DOCX格式暂不支持，请使用Markdown或HTML格式"
-                }
-            elif export_format == "all":
-                content = self._get_markdown_content(lesson_plan_content, metadata)
+                from app.core.lesson_plan_exporter import export_lesson_plan_docx
+                docx_path = export_lesson_plan_docx(lesson_plan_content, filename, metadata)
+                with open(docx_path, 'rb') as f:
+                    docx_content = f.read()
                 return {
                     "success": True,
-                    "content": content,
-                    "filename": f"{filename}.md",
-                    "format": "markdown"
+                    "content": docx_content,
+                    "filename": f"{filename}.docx",
+                    "format": "docx"
+                }
+            elif export_format == "all":
+                from app.core.lesson_plan_exporter import export_lesson_plan_all
+                all_formats = export_lesson_plan_all(lesson_plan_content, filename, metadata)
+                return {
+                    "success": True,
+                    "files": all_formats,
+                    "format": "all"
                 }
             else:
                 return {
