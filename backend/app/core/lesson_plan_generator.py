@@ -806,7 +806,7 @@ class LessonPlanGenerator:
         # 检查每个环节是否都有理论引用
         missing_sections = []
         for section in required_sections:
-            if re.search(rf"###.*?{section}.*?📌 理论依据", lesson_plan, re.DOTALL) is None:
+            if re.search(rf"###.*?{re.escape(section)}.*?📌 理论依据", lesson_plan, re.DOTALL) is None:
                 missing_sections.append(section)
         
         if missing_sections:
@@ -855,12 +855,14 @@ class LessonPlanGenerator:
                     theory_reference = theory_reference.replace('\n\n', '\n')
                     
                     # 找到环节位置并插入理论依据
-                    section_pattern = rf"(###.*?{section}.*?)(###|$)"
+                    section_pattern = rf"(###.*?{re.escape(section)}.*?)(###|$)"
                     match = re.search(section_pattern, lesson_plan, re.DOTALL)
                     if match:
                         insert_position = match.end(1)
-                        lesson_plan = lesson_plan[:insert_position] + f"\n\n{theory_reference}" + lesson_plan[insert_position:]
-                        print(f"✅ 为 {section} 环节添加理论依据: {selected_theory}：{theory_name}")
+                        # 检查该位置是否已经有理论依据，避免重复添加
+                        if "📌 理论依据" not in lesson_plan[match.start(1):insert_position]:
+                            lesson_plan = lesson_plan[:insert_position] + f"\n\n{theory_reference}" + lesson_plan[insert_position:]
+                            print(f"✅ 为 {section} 环节添加理论依据: {selected_theory}：{theory_name}")
         else:
             print("✅ 所有环节都有理论依据")
         
@@ -881,7 +883,7 @@ class LessonPlanGenerator:
         # 构建环节-理论映射
         section_theory_map = {}
         for section in required_sections:
-            section_pattern = rf"###.*?{section}.*?📌 理论依据：\[(理论卡片\d+)：([^\]]+)\]"
+            section_pattern = rf"###.*?{re.escape(section)}.*?📌 理论依据：\[(理论卡片\d+)：([^\]]+)\]"
             match = re.search(section_pattern, lesson_plan, re.DOTALL)
             if match:
                 section_theory_map[section] = match.group(1)
@@ -900,7 +902,7 @@ class LessonPlanGenerator:
                 old_theory_name = self.theory_cards_index.get(old_theory_key, {}).get("name", "未知理论")
                 new_theory_name = self.theory_cards_index.get(new_theory_key, {}).get("name", "未知理论")
                 
-                old_ref_pattern = rf"(###.*?{section}.*?)📌 理论依据：\[{old_theory_key}：{old_theory_name}\]"
+                old_ref_pattern = rf"(###.*?{re.escape(section)}.*?)📌 理论依据：\[{old_theory_key}：{re.escape(old_theory_name)}\]"
                 new_ref = f"📌 理论依据：[{new_theory_key}：{new_theory_name}]"
                 
                 lesson_plan = re.sub(old_ref_pattern, rf"\1{new_ref}", lesson_plan, flags=re.DOTALL)
@@ -1158,7 +1160,7 @@ class LessonPlanGenerator:
         
         for section in key_sections:
             # 提取该环节的理论引用
-            section_pattern = rf"###.*?{section}.*?📌 理论依据：\[(理论卡片\d+)：([^\]]+)\]"
+            section_pattern = rf"###.*?{re.escape(section)}.*?📌 理论依据：\[(理论卡片\d+)：([^\]]+)\]"
             match = re.search(section_pattern, lesson_plan, re.DOTALL)
             
             if match:
@@ -1182,7 +1184,7 @@ class LessonPlanGenerator:
                             lesson_plan = lesson_plan.replace(old_ref, new_ref)
                             
                             # 更新理论依据内容
-                            old_content_pattern = rf"\*\*📌 理论依据：\[{card_key}：{theory_name}\] - .*? - 应用场景：.*?\*\*"
+                            old_content_pattern = rf"\*\*📌 理论依据：\[{card_key}：{re.escape(theory_name)}\] - .*? - 应用场景：.*?\*\*"
                             new_content = f"**📌 理论依据：[{recommended_key}：{recommended_name}] - {core_view} - 应用场景：指导{section}环节的教学设计，体现了{recommended_name}的应用价值**"
                             lesson_plan = re.sub(old_content_pattern, new_content, lesson_plan, flags=re.DOTALL)
                             
@@ -1275,7 +1277,7 @@ class LessonPlanGenerator:
         # 构建环节-理论映射
         section_theory_map = {}
         for section in required_sections:
-            section_pattern = rf"###.*?{section}.*?📌 理论依据：\[(理论卡片\d+)：([^\]]+)\]"
+            section_pattern = rf"###.*?{re.escape(section)}.*?📌 理论依据：\[(理论卡片\d+)：([^\]]+)\]"
             match = re.search(section_pattern, lesson_plan, re.DOTALL)
             if match:
                 section_theory_map[section] = match.group(1)
@@ -1294,7 +1296,7 @@ class LessonPlanGenerator:
                 old_theory_name = self.theory_cards_index.get(old_theory_key, {}).get("name", "未知理论")
                 new_theory_name = self.theory_cards_index.get(new_theory_key, {}).get("name", "未知理论")
                 
-                old_ref_pattern = rf"(###.*?{section}.*?)📌 理论依据：\[{old_theory_key}：{old_theory_name}\]"
+                old_ref_pattern = rf"(###.*?{re.escape(section)}.*?)📌 理论依据：\[{old_theory_key}：{re.escape(old_theory_name)}\]"
                 new_ref = f"📌 理论依据：[{new_theory_key}：{new_theory_name}]"
                 
                 lesson_plan = re.sub(old_ref_pattern, rf"\1{new_ref}", lesson_plan, flags=re.DOTALL)
@@ -1429,14 +1431,19 @@ class LessonPlanGenerator:
         """
         import re
         
-        # 1. 处理标题格式，添加正确的一级标题标记
-        lesson_plan = re.sub(r'^\s*(《.+》教学设计)', r'# \1', lesson_plan, flags=re.MULTILINE)
-        # 也处理可能在中间出现的标题格式
-        lesson_plan = re.sub(r'\n\s*(《.+》教学设计)', r'\n# \1', lesson_plan)
+        # 1. 处理标题格式，添加正确的一级标题标记（避免重复添加）
+        # 只对没有井号的标题添加井号
+        lesson_plan = re.sub(r'^\s*(?!#)(《.+》教学设计)', r'# \1', lesson_plan, flags=re.MULTILINE)
+        # 也处理可能在中间出现的标题格式（避免重复添加）
+        lesson_plan = re.sub(r'\n\s*(?!#)(《.+》教学设计)', r'\n# \1', lesson_plan)
         
-        # 2. 匹配旧格式的理论依据
-        pattern = r"\*\*📌 理论依据：\[(理论卡片[^\]]+)\] - ([^-]+) - 应用场景：([^\*]+)\*\*"
+        # 2. 匹配旧格式的理论依据（使用更精确的正则表达式，避免误匹配）
+        # 使用非贪婪匹配，确保只匹配完整的理论依据块
+        pattern = r"\*\*📌 理论依据：\[(理论卡片[^\]]+)\] - (.*?) - 应用场景：(.*?)\*\*"
         matches = re.findall(pattern, lesson_plan, re.DOTALL)
+        
+        # 保存所有需要替换的内容，避免在遍历过程中修改字符串导致的问题
+        replacements = []
         
         for match in matches:
             full_theory_key = match[0]
@@ -1459,8 +1466,14 @@ class LessonPlanGenerator:
                 teaching_inspiration = theory_info.get("teaching_inspiration", "")
                 teaching_inspiration_elements = theory_info.get("teaching_inspiration_elements", [])
                 
+                # 清理核心观点和应用场景中的重复内容
+                core_view = core_view.replace('**核心观点**', '').strip()
+                application = application.replace('**应用场景**', '').strip()
+                
                 # 生成新的理论依据格式（简洁版，无边框）
                 if teaching_inspiration_elements:
+                    # 确保教学启发内容不重复
+                    teaching_inspiration = teaching_inspiration.replace('**教学启发**', '').strip()
                     new_theory_reference = f"""**📌 理论依据**
 - **理论卡片**：{theory_key} - {theory_name}
 - **核心观点**：{core_view}
@@ -1472,11 +1485,17 @@ class LessonPlanGenerator:
 - **核心观点**：{core_view}
 - **应用场景**：{application}"""
                 
-                # 替换旧格式为新格式
-                old_pattern = re.escape(f"**📌 理论依据：[{full_theory_key}] - {core_view} - 应用场景：{application}**")
-                lesson_plan = re.sub(old_pattern, new_theory_reference, lesson_plan, flags=re.DOTALL)
+                # 准备替换内容
+                old_pattern = f"**📌 理论依据：[{full_theory_key}] - {core_view} - 应用场景：{application}**"
+                replacements.append((old_pattern, new_theory_reference))
             else:
                 pass
+        
+        # 执行替换，避免在遍历过程中修改字符串
+        for old_pattern, new_theory_reference in replacements:
+            # 使用re.escape确保特殊字符被正确处理
+            safe_old_pattern = re.escape(old_pattern)
+            lesson_plan = re.sub(safe_old_pattern, new_theory_reference, lesson_plan, flags=re.DOTALL)
         
         return lesson_plan
     
@@ -1619,7 +1638,7 @@ class LessonPlanGenerator:
         # 检查每个环节是否都有理论依据
         missing_sections = []
         for section in required_sections:
-            if re.search(rf"###.*?{section}.*?📌 理论依据", lesson_plan, re.DOTALL) is None:
+            if re.search(rf"###.*?{re.escape(section)}.*?📌 理论依据", lesson_plan, re.DOTALL) is None:
                 missing_sections.append(section)
         
         if missing_sections:
@@ -1643,31 +1662,30 @@ class LessonPlanGenerator:
                     teaching_inspiration = theory_info.get("teaching_inspiration", "")
                     teaching_inspiration_elements = theory_info.get("teaching_inspiration_elements", [])
                     
-                    # 生成理论依据（使用多行边框格式，层次清晰）
+                    # 生成理论依据（使用简洁的 Markdown 格式）
                     if teaching_inspiration_elements:
                         inspiration_elements_str = "、".join(teaching_inspiration_elements[:3])  # 限制最多3个要点
-                        theory_reference = f"""**📌 理论依据**
-┌─────────────────────────────────────┐
-│ 【{selected_theory}：{theory_name}】│
-│                                      │
-│ ▸ **核心观点**：{core_view[:100]}...  │
-│                                      │
-│ ▸ **教学启发**：{teaching_inspiration[:80]}... │
-│                                      │
-│ ▸ **应用场景**：设计体现了教学启发中的：{inspiration_elements_str} │
-└─────────────────────────────────────┘"""
+                        theory_reference = f"""
+
+**📌 理论依据**
+
+**【{selected_theory}：{theory_name}】**
+
+- **核心观点**：{core_view[:100]}...
+- **教学启发**：{teaching_inspiration[:80]}...
+- **应用场景**：设计体现了教学启发中的：{inspiration_elements_str}"""
                     else:
-                        theory_reference = f"""**📌 理论依据**
-┌─────────────────────────────────────┐
-│ 【{selected_theory}：{theory_name}】│
-│                                      │
-│ ▸ **核心观点**：{core_view[:150]}...  │
-│                                      │
-│ ▸ **应用场景**：指导{section}环节的教学设计，具体体现了{theory_name}的核心观点 │
-└─────────────────────────────────────┘"""
+                        theory_reference = f"""
+
+**📌 理论依据**
+
+**【{selected_theory}：{theory_name}】**
+
+- **核心观点**：{core_view[:150]}...
+- **应用场景**：指导{section}环节的教学设计，具体体现了{theory_name}的核心观点"""
                     
                     # 找到环节位置并插入理论依据
-                    section_pattern = rf"(###.*?{section}.*?)(###|$)"
+                    section_pattern = rf"(###.*?{re.escape(section)}.*?)(###|$)"
                     match = re.search(section_pattern, lesson_plan, re.DOTALL)
                     if match:
                         insert_position = match.end(1)
@@ -1754,7 +1772,7 @@ class LessonPlanGenerator:
 - **应用场景**：通过设计具体的教学活动，如...，充分体现了{theory_name}的核心观点，实现了理论与实践的深度融合"""
                     
                     # 替换表层引用
-                    old_pattern = rf"📌 理论依据：\[{card_key}：{theory_name}\].*? - 应用场景：.*?\*\*"
+                    old_pattern = rf"📌 理论依据：\[{card_key}：{re.escape(theory_name)}\].*? - 应用场景：.*?\*\*"
                     lesson_plan = re.sub(old_pattern, deep_content, lesson_plan, flags=re.DOTALL)
                     print(f"✅ 优化理论引用深度: {card_key}：{theory_name}")
         else:
@@ -1893,7 +1911,10 @@ class LessonPlanGenerator:
             # 转换所有理论依据为新的边框格式
             formatted_plan = self._format_all_theory_references(consistent_plan)
             
-            return formatted_plan
+            # 检查教案环节完整性
+            complete_plan = self._check_lesson_plan_completeness(formatted_plan)
+            
+            return complete_plan
             
         except Exception as e:
             print(f"❌ 教案生成失败: {str(e)}")
@@ -2023,7 +2044,7 @@ class LessonPlanGenerator:
             提取的章节内容
         """
         import re
-        pattern = rf"\*\*{section_name}\*\*\s*\n(.*?)(?=\n\*\*|\Z)"
+        pattern = rf"\*\*{re.escape(section_name)}\*\*\s*\n(.*?)(?=\n\*\*|\Z)"
         match = re.search(pattern, content, re.DOTALL)
         if match:
             return match.group(1).strip()
@@ -2086,6 +2107,201 @@ class LessonPlanGenerator:
 ---
 """
     
+    def _check_lesson_plan_completeness(self, lesson_plan: str) -> str:
+        """
+        检查教案环节完整性，自动补充缺失的必备模块
+        
+        Args:
+            lesson_plan: 教案文本
+        
+        Returns:
+            完整的教案文本
+        """
+        # 定义必备环节及其默认内容模板
+        required_sections = {
+            "教学目标设计": """## 一、教学目标设计
+
+### 知识与技能目标
+- 理解并掌握本课的核心概念和基本原理
+- 能够运用所学知识解决简单的实际问题
+- 培养数学思维能力和逻辑推理能力
+
+### 过程与方法目标
+- 通过自主探究和小组合作，体验知识的形成过程
+- 学会运用数学思想方法分析和解决问题
+- 提升数学表达和交流能力
+
+### 情感态度与价值观目标
+- 培养学习数学的兴趣和自信心
+- 体会数学的实用价值和美学价值
+- 培养严谨的科学态度和合作精神
+
+**📌 理论依据**
+- **理论卡片**：理论卡片一 - 布鲁姆教育目标分类学
+- **核心观点**：教育目标应分为认知、情感和动作技能三个领域
+- **教学启发**：在教案设计中，应明确区分知识目标、能力目标和情感目标，确保教学目标的全面性和层次性
+- **应用场景**：用于指导教学目标的设定，确保目标覆盖知识、过程、情感三个维度
+
+---
+
+""",
+            "教学重难点分析": """## 二、教学重难点分析
+
+### 教学重点
+- 本课的核心概念和基本原理
+- 知识之间的内在联系和逻辑关系
+- 数学思想方法的理解和应用
+
+### 教学难点
+- 抽象概念的理解和掌握
+- 数学思想方法的灵活运用
+- 解决实际问题的能力培养
+
+### 突破策略
+- 通过具体实例引入抽象概念
+- 采用循序渐进的教学方法
+- 加强练习和反馈，及时纠正错误
+
+**📌 理论依据**
+- **理论卡片**：理论卡片二 - 最近发展区理论
+- **核心观点**：学生的发展存在两种水平：现有发展水平和潜在发展水平，两者之间的差距就是最近发展区
+- **教学启发**：教学应着眼于学生的最近发展区，为学生提供适当难度的学习任务，通过教师的引导和同伴的帮助，使学生能够达到潜在发展水平
+- **应用场景**：用于确定教学重难点，设计符合学生认知水平的教学内容和活动
+
+---
+
+""",
+            "教学方法与策略": """## 三、教学方法与策略
+
+### 教学方法
+- **讲授法**：系统讲解核心概念和基本原理
+- **探究法**：引导学生自主发现和总结规律
+- **合作学习**：通过小组讨论促进思维碰撞
+
+### 教学策略
+- **情境创设**：创设贴近学生生活的教学情境
+- **问题驱动**：以问题为导向，激发学生思考
+- **分层教学**：根据学生差异提供不同层次的学习任务
+
+### 教学手段
+- 多媒体课件辅助教学
+- 板书演示重点内容
+- 实物教具或数学软件辅助
+
+**📌 理论依据**
+- **理论卡片**：理论卡片三 - 建构主义学习理论
+- **核心观点**：学习是学习者主动建构意义的过程，不是被动接受信息
+- **教学启发**：教学应以学生为中心，创设真实的学习情境，提供丰富的学习资源，引导学生主动建构知识
+- **应用场景**：用于指导教学方法和策略的选择，强调学生的主动参与和知识建构
+
+---
+
+""",
+            "板书设计": """## 五、板书设计
+
+### 板书布局
+```
+--------------------------------------------------
+|                  课题：[课题名称]                |
+--------------------------------------------------
+|  一、教学目标                                    |
+|  1. 知识目标：...                                |
+|  2. 能力目标：...                                |
+|  3. 情感目标：...                                |
+--------------------------------------------------
+|  二、核心概念                                    |
+|  [核心概念1]：定义、性质、应用                    |
+|  [核心概念2]：定义、性质、应用                    |
+--------------------------------------------------
+|  三、典型例题                                    |
+|  例1：[题目内容]                                 |
+|      解：[解题过程]                              |
+--------------------------------------------------
+|  四、重要结论                                    |
+|  1. [结论1]                                      |
+|  2. [结论2]                                      |
+--------------------------------------------------
+```
+
+### 设计意图
+- 课题醒目，明确本课主题
+- 教学目标清晰，指导学习方向
+- 核心概念突出，便于记忆理解
+- 典型例题详细，展示解题思路
+- 重要结论归纳，便于复习巩固
+
+**📌 理论依据**
+- **理论卡片**：理论卡片四 - 双重编码理论
+- **核心观点**：人类记忆系统包含言语系统和表象系统，两种系统同时加工信息可以提高记忆效果
+- **教学启发**：板书设计应结合文字和图形，充分利用双重编码的优势，帮助学生更好地理解和记忆知识
+- **应用场景**：用于指导板书设计，通过文字和图形的结合提高教学效果
+
+---
+
+""",
+            "教学反思": """## 六、教学反思
+
+### 预期效果
+- 学生能够理解并掌握本课的核心概念和基本原理
+- 学生能够运用所学知识解决简单的实际问题
+- 学生的数学思维能力和逻辑推理能力得到提升
+- 学生对数学学习的兴趣和自信心得到增强
+
+### 可能的问题
+- 部分学生对抽象概念的理解可能存在困难
+- 学生的个体差异可能导致学习进度不一致
+- 课堂时间分配可能需要根据实际情况调整
+
+### 改进方向
+- 加强对抽象概念的具体化讲解
+- 采用分层教学，满足不同层次学生的需求
+- 增加课堂互动，提高学生参与度
+- 及时收集学生反馈，调整教学策略
+
+**📌 理论依据**
+- **理论卡片**：理论卡片五 - 反思性教学理论
+- **核心观点**：教师通过反思自己的教学实践，不断改进教学方法，提高教学质量
+- **教学启发**：教学反思是教师专业发展的重要途径，应关注教学效果、学生反应和改进方向
+- **应用场景**：用于指导教学反思，帮助教师总结经验、发现问题、改进教学
+
+---
+
+"""
+        }
+        
+        # 检查教学过程中的必备子环节
+        required_subsections = {
+            "作业布置": """### ⏱️ 环节六：作业布置（2分钟）
+- **基础作业**（1分钟）：[详细布置基础巩固作业，包含2-3道基础题目，难度适中]
+- **拓展作业**（1分钟）：[详细布置拓展延伸作业，包含1道拓展题目，可选做]
+
+**📌 理论依据**
+- **理论卡片**：理论卡片六 - 练习曲线理论
+- **核心观点**：技能的掌握需要经过大量的练习，练习的次数和时间与技能的熟练度成正比
+- **教学启发**：作业设计应遵循由易到难、循序渐进的原则，既要巩固基础知识，又要适当拓展提升
+- **应用场景**：用于指导作业布置，确保作业的层次性和有效性
+
+---
+
+"""
+        }
+        
+        # 检查主要环节
+        for section_name, section_content in required_sections.items():
+            if section_name not in lesson_plan:
+                print(f"⚠️ 自动补充缺失环节: {section_name}")
+                # 在教案末尾添加缺失环节
+                lesson_plan += section_content
+        
+        # 检查教学过程中的子环节
+        for subsection_name, subsection_content in required_subsections.items():
+            if subsection_name not in lesson_plan:
+                print(f"⚠️ 自动补充缺失子环节: {subsection_name}")
+                # 在教案末尾添加缺失子环节
+                lesson_plan += subsection_content
+        
+        return lesson_plan
+    
     def _create_prompt_template(self) -> ChatPromptTemplate:
         """
         创建教案生成的提示词模板
@@ -2129,7 +2345,15 @@ class LessonPlanGenerator:
 ## 🎯 教案设计要求
 
 ### 一、整体结构要求
-请严格按照以下结构组织教案，**每个部分、每个小环节都必须清晰标注理论依据（必须来自理论卡片），不能有任何环节缺失**。特别注意：**情感态度与价值观目标必须有完整的理论依据**，不能被截断或省略！
+请严格按照以下结构组织教案，**每个部分、每个小环节都必须清晰标注理论依据（必须来自理论卡片），不能有任何环节缺失**。特别注意：**情感态度与价值观目标必须有完整的理论依据，不能被截断或省略！**
+
+**学情适配要求：**
+- 严格根据用户指定的学段（如高一、高二）、班型（如普通班、重点班）、课时（如1课时）来调整内容深度和难度
+- 高一普通班1课时：内容要基础，难度适中，避免超纲内容（如含参函数、分段函数的深入讨论），重点放在概念理解和基础应用
+- 高一重点班或高二普通班：可以适当增加拓展内容和深度，加入一些变式训练
+- 高二重点班或高年级：可以增加综合性问题和拓展应用，提升思维训练
+- 确保教学内容与学生认知水平匹配，避免过难或过易
+- 根据课时安排合理分配时间，确保每个环节都有充足的时间完成
 
 **内容详细度要求：**
 - 每个教学环节都要有具体的教学内容和实施步骤
@@ -2149,9 +2373,10 @@ class LessonPlanGenerator:
 
 **格式要求：**
 - 标题使用《[课题名称]》教学设计格式，使用一级标题标记 (#)
-- 使用图标、缩进等元素增强可读性
-- 理论依据使用分点格式，避免使用边框
+- 减少emoji使用，仅使用必要的图标（如📋、📚、📌）增强可读性
+- 理论依据使用简洁的分点格式，避免使用边框
 - 教学目标、重难点使用层次化格式和图标突出显示
+- 确保格式规范，符合学科教案正式排版要求
 
 ```markdown
 # 《[课题名称]》教学设计
@@ -2280,9 +2505,9 @@ class LessonPlanGenerator:
 - **应用场景**：[具体应用场景说明]
 
 ### ⏱️ 环节二：新知探究（15分钟）
-- **自主探究**（5分钟）：[详细设计学生自主探究活动]
-- **小组合作**（5分钟）：[详细设计小组讨论和合作学习活动]
-- **教师引导**（5分钟）：[详细说明教师的引导方式和脚手架搭建]
+- **自主探究**（5分钟）：[详细设计学生自主探究活动，包括具体的探究任务、学生操作步骤和预期结果]
+- **小组合作**（5分钟）：[详细设计小组讨论和合作学习活动，包括分组方式、讨论问题和合作要求]
+- **教师引导**（5分钟）：[详细说明教师的引导方式，包括提问设计、脚手架搭建和适时点拨]
 
 **📌 理论依据**
 - **理论卡片**：[理论卡片编号] - [理论名称]
@@ -2291,9 +2516,9 @@ class LessonPlanGenerator:
 - **应用场景**：[具体应用场景说明]
 
 ### ⏱️ 环节三：典例分析（10分钟）
-- **典型例题**（5分钟）：[详细设计典型例题，包含题目内容、解题过程和思路分析]
-- **解题思路**（3分钟）：[详细分析解题思路和方法]
-- **易错点辨析**（2分钟）：[详细指出常见错误和注意事项]
+- **典型例题**（5分钟）：[详细设计典型例题，包含题目内容、完整解题过程和思路分析]
+- **解题思路**（3分钟）：[详细分析解题思路和方法，说明关键步骤和注意事项]
+- **易错点辨析**（2分钟）：[详细指出常见错误和注意事项，结合高一学生核心易错点设计]
 
 **📌 理论依据**
 - **理论卡片**：[理论卡片编号] - [理论名称]
@@ -2302,9 +2527,9 @@ class LessonPlanGenerator:
 - **应用场景**：[具体应用场景说明]
 
 ### ⏱️ 环节四：跟踪训练（8分钟）
-- **基础训练**（3分钟）：[详细设计基础练习题]
-- **综合应用**（3分钟）：[详细设计综合应用题]
-- **分层作业**（2分钟）：[详细设计分层作业]
+- **基础训练**（3分钟）：[详细设计基础练习题，包含2-3道基础题目，巩固核心概念]
+- **综合应用**（3分钟）：[详细设计综合应用题，包含1-2道综合题目，提升应用能力]
+- **反馈讲解**（2分钟）：[详细设计反馈讲解环节，针对学生错误进行纠正和巩固]
 
 **📌 理论依据**
 - **理论卡片**：[理论卡片编号] - [理论名称]
@@ -2313,9 +2538,9 @@ class LessonPlanGenerator:
 - **应用场景**：[具体应用场景说明]
 
 ### ⏱️ 环节五：课堂小结（5分钟）
-- **知识梳理**（2分钟）：[详细梳理本课的知识结构和要点]
-- **方法提炼**（2分钟）：[详细提炼数学思想方法]
-- **反思评价**（1分钟）：[详细引导学生进行自我反思和评价]
+- **知识梳理**（2分钟）：[详细梳理本课的知识结构和要点，使用思维导图或知识框架]
+- **方法提炼**（2分钟）：[详细提炼数学思想方法，强调本课的核心数学思想]
+- **反思评价**（1分钟）：[详细引导学生进行自我反思和评价，检验学习效果]
 
 **📌 理论依据**
 - **理论卡片**：[理论卡片编号] - [理论名称]
@@ -2324,8 +2549,8 @@ class LessonPlanGenerator:
 - **应用场景**：[具体应用场景说明]
 
 ### ⏱️ 环节六：作业布置（2分钟）
-- **基础作业**（1分钟）：[详细布置基础巩固作业]
-- **拓展作业**（1分钟）：[详细布置拓展延伸作业]
+- **基础作业**（1分钟）：[详细布置基础巩固作业，包含2-3道基础题目，难度适中]
+- **拓展作业**（1分钟）：[详细布置拓展延伸作业，包含1道拓展题目，可选做]
 
 **📌 理论依据**
 - **理论卡片**：[理论卡片编号] - [理论名称]
@@ -2337,7 +2562,7 @@ class LessonPlanGenerator:
 
 ## 五、板书设计
 
-[详细设计结构化的板书，要有具体的布局规划、内容安排和设计意图]
+[详细设计结构化的板书，要有具体的布局规划、内容安排和设计意图。板书应包含：课题、教学目标、核心概念、典型例题、重要结论等]
 
 **📌 理论依据**
 - **理论卡片**：[理论卡片编号] - [理论名称]
@@ -2349,7 +2574,7 @@ class LessonPlanGenerator:
 
 ## 六、教学反思
 
-### 🎯 预期效果
+### 预期效果
 [详细预期本课的教学效果，要有具体的目标达成预期和效果评估方式]
 
 **📌 理论依据**
@@ -2358,7 +2583,7 @@ class LessonPlanGenerator:
 - **教学启发**：[教学启发内容]
 - **应用场景**：[具体应用场景说明]
 
-### ⚠️ 可能的问题
+### 可能的问题
 [详细预测可能出现的问题和应对策略，要有具体的问题类型和解决措施]
 
 **📌 理论依据**
@@ -2367,7 +2592,7 @@ class LessonPlanGenerator:
 - **教学启发**：[教学启发内容]
 - **应用场景**：[具体应用场景说明]
 
-### ✨ 改进方向
+### 改进方向
 [详细提出教学改进的方向，要有具体的改进措施和预期效果]
 
 **📌 理论依据**
@@ -2377,27 +2602,6 @@ class LessonPlanGenerator:
 - **应用场景**：[具体应用场景说明]
 
 ---
-
-## 七、理论依据使用总结
-
-### 📚 本教案使用的理论依据汇总
-
-| 🆔 理论卡片 | 🎯 应用环节 | 💡 核心观点 | ✨ 具体作用 |
-|:----------:|-----------|------------|------------|
-| **理论卡片X**<br>[理论名称] | [环节名称] | [理论核心观点] | [详细说明该理论在该环节的具体作用，体现了理论的哪些要素] |
-| **理论卡片X**<br>[理论名称] | [环节名称] | [理论核心观点] | [详细说明该理论在该环节的具体作用，体现了理论的哪些要素] |
-| ... | ... | ... | ... |
-
-### 🎯 理论依据使用亮点
-
-1. **全面覆盖**：本教案在设计过程中，每个教学环节都有明确的理论支撑，确保了理论依据的完整性。特别是情感态度与价值观目标，必须有完整的理论依据，不能缺失。
-2. **深度融合**：理论依据不是简单的贴标签，而是与具体的教学设计紧密结合，详细说明了设计如何体现理论的具体要素。每个理论依据都充分利用了理论卡片中的"教学启发"内容，说明体现了哪些具体维度。
-3. **精准选择**：根据不同的教学环节和教学目标，选择了最合适的理论依据，体现了理论应用的针对性。特别是情感目标，选择了涉及情感、动机、态度、价值等维度的理论。
-4. **多元运用**：合理使用多种理论，体现了理论的综合运用，避免了单一理论的过度依赖。不同环节使用不同的理论，确保理论多样性。
-5. **格式美观**：使用图标、缩进等元素增强可读性，理论依据采用分点格式，层次清晰，易于阅读。
-
----
-```
 
 ### 二、理论依据引用要求
 

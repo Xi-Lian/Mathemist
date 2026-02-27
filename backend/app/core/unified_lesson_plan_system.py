@@ -26,6 +26,7 @@
 import os
 import json
 import time
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 from enum import Enum
 import uuid
@@ -146,7 +147,7 @@ class UnifiedLessonPlanSystem:
                     
                     response = f"""📖 完整教案如下：
 
-# {lesson_plan}
+{lesson_plan}
 
 ---
 
@@ -445,7 +446,13 @@ class UnifiedLessonPlanSystem:
             # 具体修改内容
             "太短", "太长", "太简单", "太复杂", "不够", "不足", "缺少", "缺乏",
             # 其他修改相关词汇
-            "改一下", "改改", "调整一下", "完善一下", "优化一下", "补充一下"
+            "改一下", "改改", "调整一下", "完善一下", "优化一下", "补充一下",
+            # 新增：替换类词汇
+            "替换", "换成", "改为", "改成", "变更", "更改", "更新", "重写", "重新写",
+            # 新增：去除类词汇
+            "去掉", "去除", "删除", "删去", "移除", "取消", "不要", "不用",
+            # 新增：通用请求词
+            "请", "帮忙", "帮我", "给我"
         ]
         has_revision_request = any(keyword in user_input for keyword in revision_keywords)
         

@@ -294,22 +294,31 @@ class ModelConfig:
                 "DEEPSEEK_API_KEY（DeepSeek）或 OPENAI_COMPAT_API_KEY（OpenAI兼容）"
             )
         
-        # 根据任务类型调整max_tokens
+        # 教案生成任务需要更大的输出长度
         if task_type == "lesson_plan":
-            # 教案生成需要更大的输出长度
-            if hasattr(self._llm, 'max_tokens'):
-                self._llm.max_tokens = 4000
-                print(f"📝 教案生成任务，设置max_tokens=4000")
-        elif task_type == "info_extraction":
-            # 信息提取任务使用默认值
-            if hasattr(self._llm, 'max_tokens'):
-                self._llm.max_tokens = 2000
-                print(f"🔍 信息提取任务，设置max_tokens=2000")
-        else:
-            # 其他任务使用默认值
-            if hasattr(self._llm, 'max_tokens'):
-                self._llm.max_tokens = 2000
-                print(f"⚙️ 默认任务，设置max_tokens=2000")
+            # 重新初始化模型以设置更大的max_tokens
+            if self._llm_provider_resolved == "deepseek" and ChatDeepSeek:
+                self._deepseek_llm = ChatDeepSeek(
+                    model=self.DEEPSEEK_MODEL,
+                    api_key=self.DEEPSEEK_API_KEY,
+                    temperature=0.3,
+                    max_tokens=8000  # 增加到8000以确保足够的输出长度
+                )
+                self._llm = self._deepseek_llm
+                print(f"📝 教案生成任务，重新初始化模型，max_tokens=8000")
+            elif self._llm_provider_resolved == "openai_compatible" and ChatOpenAI:
+                kwargs = {
+                    "model": self.OPENAI_COMPAT_MODEL,
+                    "api_key": self.OPENAI_COMPAT_API_KEY,
+                    "temperature": 0.3,
+                    "max_tokens": 8000,  # 增加到8000以确保足够的输出长度
+                }
+                if self.OPENAI_COMPAT_BASE_URL:
+                    kwargs["base_url"] = self.OPENAI_COMPAT_BASE_URL
+                
+                self._openai_compat_llm = ChatOpenAI(**kwargs)
+                self._llm = self._openai_compat_llm
+                print(f"📝 教案生成任务，重新初始化模型，max_tokens=8000")
         
         return self._llm
 

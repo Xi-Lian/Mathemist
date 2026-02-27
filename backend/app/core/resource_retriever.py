@@ -75,7 +75,7 @@ class ResourceRetriever:
             检索结果字典，包含各类资源
         """
         try:
-            print(f"🔍 资源检索开始")
+            print(f" 资源检索开始")
             print(f"📝 查询: {query}")
             print(f"🎯 意图: {intent}")
             print(f"📋 资源类型: {resource_types}")
