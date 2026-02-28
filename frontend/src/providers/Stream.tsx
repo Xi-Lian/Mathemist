@@ -29,6 +29,8 @@ export type LessonPlanExportData = {
   content: string;
   filename: string;
   format: string;
+  encoding?: string;
+  mime_type?: string;
 };
 
 export type StateType = {

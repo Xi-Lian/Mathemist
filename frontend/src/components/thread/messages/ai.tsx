@@ -14,7 +14,6 @@ import { ThreadView } from "../agent-inbox";
 import { useQueryState, parseAsBoolean } from "nuqs";
 import { GenericInterruptView } from "./generic-interrupt";
 import { useArtifact } from "../artifact";
-import { ResourceFeedbackList } from "@/components/feedback/ResourceFeedbackList";
 import { LessonPlanDownloadButton } from "../LessonPlanDownloadButton";
 
 type MessageWithExportData = Message & {
@@ -108,14 +107,10 @@ export function AssistantMessage({
   message,
   isLoading,
   handleRegenerate,
-  apiBaseUrl,
-  queryForFeedback,
 }: {
   message: MessageWithExportData | undefined;
   isLoading: boolean;
   handleRegenerate: (parentCheckpoint: Checkpoint | null | undefined) => void;
-  apiBaseUrl: string;
-  queryForFeedback: string;
 }) {
   const content = message?.content ?? [];
   const contentString = getContentString(content);
@@ -173,11 +168,6 @@ export function AssistantMessage({
             {contentString.length > 0 && (
               <div className="py-1">
                 <MarkdownText>{contentString}</MarkdownText>
-                <ResourceFeedbackList
-                  messageText={contentString}
-                  apiBaseUrl={apiBaseUrl}
-                  query={queryForFeedback}
-                />
               </div>
             )}
             {exportData && <LessonPlanDownloadButton exportData={exportData} />}

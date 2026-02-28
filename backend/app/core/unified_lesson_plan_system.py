@@ -26,6 +26,9 @@
 import os
 import json
 import time
+import base64
+import io
+import zipfile
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 from enum import Enum
@@ -38,6 +41,7 @@ from .lesson_plan_exporter import (
     export_lesson_plan_markdown,
     export_lesson_plan_html,
     export_lesson_plan_docx,
+    export_lesson_plan_pdf,
     export_lesson_plan_all
 )
 from .resource_retriever import ResourceRetriever
@@ -174,7 +178,9 @@ class UnifiedLessonPlanSystem:
                         result["export_data"] = {
                             "content": export_result.get("content", ""),
                             "filename": export_result.get("filename", "lesson_plan.md"),
-                            "format": export_result.get("format", "markdown")
+                            "format": export_result.get("format", "markdown"),
+                            "encoding": export_result.get("encoding"),
+                            "mime_type": export_result.get("mime_type")
                         }
                     
                     return result
@@ -214,12 +220,14 @@ class UnifiedLessonPlanSystem:
             
             # 智能格式推断
             export_format = "markdown"  # 默认格式
-            if "word" in user_input.lower() or "docx" in user_input.lower():
+            if "全部" in user_input or "所有" in user_input:
+                export_format = "all"
+            elif "word" in user_input.lower() or "docx" in user_input.lower():
                 export_format = "docx"
+            elif "pdf" in user_input.lower():
+                export_format = "pdf"
             elif "html" in user_input.lower():
                 export_format = "html"
-            elif "全部" in user_input or "所有" in user_input:
-                export_format = "all"
             
             if session_id and session_id in self.sessions:
                 session = self.sessions[session_id]
@@ -232,9 +240,10 @@ class UnifiedLessonPlanSystem:
 1. 📄 Markdown格式 - 适合在编辑器中查看和编辑
 2. 🌐 HTML格式 - 适合在浏览器中查看
 3. 📝 Word格式 - 适合正式文档和打印
-4. 📦 全部格式 - 同时导出所有格式
+4. 📕 PDF格式 - 适合打印与分享
+5. 📦 全部格式 - 同时导出所有格式（ZIP）
 
-请回复对应的数字或格式名称，例如："1" 或 "Word"。"""
+请回复对应的数字或格式名称，例如："1"、"Word" 或 "PDF"。"""
                         session["conversation_history"].append({"role": "assistant", "content": response})
                         return {
                             "success": True,
@@ -273,7 +282,9 @@ class UnifiedLessonPlanSystem:
                                 "export_data": {
                                     "content": content,
                                     "filename": filename,
-                                    "format": format_type
+                                    "format": format_type,
+                                    "encoding": export_result.get("encoding"),
+                                    "mime_type": export_result.get("mime_type")
                                 }
                             }
                         else:
@@ -314,9 +325,10 @@ class UnifiedLessonPlanSystem:
 1. 📄 Markdown格式 - 适合在编辑器中查看和编辑
 2. 🌐 HTML格式 - 适合在浏览器中查看
 3. 📝 Word格式 - 适合正式文档和打印
-4. 📦 全部格式 - 同时导出所有格式
+4. 📕 PDF格式 - 适合打印与分享
+5. 📦 全部格式 - 同时导出所有格式（ZIP）
 
-请回复对应的数字或格式名称，例如："1" 或 "Word"。"""
+请回复对应的数字或格式名称，例如："1"、"Word" 或 "PDF"。"""
                         self.sessions[session_id]["conversation_history"].append({"role": "assistant", "content": response})
                         return {
                             "success": True,
@@ -328,18 +340,16 @@ class UnifiedLessonPlanSystem:
                         # 直接导出
                         export_result = self.export_lesson_plan(session_id, export_format)
                         if export_result.get("success"):
-                            files = export_result.get("files", {})
-                            file_list = []
-                            for fmt, path in files.items():
-                                file_list.append(f"{fmt.upper()}: {path}")
-                            file_list_str = "\n".join(file_list)
+                            content = export_result.get("content", "")
+                            filename = export_result.get("filename", "lesson_plan.md")
+                            format_type = export_result.get("format", "markdown")
                             
                             response = f"""📥 教案导出成功！
 
-**导出文件：**
-{file_list_str}
+**导出格式：** {format_type.upper()}
+**文件名：** {filename}
 
-您可以查看或下载这些文件。
+文件已准备好，您可以点击下载按钮保存到本地。
 
 **您还可以：**
 1. 继续修改教案
@@ -354,7 +364,13 @@ class UnifiedLessonPlanSystem:
                                 "session_id": session_id,
                                 "status": "completed",
                                 "response": response,
-                                "files": files
+                                "export_data": {
+                                    "content": content,
+                                    "filename": filename,
+                                    "format": format_type,
+                                    "encoding": export_result.get("encoding"),
+                                    "mime_type": export_result.get("mime_type")
+                                }
                             }
                         else:
                             response = f"导出失败：{export_result.get('error', '未知错误')}"
@@ -390,24 +406,24 @@ class UnifiedLessonPlanSystem:
                         export_format = "html"
                     elif user_choice in ["3", "word", "docx"]:
                         export_format = "docx"
-                    elif user_choice in ["4", "全部", "所有", "all"]:
+                    elif user_choice in ["4", "pdf"]:
+                        export_format = "pdf"
+                    elif user_choice in ["5", "全部", "所有", "all"]:
                         export_format = "all"
                     
                     # 执行导出
                     export_result = self.export_lesson_plan(session_id, export_format)
                     if export_result.get("success"):
-                        files = export_result.get("files", {})
-                        file_list = []
-                        for fmt, path in files.items():
-                            file_list.append(f"{fmt.upper()}: {path}")
-                        file_list_str = "\n".join(file_list)
+                        content = export_result.get("content", "")
+                        filename = export_result.get("filename", "lesson_plan.md")
+                        format_type = export_result.get("format", "markdown")
                         
                         response = f"""📥 教案导出成功！
 
-**导出文件：**
-{file_list_str}
+**导出格式：** {format_type.upper()}
+**文件名：** {filename}
 
-您可以查看或下载这些文件。
+文件已准备好，您可以点击下载按钮保存到本地。
 
 **您还可以：**
 1. 继续修改教案
@@ -422,7 +438,13 @@ class UnifiedLessonPlanSystem:
                             "session_id": session_id,
                             "status": "completed",
                             "response": response,
-                            "files": files
+                            "export_data": {
+                                "content": content,
+                                "filename": filename,
+                                "format": format_type,
+                                "encoding": export_result.get("encoding"),
+                                "mime_type": export_result.get("mime_type")
+                            }
                         }
                     else:
                         response = f"导出失败：{export_result.get('error', '未知错误')}"
@@ -1184,7 +1206,7 @@ class UnifiedLessonPlanSystem:
 **您可以：**
 1. 📖 查看完整教案
 2. ✏️ 提出修改意见，我可以帮您调整
-3. 📥 导出教案（支持 Markdown、HTML、Word 格式）
+3. 📥 导出教案（支持 Markdown、HTML、Word、PDF 格式）
 4. 🔄 基于这个教案继续优化
 
 请告诉我您的想法！"""
@@ -1315,7 +1337,7 @@ class UnifiedLessonPlanSystem:
 
 **您可以：**
 1. ✏️ 继续提出修改意见，我会帮您进一步调整
-2. 📥 导出教案（支持 Markdown、HTML、Word 格式）
+2. 📥 导出教案（支持 Markdown、HTML、Word、PDF 格式）
 3. 👁️ 查看完整教案内容
 4. 🔄 确认教案完成
 
@@ -1403,6 +1425,7 @@ class UnifiedLessonPlanSystem:
         
         # 移除文件扩展名（如果有的话）
         filename = filename.replace(".md", "").replace(".html", "").replace(".docx", "").replace(".pdf", "")
+        export_format = export_format.strip().lower()
         
         try:
             if export_format == "markdown":
@@ -1411,7 +1434,8 @@ class UnifiedLessonPlanSystem:
                     "success": True,
                     "content": content,
                     "filename": f"{filename}.md",
-                    "format": "markdown"
+                    "format": "markdown",
+                    "mime_type": "text/markdown"
                 }
             elif export_format == "html":
                 content = self._get_html_content(lesson_plan_content, metadata)
@@ -1419,26 +1443,54 @@ class UnifiedLessonPlanSystem:
                     "success": True,
                     "content": content,
                     "filename": f"{filename}.html",
-                    "format": "html"
+                    "format": "html",
+                    "mime_type": "text/html"
                 }
             elif export_format == "docx":
-                from app.core.lesson_plan_exporter import export_lesson_plan_docx
-                docx_path = export_lesson_plan_docx(lesson_plan_content, filename, metadata)
-                with open(docx_path, 'rb') as f:
-                    docx_content = f.read()
+                filepath = export_lesson_plan_docx(lesson_plan_content, filename, metadata)
+                with open(filepath, "rb") as f:
+                    content_b64 = base64.b64encode(f.read()).decode("ascii")
                 return {
                     "success": True,
-                    "content": docx_content,
+                    "content": content_b64,
                     "filename": f"{filename}.docx",
-                    "format": "docx"
+                    "format": "docx",
+                    "encoding": "base64",
+                    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                }
+            elif export_format == "pdf":
+                filepath = export_lesson_plan_pdf(lesson_plan_content, filename, metadata)
+                with open(filepath, "rb") as f:
+                    content_b64 = base64.b64encode(f.read()).decode("ascii")
+                return {
+                    "success": True,
+                    "content": content_b64,
+                    "filename": f"{filename}.pdf",
+                    "format": "pdf",
+                    "encoding": "base64",
+                    "mime_type": "application/pdf"
                 }
             elif export_format == "all":
-                from app.core.lesson_plan_exporter import export_lesson_plan_all
-                all_formats = export_lesson_plan_all(lesson_plan_content, filename, metadata)
+                markdown_content = self._get_markdown_content(lesson_plan_content, metadata)
+                html_content = self._get_html_content(lesson_plan_content, metadata)
+                docx_path = export_lesson_plan_docx(lesson_plan_content, filename, metadata)
+                pdf_path = export_lesson_plan_pdf(lesson_plan_content, filename, metadata)
+                zip_buffer = io.BytesIO()
+                with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                    zip_file.writestr(f"{filename}.md", markdown_content.encode("utf-8"))
+                    zip_file.writestr(f"{filename}.html", html_content.encode("utf-8"))
+                    with open(docx_path, "rb") as f:
+                        zip_file.writestr(f"{filename}.docx", f.read())
+                    with open(pdf_path, "rb") as f:
+                        zip_file.writestr(f"{filename}.pdf", f.read())
+                content_b64 = base64.b64encode(zip_buffer.getvalue()).decode("ascii")
                 return {
                     "success": True,
-                    "files": all_formats,
-                    "format": "all"
+                    "content": content_b64,
+                    "filename": f"{filename}.zip",
+                    "format": "zip",
+                    "encoding": "base64",
+                    "mime_type": "application/zip"
                 }
             else:
                 return {

@@ -24,6 +24,21 @@ from .core.unified_lesson_plan_system import unified_lesson_plan_system
 from .state import MathAgentState
 
 
+def _get_empty_retrieved_resources() -> Dict[str, Any]:
+    """统一的空检索结果结构，避免 None 传播到下游节点。"""
+    return {
+        "theory_resources": [],
+        "lesson_plan_patterns": [],
+        "exercise_resources": [],
+        "visualization_examples": [],
+        "general_resources": [],
+        "courseware_resources": [],
+        "lesson_case_resources": [],
+        "ggb_resources": [],
+        "syllabus_resources": [],
+    }
+
+
 def intent_understanding_node(state: MathAgentState) -> Dict[str, Any]:
     """
     意图理解节点
@@ -66,6 +81,8 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
         state.intent,
         resource_types=resource_types
     )
+    if not isinstance(retrieved_resources, dict):
+        retrieved_resources = _get_empty_retrieved_resources()
     
     return {
         "retrieved_resources": retrieved_resources,
@@ -134,8 +151,9 @@ def lesson_plan_generation_node(state: MathAgentState) -> Dict[str, Any]:
     generator = LessonPlanGenerator()
     
     # 提取理论资源和教案示例
-    theory_resources = state.retrieved_resources.get("theory_resources", [])
-    lesson_plan_patterns = state.retrieved_resources.get("lesson_plan_patterns", [])
+    retrieved_resources = state.retrieved_resources or {}
+    theory_resources = retrieved_resources.get("theory_resources", [])
+    lesson_plan_patterns = retrieved_resources.get("lesson_plan_patterns", [])
     
     lesson_plan = generator.generate(
         state.user_input,
@@ -164,7 +182,8 @@ def visualization_suggestions_node(state: MathAgentState) -> Dict[str, Any]:
     advisor = VisualizationAdvisor()
     
     # 提取可视化示例
-    visualization_examples = state.retrieved_resources.get("visualization_examples", [])
+    retrieved_resources = state.retrieved_resources or {}
+    visualization_examples = retrieved_resources.get("visualization_examples", [])
     
     suggestions = advisor.advise(
         state.user_input,
@@ -192,7 +211,8 @@ def ggb_design_advisor_node(state: MathAgentState) -> Dict[str, Any]:
     advisor = GGBDesignAdvisor()
     
     # 提取GGB资源
-    ggb_resources = state.retrieved_resources.get("ggb", [])
+    retrieved_resources = state.retrieved_resources or {}
+    ggb_resources = retrieved_resources.get("ggb", [])
     
     # 如果没有GGB资源，返回空结果
     if not ggb_resources:

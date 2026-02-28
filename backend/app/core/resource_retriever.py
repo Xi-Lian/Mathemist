@@ -141,6 +141,10 @@ class ResourceRetriever:
                 print(f"✅ 检索完成: {self._get_summary(classified_resources)}")
                 
                 return classified_resources
+            else:
+                # 查询执行成功但没有任何匹配结果，返回空结构而不是 None
+                print("ℹ️ 查询完成，但未命中任何资源")
+                return self._get_empty_result()
             
         except Exception as e:
             print(f"❌ 资源检索失败: {str(e)}")

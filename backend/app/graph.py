@@ -58,6 +58,10 @@ def create_math_agent_graph():
             resource_types = getattr(state, "resource_types", [])
             lesson_plan_session_id = getattr(state, "lesson_plan_session_id", None)
             user_input = getattr(state, "user_input", "")
+
+        # 兜底：防止检索阶段返回 None 导致后续 .get 崩溃
+        if not isinstance(retrieved_resources, dict):
+            retrieved_resources = {}
         
         print(f"🔀 路由函数: state 类型 = {type(state)}")
         print(f"🔀 路由函数: intent = {intent}")
@@ -253,6 +257,10 @@ def multi_intent_processor_node(state) -> dict:
         retrieved_resources = state.get("retrieved_resources", {})
     else:
         retrieved_resources = getattr(state, "retrieved_resources", {})
+
+    # 兜底：防止检索阶段返回 None 导致后续 .get 崩溃
+    if not isinstance(retrieved_resources, dict):
+        retrieved_resources = {}
     
     ggb_resources = retrieved_resources.get("ggb_resources", [])
     if ggb_resources and "visualization" in intent_types:

@@ -8,12 +8,16 @@ const MIME_TYPE_BY_FORMAT: Record<string, string> = {
   markdown: "text/markdown",
   html: "text/html",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  pdf: "application/pdf",
+  zip: "application/zip",
 };
 
 const EXTENSION_BY_FORMAT: Record<string, string> = {
   markdown: ".md",
   html: ".html",
   docx: ".docx",
+  pdf: ".pdf",
+  zip: ".zip",
 };
 
 function ensureFileExtension(filename: string, format: string): string {
@@ -21,6 +25,16 @@ function ensureFileExtension(filename: string, format: string): string {
   if (!ext) return filename;
   if (filename.toLowerCase().endsWith(ext)) return filename;
   return `${filename}${ext}`;
+}
+
+function decodeBase64ToUint8Array(base64Content: string): Uint8Array {
+  const normalized = base64Content.replace(/\s/g, "");
+  const binary = atob(normalized);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }
 
 export function LessonPlanDownloadButton({
@@ -46,24 +60,25 @@ export function LessonPlanDownloadButton({
       toast.error("下载失败：缺少文件名");
       return;
     }
-    if (normalizedFormat === "docx") {
-      toast.error("DOCX 暂不支持前端直接下载");
-      return;
-    }
 
     setDownloading(true);
     try {
       const mimeType =
-        MIME_TYPE_BY_FORMAT[normalizedFormat] ?? "application/octet-stream";
+        exportData.mime_type?.trim() ||
+        MIME_TYPE_BY_FORMAT[normalizedFormat] ||
+        "application/octet-stream";
       const filename = ensureFileExtension(
         exportData.filename.trim(),
         normalizedFormat,
       );
-      const content =
-        mimeType.startsWith("text/")
-          ? `\uFEFF${exportData.content}`
-          : exportData.content;
-      const blob = new Blob([content], {
+      const normalizedEncoding = exportData.encoding?.trim().toLowerCase();
+      const blobPart =
+        normalizedEncoding === "base64"
+          ? decodeBase64ToUint8Array(exportData.content)
+          : mimeType.startsWith("text/")
+            ? `\uFEFF${exportData.content}`
+            : exportData.content;
+      const blob = new Blob([blobPart], {
         type: mimeType.startsWith("text/") ? `${mimeType};charset=utf-8` : mimeType,
       });
       const url = URL.createObjectURL(blob);
@@ -99,4 +114,3 @@ export function LessonPlanDownloadButton({
     </Button>
   );
 }
-

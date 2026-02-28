@@ -3,6 +3,7 @@ import {
   FormEvent,
   ReactNode,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -55,7 +56,9 @@ import {
   ArtifactTitle,
   useArtifactContext,
 } from "./artifact";
-import { ImprovementSuggestionBox } from "@/components/feedback/ImprovementSuggestionBox";
+import { FeedbackFloatingPanel } from "@/components/feedback/FeedbackFloatingPanel";
+import { parseResourcesFromResponse } from "@/components/feedback/resourceParser";
+import { ImprovementSuggestionFloatingPanel } from "@/components/feedback/ImprovementSuggestionFloatingPanel";
 
 function StickyToBottomContent(props: {
   content: ReactNode;
@@ -321,6 +324,21 @@ export function Thread() {
     return { message, query: latestHumanQuery };
   });
 
+  const latestFeedbackPayload = useMemo(() => {
+    for (let index = messageEntries.length - 1; index >= 0; index -= 1) {
+      const entry = messageEntries[index];
+      if (entry.message.type !== "ai") continue;
+      const messageText = getContentString(entry.message.content);
+      if (!messageText.trim()) continue;
+      if (!parseResourcesFromResponse(messageText).length) continue;
+      return {
+        messageText,
+        query: entry.query,
+      };
+    }
+    return null;
+  }, [messageEntries]);
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <div className="relative hidden lg:flex">
@@ -463,7 +481,7 @@ export function Thread() {
               contentClassName="pt-8 pb-16 mx-auto flex w-full max-w-[min(960px,100%)] flex-col gap-4"
               content={
                 <>
-                  {messageEntries.map(({ message, query }, index) =>
+                  {messageEntries.map(({ message }, index) =>
                     message.type === "human" ? (
                       <HumanMessage
                         key={message.id || `${message.type}-${index}`}
@@ -476,8 +494,6 @@ export function Thread() {
                         message={message}
                         isLoading={isLoading}
                         handleRegenerate={handleRegenerate}
-                        apiBaseUrl={feedbackApiBaseUrl}
-                        queryForFeedback={query}
                       />
                     ),
                   )}
@@ -489,8 +505,6 @@ export function Thread() {
                       message={undefined}
                       isLoading={isLoading}
                       handleRegenerate={handleRegenerate}
-                      apiBaseUrl={feedbackApiBaseUrl}
-                      queryForFeedback={latestHumanQuery}
                     />
                   )}
                   {isLoading && !firstTokenReceived && (
@@ -510,8 +524,7 @@ export function Thread() {
 
                   <div
                     className={cn(
-                      "mx-auto mb-8 grid w-full max-w-[min(1320px,100%)] gap-4",
-                      chatStarted && "xl:grid-cols-[minmax(0,960px)_320px] xl:items-end",
+                      "mx-auto mb-8 grid w-full max-w-[min(960px,100%)] gap-4",
                     )}
                   >
                     <div
@@ -621,13 +634,6 @@ export function Thread() {
                       </form>
                     </div>
 
-                    {chatStarted && (
-                      <ImprovementSuggestionBox
-                        apiBaseUrl={feedbackApiBaseUrl}
-                        query={latestHumanQuery || input.trim()}
-                        className="mb-0 h-fit"
-                      />
-                    )}
                   </div>
                 </div>
               }
@@ -649,6 +655,21 @@ export function Thread() {
           </div>
         </div>
       </div>
+      {chatStarted && latestFeedbackPayload && (
+        <FeedbackFloatingPanel
+          messageText={latestFeedbackPayload.messageText}
+          apiBaseUrl={feedbackApiBaseUrl}
+          query={latestFeedbackPayload.query || latestHumanQuery}
+          className={cn(chatHistoryOpen && isLargeScreen ? "left-[312px]" : "left-2")}
+        />
+      )}
+      {chatStarted && (
+        <ImprovementSuggestionFloatingPanel
+          apiBaseUrl={feedbackApiBaseUrl}
+          query={latestHumanQuery || input.trim()}
+          className={cn(chatHistoryOpen && isLargeScreen ? "left-[312px]" : "left-2")}
+        />
+      )}
     </div>
   );
 }

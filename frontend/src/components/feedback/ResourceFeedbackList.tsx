@@ -3,17 +3,20 @@
 import { useMemo } from "react";
 import { ResourceFeedbackButtons } from "./ResourceFeedbackButtons";
 import { parseResourcesFromResponse } from "./resourceParser";
+import { cn } from "@/lib/utils";
 
 interface ResourceFeedbackListProps {
   messageText: string;
   apiBaseUrl: string;
   query: string;
+  className?: string;
 }
 
 export function ResourceFeedbackList({
   messageText,
   apiBaseUrl,
   query,
+  className,
 }: ResourceFeedbackListProps) {
   const resources = useMemo(
     () => parseResourcesFromResponse(messageText),
@@ -23,7 +26,7 @@ export function ResourceFeedbackList({
   if (!resources.length) return null;
 
   return (
-    <div className="mt-3 overflow-hidden rounded-lg border bg-card">
+    <div className={cn("overflow-hidden rounded-lg border bg-card", className)}>
       <div className="border-b bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
         请对下方资源进行点赞/点踩（每个资源仅可反馈一次）
       </div>
