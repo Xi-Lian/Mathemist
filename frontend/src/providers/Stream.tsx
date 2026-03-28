@@ -80,7 +80,15 @@ async function checkGraphStatus(
   apiKey: string | null,
 ): Promise<boolean> {
   try {
-    const res = await fetch(`${apiUrl}/info`, {
+    // 对于服务器状态检查，使用根路径的/info端点
+    let rootApiUrl = apiUrl;
+    // 处理 /langserve 或 /langgraph 路径
+    if (apiUrl.includes('/langserve')) {
+      rootApiUrl = apiUrl.split('/langserve')[0];
+    } else if (apiUrl.includes('/langgraph')) {
+      rootApiUrl = apiUrl.split('/langgraph')[0];
+    }
+    const res = await fetch(`${rootApiUrl}/info`, {
       ...(apiKey && {
         headers: {
           "X-Api-Key": apiKey,
@@ -156,7 +164,7 @@ const StreamSession = ({
 };
 
 // Default values for the form
-const DEFAULT_API_URL = "http://localhost:8000";
+const DEFAULT_API_URL = "http://localhost:8001/langgraph/math-agent";
 const DEFAULT_ASSISTANT_ID = "math-agent";
 
 export const StreamProvider: React.FC<{ children: ReactNode }> = ({
@@ -186,11 +194,11 @@ export const StreamProvider: React.FC<{ children: ReactNode }> = ({
     _setApiKey(key);
   };
 
-  // Determine final values to use, prioritizing URL params then env vars
-  const finalApiUrl = apiUrl || envApiUrl;
-  const finalAssistantId = assistantId || envAssistantId;
+  // Determine final values to use, prioritizing URL params then env vars, then defaults
+  const finalApiUrl = apiUrl || envApiUrl || DEFAULT_API_URL;
+  const finalAssistantId = assistantId || envAssistantId || DEFAULT_ASSISTANT_ID;
 
-  // Show the form if we: don't have an API URL, or don't have an assistant ID
+  // Show form if we: don't have an API URL, or don't have an assistant ID
   if (!finalApiUrl || !finalAssistantId) {
     return (
       <div className="flex min-h-screen w-full items-center justify-center p-4">

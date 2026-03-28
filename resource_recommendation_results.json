@@ -1,0 +1,469 @@
+{
+  "total_queries": 30,
+  "success_count": 29,
+  "failure_count": 1,
+  "success_rate": 0.9666666666666667,
+  "resource_type_stats": {
+    "exercise": 259,
+    "courseware": 569,
+    "lesson_plan": 446,
+    "ggb": 427,
+    "lesson_case": 240,
+    "theory": 0,
+    "syllabus": 0
+  },
+  "tone_analysis": {
+    "直接请求": {
+      "count": 15,
+      "success_count": 14,
+      "success_rate": 0.9333333333333333
+    },
+    "礼貌请求": {
+      "count": 5,
+      "success_count": 5,
+      "success_rate": 1.0
+    },
+    "具体要求": {
+      "count": 7,
+      "success_count": 6,
+      "success_rate": 0.8571428571428571
+    },
+    "口语化表达": {
+      "count": 4,
+      "success_count": 4,
+      "success_rate": 1.0
+    },
+    "特定场景": {
+      "count": 10,
+      "success_count": 10,
+      "success_rate": 1.0
+    },
+    "综合查询": {
+      "count": 2,
+      "success_count": 2,
+      "success_rate": 1.0
+    }
+  },
+  "results": [
+    {
+      "query": "给我一些二次函数的习题",
+      "success": true,
+      "total_results": 2,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题2条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "请推荐指数函数的课件",
+      "success": true,
+      "total_results": 181,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件181条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "我需要三角函数的教案",
+      "success": true,
+      "total_results": 59,
+      "resource_types": [
+        "理论0条",
+        "教案59条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "帮我找对数函数的GGB资源",
+      "success": true,
+      "total_results": 45,
+      "resource_types": [
+        "理论0条",
+        "教案5条",
+        "习题2条",
+        "课件10条",
+        "课例0条",
+        "GGB28条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "有没有函数的单调性的课例视频",
+      "success": true,
+      "total_results": 60,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件0条",
+        "课例60条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "请问有二次函数的习题吗？",
+      "success": true,
+      "total_results": 120,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题120条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "能不能推荐一些指数函数的课件？",
+      "success": true,
+      "total_results": 5,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件5条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "麻烦帮我找三角函数的教案",
+      "success": true,
+      "total_results": 59,
+      "resource_types": [
+        "理论0条",
+        "教案59条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "请问有没有对数函数的GGB资源？",
+      "success": true,
+      "total_results": 45,
+      "resource_types": [
+        "理论0条",
+        "教案5条",
+        "习题2条",
+        "课件10条",
+        "课例0条",
+        "GGB28条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "能否提供函数的单调性的课例视频？",
+      "success": true,
+      "total_results": 60,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件0条",
+        "课例60条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "给我5道二次函数基础题",
+      "success": false,
+      "total_results": 0,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "推荐3个指数函数的优质课件",
+      "success": true,
+      "total_results": 3,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件3条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "我需要三角函数的详细教案",
+      "success": true,
+      "total_results": 59,
+      "resource_types": [
+        "理论0条",
+        "教案59条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "帮我找对数函数的GGB动态演示",
+      "success": true,
+      "total_results": 141,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题3条",
+        "课件0条",
+        "课例0条",
+        "GGB138条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "有没有函数的单调性的教学视频",
+      "success": true,
+      "total_results": 60,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件0条",
+        "课例60条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "来几道二次函数题",
+      "success": true,
+      "total_results": 1,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题1条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "整点指数函数的课件",
+      "success": true,
+      "total_results": 181,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件181条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "弄点三角函数的教案",
+      "success": true,
+      "total_results": 59,
+      "resource_types": [
+        "理论0条",
+        "教案59条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "给我整几个对数函数的GGB",
+      "success": true,
+      "total_results": 5,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB5条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "有没有函数单调性的视频",
+      "success": true,
+      "total_results": 60,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件0条",
+        "课例60条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "高二二次函数复习题",
+      "success": true,
+      "total_results": 109,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题109条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "高一指数函数入门课件",
+      "success": true,
+      "total_results": 177,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题0条",
+        "课件177条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "三角函数应用教案",
+      "success": true,
+      "total_results": 100,
+      "resource_types": [
+        "理论0条",
+        "教案100条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "对数函数运算GGB",
+      "success": true,
+      "total_results": 116,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题2条",
+        "课件0条",
+        "课例0条",
+        "GGB114条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "函数单调性证明题",
+      "success": true,
+      "total_results": 6,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题6条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "高一二次函数基础选择题5道",
+      "success": true,
+      "total_results": 1,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题1条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "高二指数函数中等难度解答题",
+      "success": true,
+      "total_results": 3,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题3条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "三角函数应用教案带例题",
+      "success": true,
+      "total_results": 100,
+      "resource_types": [
+        "理论0条",
+        "教案100条",
+        "习题0条",
+        "课件0条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "对数函数运算GGB动态演示",
+      "success": true,
+      "total_results": 116,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题2条",
+        "课件0条",
+        "课例0条",
+        "GGB114条",
+        "大纲0条"
+      ]
+    },
+    {
+      "query": "函数单调性证明题课件",
+      "success": true,
+      "total_results": 8,
+      "resource_types": [
+        "理论0条",
+        "教案0条",
+        "习题6条",
+        "课件2条",
+        "课例0条",
+        "GGB0条",
+        "大纲0条"
+      ]
+    }
+  ]
+}

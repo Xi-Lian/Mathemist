@@ -133,6 +133,7 @@ class QueryPreprocessor:
     def __init__(self):
         """初始化查询预处理器"""
         self.fuzzy_matcher = FuzzyMatcher()
+        self.context_history = []  # V33.0改进：上下文历史
         self.math_synonyms = {
             "函数": ["函数", "function"],
             "方程": ["方程", "equation"],
@@ -183,6 +184,25 @@ class QueryPreprocessor:
             "诱导公式", "三角恒等变换", "函数的零点", "二分法",
             "任意角", "弧度制", "同角三角函数的基本关系", "函数模型的应用"
         ]
+        
+        # V33.0改进：概念边界定义
+        self.concept_boundaries = {
+            "幂函数": {
+                "definition": "形如 y = x^a 的函数，底数是变量x，指数是常数a",
+                "core_features": ["底数是变量", "指数是常数", "函数图像", "函数性质"],
+                "excluded_features": ["底数是常数", "指数是变量", "指数运算", "根式运算"]
+            },
+            "指数函数": {
+                "definition": "形如 y = a^x 的函数，底数是常数a，指数是变量x",
+                "core_features": ["底数是常数", "指数是变量", "函数图像", "函数性质"],
+                "excluded_features": ["底数是变量", "指数是常数", "幂函数"]
+            },
+            "指数运算": {
+                "definition": "计算 a^b 形式的值，底数是常数，指数可以是分数",
+                "core_features": ["计算", "化简", "指数法则", "根式化简"],
+                "excluded_features": ["函数", "图像", "性质", "底数是变量"]
+            }
+        }
     
     def preprocess(self, query: str) -> Dict[str, Any]:
         """
@@ -238,6 +258,16 @@ class QueryPreprocessor:
         result["query_type"] = self._classify_query_type(query, result["intent"], result["core_concepts"])
         result["clarity"] = self._calculate_query_clarity(query, result["core_concepts"], result["intent"])
         result["search_versions"] = self._generate_search_versions(result)
+        
+        # V33.0改进：处理上下文查询
+        if self.context_history and "最近讲了" in query or "最近学了" in query:
+            context_enhanced = self._enhance_with_context(query, result)
+            if context_enhanced:
+                result["context_enhanced"] = context_enhanced
+                logger.info(f"🔄 V33.0上下文增强: {context_enhanced}")
+        
+        # 更新上下文历史
+        self._update_context_history(query, result)
         
         logger.info(f"✅ 查询预处理完成")
         logger.info(f"   清洗后: {result['cleaned_query']}")
@@ -689,6 +719,81 @@ class QueryPreprocessor:
                             expanded_queries.append(expanded)
         
         return expanded_queries
+    
+    def _enhance_with_context(self, query: str, result: Dict[str, Any]) -> Optional[str]:
+        """
+        V33.0改进：使用上下文增强查询
+        
+        Args:
+            query: 原始查询
+            result: 预处理结果
+        
+        Returns:
+            增强后的查询
+        """
+        if not self.context_history:
+            return None
+        
+        # 获取最近的上下文
+        recent_context = self.context_history[-1]
+        recent_query = recent_context.get("original_query", "")
+        recent_concepts = recent_context.get("core_concepts", [])
+        
+        # 检查是否是上下文查询
+        if "最近讲了" in query or "最近学了" in query:
+            # 提取查询中的具体知识点
+            specific_topics = []
+            
+            # 检查是否提到了具体的三角函数
+            if "正弦" in query or "余弦" in query:
+                specific_topics.extend(["正弦函数", "余弦函数"])
+            elif "正切" in query:
+                specific_topics.append("正切函数")
+            elif "三角函数" in query:
+                # 如果只说了三角函数，检查最近是否提到了具体的
+                if "正弦" in recent_query or "余弦" in recent_query:
+                    specific_topics.extend(["正弦函数", "余弦函数"])
+                elif "正切" in recent_query:
+                    specific_topics.append("正切函数")
+                else:
+                    specific_topics.append("三角函数")
+            
+            # 如果找到了具体主题，返回增强查询
+            if specific_topics:
+                enhanced_query = query
+                for topic in specific_topics:
+                    if topic not in enhanced_query:
+                        enhanced_query += f" {topic}"
+                return enhanced_query
+        
+        return None
+    
+    def _update_context_history(self, query: str, result: Dict[str, Any]) -> None:
+        """
+        V33.0改进：更新上下文历史
+        
+        Args:
+            query: 原始查询
+            result: 预处理结果
+        """
+        context_entry = {
+            "original_query": query,
+            "cleaned_query": result.get("cleaned_query", ""),
+            "core_concepts": result.get("core_concepts", []),
+            "intent": result.get("intent", {}),
+            "timestamp": "2026-03-16"  # 实际应用中应使用当前时间
+        }
+        
+        self.context_history.append(context_entry)
+        # 保持历史记录不超过5条
+        if len(self.context_history) > 5:
+            self.context_history = self.context_history[-5:]
+    
+    def clear_context_history(self) -> None:
+        """
+        V33.0改进：清除上下文历史
+        """
+        self.context_history = []
 
 
 _query_preprocessor = None

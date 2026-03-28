@@ -26,16 +26,44 @@ RESOURCE_TYPE_MAPPING = {
     "课例": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
     "教学视频": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
     "课堂实录": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "视频": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "微课": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "优质课": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "示范课": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "公开课": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "赛课": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "课例视频": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
+    "教学实录": ("课例", "lesson_case", "lesson_case_resources", "🎬"),
     
     "习题": ("习题", "exercise", "exercise_resources", "📝"),
     "题目": ("习题", "exercise", "exercise_resources", "📝"),
     "练习": ("习题", "exercise", "exercise_resources", "📝"),
+    "练习题": ("习题", "exercise", "exercise_resources", "📝"),
     "测试": ("习题", "exercise", "exercise_resources", "📝"),
+    "测试题": ("习题", "exercise", "exercise_resources", "📝"),
+    "作业": ("习题", "exercise", "exercise_resources", "📝"),
+    "试题": ("习题", "exercise", "exercise_resources", "📝"),
+    "考题": ("习题", "exercise", "exercise_resources", "📝"),
+    "填空题": ("习题", "exercise", "exercise_resources", "📝"),
+    "选择题": ("习题", "exercise", "exercise_resources", "📝"),
+    "解答题": ("习题", "exercise", "exercise_resources", "📝"),
+    "计算题": ("习题", "exercise", "exercise_resources", "📝"),
+    "证明题": ("习题", "exercise", "exercise_resources", "📝"),
+    "应用题": ("习题", "exercise", "exercise_resources", "📝"),
+    "作图题": ("习题", "exercise", "exercise_resources", "📝"),
     
     "GGB": ("GGB", "ggb", "ggb_resources", "🔧"),
     "GeoGebra": ("GGB", "ggb", "ggb_resources", "🔧"),
     "动态图": ("GGB", "ggb", "ggb_resources", "🔧"),
     "可视化": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "几何画板": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "动态演示": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "动态变化": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "动态数学": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "动态几何": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "动画演示": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "图形设计": ("GGB", "ggb", "ggb_resources", "🔧"),
+    "可视化设计": ("GGB", "ggb", "ggb_resources", "🔧"),
     
     "教学大纲": ("教学大纲", "syllabus", "syllabus_resources", "📋"),
     "大纲": ("教学大纲", "syllabus", "syllabus_resources", "📋"),
@@ -50,7 +78,9 @@ RESOURCE_TYPE_MAPPING = {
     
     "图像": ("可视化", "visualization", "visualization_examples", "🎨"),
     "图形": ("可视化", "visualization", "visualization_examples", "🎨"),
-    "例子": ("可视化", "visualization", "visualization_examples", "🎨")
+    "例子": ("可视化", "visualization", "visualization_examples", "🎨"),
+    "教学资源": ("资料", "all", "all_resources", "📂"),
+    "教学资料": ("资料", "all", "all_resources", "📂")
 }
 
 # 数据库类型到标准名称的映射（反向映射）
@@ -164,6 +194,55 @@ def get_all_db_types() -> list:
         数据库类型列表（去重）
     """
     return list({v[1] for v in RESOURCE_TYPE_MAPPING.values()})
+
+
+def is_valid_resource_type(user_type: str) -> bool:
+    """
+    检查资源类型是否有效
+    
+    V92.0改进：只有6种资源类型有效，超出范围显示没有
+    支持的资源类型：习题、课件、教案、课例、GGB、教学大纲
+    
+    Args:
+        user_type: 用户输入的资源类型
+    
+    Returns:
+        是否为有效资源类型
+    """
+    # 支持的6种资源类型
+    valid_types = [
+        "习题", "课件", "教案", "课例", "GGB", "教学大纲",
+        # 同义词
+        "题目", "练习", "练习题", "测试", "测试题", "作业", "试题", "考题",
+        "填空题", "选择题", "解答题", "计算题", "证明题", "应用题", "作图题",
+        "PPT", "幻灯片",
+        "教学设计", "教学方案",
+        "教学视频", "课堂实录", "视频", "微课", "优质课", "示范课", "公开课", "赛课", "课例视频", "教学实录",
+        "GeoGebra", "动态图", "可视化", "几何画板", "动态演示", "动态变化", "动态数学", "动态几何", "动画演示", "图形设计", "可视化设计",
+        "大纲", "课程标准",
+        "资料", "资源", "教学资源", "教学资料"
+    ]
+    
+    return user_type in valid_types
+
+
+def get_supported_resource_types() -> list:
+    """
+    获取支持的6种资源类型
+    
+    V92.0改进：只有6种资源类型
+    
+    Returns:
+        支持的资源类型列表
+    """
+    return [
+        {"name": "习题", "db_type": "exercise", "icon": "📝"},
+        {"name": "课件", "db_type": "courseware", "icon": "📊"},
+        {"name": "教案", "db_type": "lesson_plan", "icon": "📚"},
+        {"name": "课例", "db_type": "lesson_case", "icon": "🎬"},
+        {"name": "GGB", "db_type": "ggb", "icon": "🔧"},
+        {"name": "教学大纲", "db_type": "syllabus", "icon": "📋"}
+    ]
 
 
 def normalize_resource_types(user_types: list) -> list:

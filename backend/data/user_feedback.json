@@ -9,7 +9,10 @@
         "dislike_reason": "",
         "metadata": {
           "chapter": "第一章"
-        }
+        },
+        "feedback_id": "feedback_old_1",
+        "user_id": "anonymous",
+        "status": "processed"
       },
       {
         "timestamp": "2026-02-25T20:57:36.699287",
@@ -19,7 +22,128 @@
         "dislike_reason": "",
         "metadata": {
           "chapter": "第一章"
-        }
+        },
+        "feedback_id": "feedback_old_2",
+        "user_id": "anonymous",
+        "status": "processed"
+      },
+      {
+        "feedback_id": "feedback_20260325_115840_174031",
+        "timestamp": "2026-03-25T11:58:40.174031",
+        "query": "测试查询",
+        "resource_type": "test",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {},
+        "user_id": "test-user",
+        "status": "pending"
+      },
+      {
+        "feedback_id": "feedback_20260325_145413_142617",
+        "timestamp": "2026-03-25T14:54:13.142617",
+        "query": "??3?????????",
+        "resource_type": "exercise",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {},
+        "user_id": "test-user-001",
+        "status": "pending"
+      }
+    ],
+    "func-resource-001": [
+      {
+        "feedback_id": "feedback_20260325_120714_984921",
+        "timestamp": "2026-03-25T12:07:14.984921",
+        "query": "二次函数练习题",
+        "resource_type": "function_exercise",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {
+          "chapter": "二次函数",
+          "difficulty": "medium"
+        },
+        "user_id": "user-001",
+        "status": "pending"
+      }
+    ],
+    "geo-resource-001": [
+      {
+        "feedback_id": "feedback_20260325_120714_986485",
+        "timestamp": "2026-03-25T12:07:14.986485",
+        "query": "立体几何证明题",
+        "resource_type": "geometry_proof",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {
+          "chapter": "立体几何",
+          "difficulty": "hard"
+        },
+        "user_id": "user-001",
+        "status": "pending"
+      }
+    ],
+    "prob-resource-001": [
+      {
+        "feedback_id": "feedback_20260325_120714_998917",
+        "timestamp": "2026-03-25T12:07:14.998917",
+        "query": "概率计算题",
+        "resource_type": "probability_exercise",
+        "is_like": false,
+        "dislike_reason": "难度不合适",
+        "metadata": {
+          "chapter": "概率",
+          "difficulty": "easy"
+        },
+        "user_id": "user-002",
+        "status": "pending"
+      }
+    ],
+    "video-resource-001": [
+      {
+        "feedback_id": "feedback_20260325_120715_013943",
+        "timestamp": "2026-03-25T12:07:15.013943",
+        "query": "三角函数教学视频",
+        "resource_type": "video",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {
+          "duration": "15min",
+          "topic": "三角函数"
+        },
+        "user_id": "user-003",
+        "status": "pending"
+      }
+    ],
+    "lesson-plan-001": [
+      {
+        "feedback_id": "feedback_20260325_120715_027351",
+        "timestamp": "2026-03-25T12:07:15.027351",
+        "query": "指数函数教案",
+        "resource_type": "lesson_plan",
+        "is_like": true,
+        "dislike_reason": "",
+        "metadata": {
+          "grade": "高一",
+          "topic": "指数函数"
+        },
+        "user_id": "user-004",
+        "status": "pending"
+      }
+    ],
+    "exercise-001": [
+      {
+        "feedback_id": "feedback_20260325_120715_041516",
+        "timestamp": "2026-03-25T12:07:15.041516",
+        "query": "对数函数选择题",
+        "resource_type": "exercise",
+        "is_like": false,
+        "dislike_reason": "主题不对",
+        "metadata": {
+          "type": "选择题",
+          "topic": "对数函数"
+        },
+        "user_id": "user-005",
+        "status": "pending"
       }
     ]
   },
@@ -28,24 +152,254 @@
       "timestamp": "2026-02-25T20:46:41.214575",
       "query": "二次函数",
       "suggestion": "希望增加更多的练习题",
-      "contact": "user@example.com"
+      "contact": "user@example.com",
+      "feedback_id": "feedback_old_3",
+      "user_id": "anonymous",
+      "status": "processed"
     },
     {
       "timestamp": "2026-02-25T20:57:38.739512",
       "query": "二次函数",
       "suggestion": "希望增加更多的练习题",
-      "contact": "user@example.com"
+      "contact": "user@example.com",
+      "feedback_id": "feedback_old_4",
+      "user_id": "anonymous",
+      "status": "processed"
+    },
+    {
+      "feedback_id": "feedback_20260325_145437_666854",
+      "timestamp": "2026-03-25T14:54:37.666854",
+      "query": "??3?????????",
+      "suggestion": "??????????????",
+      "contact": "",
+      "user_id": "test-user-001",
+      "status": "pending"
     }
   ],
   "statistics": {
-    "total_likes": 2,
-    "total_dislikes": 0,
+    "total_likes": 8,
+    "total_dislikes": 2,
     "feedback_by_theme": {},
     "feedback_by_type": {
       "theory": {
         "likes": 2,
         "dislikes": 0
+      },
+      "test": {
+        "likes": 1,
+        "dislikes": 0
+      },
+      "exercise": {
+        "likes": 1,
+        "dislikes": 1
+      },
+      "function_exercise": {
+        "likes": 1,
+        "dislikes": 0
+      },
+      "geometry_proof": {
+        "likes": 1,
+        "dislikes": 0
+      },
+      "probability_exercise": {
+        "likes": 0,
+        "dislikes": 1
+      },
+      "video": {
+        "likes": 1,
+        "dislikes": 0
+      },
+      "lesson_plan": {
+        "likes": 1,
+        "dislikes": 0
       }
+    },
+    "total_feedback": 10,
+    "total_suggestions": 3,
+    "feedback_by_date": {
+      "2026-02-25": {
+        "likes": 2,
+        "dislikes": 0,
+        "suggestions": 2
+      },
+      "2026-03-25": {
+        "likes": 6,
+        "dislikes": 2,
+        "suggestions": 1
+      }
+    },
+    "satisfaction_score": 0.8
+  },
+  "user_feedback_history": {
+    "test-user": [
+      {
+        "feedback_id": "feedback_20260325_115840_174031",
+        "timestamp": "2026-03-25T11:58:40.174031",
+        "resource_id": "test-resource-001",
+        "is_like": true,
+        "resource_type": "test",
+        "status": "pending"
+      }
+    ],
+    "user-001": [
+      {
+        "feedback_id": "feedback_20260325_120714_984921",
+        "timestamp": "2026-03-25T12:07:14.984921",
+        "resource_id": "func-resource-001",
+        "is_like": true,
+        "resource_type": "function_exercise",
+        "status": "pending"
+      },
+      {
+        "feedback_id": "feedback_20260325_120714_986485",
+        "timestamp": "2026-03-25T12:07:14.986485",
+        "resource_id": "geo-resource-001",
+        "is_like": true,
+        "resource_type": "geometry_proof",
+        "status": "pending"
+      }
+    ],
+    "user-002": [
+      {
+        "feedback_id": "feedback_20260325_120714_998917",
+        "timestamp": "2026-03-25T12:07:14.998917",
+        "resource_id": "prob-resource-001",
+        "is_like": false,
+        "resource_type": "probability_exercise",
+        "status": "pending"
+      }
+    ],
+    "user-003": [
+      {
+        "feedback_id": "feedback_20260325_120715_013943",
+        "timestamp": "2026-03-25T12:07:15.013943",
+        "resource_id": "video-resource-001",
+        "is_like": true,
+        "resource_type": "video",
+        "status": "pending"
+      }
+    ],
+    "user-004": [
+      {
+        "feedback_id": "feedback_20260325_120715_027351",
+        "timestamp": "2026-03-25T12:07:15.027351",
+        "resource_id": "lesson-plan-001",
+        "is_like": true,
+        "resource_type": "lesson_plan",
+        "status": "pending"
+      }
+    ],
+    "user-005": [
+      {
+        "feedback_id": "feedback_20260325_120715_041516",
+        "timestamp": "2026-03-25T12:07:15.041516",
+        "resource_id": "exercise-001",
+        "is_like": false,
+        "resource_type": "exercise",
+        "status": "pending"
+      }
+    ],
+    "test-user-001": [
+      {
+        "feedback_id": "feedback_20260325_145413_142617",
+        "timestamp": "2026-03-25T14:54:13.142617",
+        "resource_id": "test-resource-001",
+        "is_like": true,
+        "resource_type": "exercise",
+        "status": "pending"
+      },
+      {
+        "feedback_id": "feedback_20260325_145437_666854",
+        "timestamp": "2026-03-25T14:54:37.666854",
+        "type": "suggestion",
+        "status": "pending"
+      }
+    ]
+  },
+  "feedback_processing": {
+    "feedback_20260325_115840_174031": {
+      "resource_id": "test-resource-001",
+      "timestamp": "2026-03-25T11:58:40.174031",
+      "is_like": true,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_120714_984921": {
+      "resource_id": "func-resource-001",
+      "timestamp": "2026-03-25T12:07:14.984921",
+      "is_like": true,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_120714_986485": {
+      "resource_id": "geo-resource-001",
+      "timestamp": "2026-03-25T12:07:14.986485",
+      "is_like": true,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_120714_998917": {
+      "resource_id": "prob-resource-001",
+      "timestamp": "2026-03-25T12:07:14.998917",
+      "is_like": false,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_120715_013943": {
+      "resource_id": "video-resource-001",
+      "timestamp": "2026-03-25T12:07:15.013943",
+      "is_like": true,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_120715_027351": {
+      "resource_id": "lesson-plan-001",
+      "timestamp": "2026-03-25T12:07:15.027351",
+      "is_like": true,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_120715_041516": {
+      "resource_id": "exercise-001",
+      "timestamp": "2026-03-25T12:07:15.041516",
+      "is_like": false,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_145413_142617": {
+      "resource_id": "test-resource-001",
+      "timestamp": "2026-03-25T14:54:13.142617",
+      "is_like": true,
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
+    },
+    "feedback_20260325_145437_666854": {
+      "timestamp": "2026-03-25T14:54:37.666854",
+      "type": "suggestion",
+      "status": "pending",
+      "processed_at": null,
+      "processor_id": null,
+      "notes": ""
     }
+  },
+  "config": {
+    "feedback_rate_limit": 10,
+    "feedback_expiry_days": 365
   }
 }

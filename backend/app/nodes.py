@@ -23,6 +23,22 @@ from .core import (
 from .core.unified_lesson_plan_system import unified_lesson_plan_system
 from .state import MathAgentState
 
+# 缓存核心实例，避免重复创建
+_cached_retriever = None
+
+
+def get_resource_retriever() -> ResourceRetriever:
+    """
+    获取资源检索器实例（单例模式）
+    
+    Returns:
+        ResourceRetriever实例
+    """
+    global _cached_retriever
+    if _cached_retriever is None:
+        _cached_retriever = ResourceRetriever()
+    return _cached_retriever
+
 
 def _get_empty_retrieved_resources() -> Dict[str, Any]:
     """统一的空检索结果结构，避免 None 传播到下游节点。"""
@@ -65,21 +81,45 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
     Returns:
         更新的状态，包含检索到的资源
     """
-    retriever = ResourceRetriever()
+    print(f"\n{'='*80}")
+    print("🚀 RESOURCE_RETRIEVAL_NODE 被调用")
+    print(f"{'='*80}")
+    print(f"📝 用户输入: {state.user_input}")
+    print(f"🎯 意图: {state.intent}")
     
-    # 获取资源类型（如果用户明确指定了）
+    retriever = get_resource_retriever()
+    
     resource_types = None
     if hasattr(state, 'resource_types'):
         resource_types = getattr(state, 'resource_types', None)
     elif isinstance(state, dict):
         resource_types = state.get('resource_types', None)
     
-    # 如果用户没有明确指定资源类型，但意图是搜索，则检索所有类型
-    # 如果用户明确指定了资源类型，则只检索指定类型
+    quantity_limit = None
+    if hasattr(state, 'quantity_limit'):
+        quantity_limit = getattr(state, 'quantity_limit', None)
+    elif isinstance(state, dict):
+        quantity_limit = state.get('quantity_limit', None)
+    
+    grade_info = None
+    if hasattr(state, 'grade_info'):
+        grade_info = getattr(state, 'grade_info', None)
+    elif isinstance(state, dict):
+        grade_info = state.get('grade_info', None)
+    
+    clarified_topic = None
+    if hasattr(state, 'clarified_topic'):
+        clarified_topic = getattr(state, 'clarified_topic', None)
+    elif isinstance(state, dict):
+        clarified_topic = state.get('clarified_topic', None)
+    
     retrieved_resources = retriever.retrieve(
-        state.user_input,
-        state.intent,
-        resource_types=resource_types
+        query=state.user_input,
+        intent=state.intent,
+        resource_types=resource_types,
+        quantity_limit=quantity_limit,
+        grade_info=grade_info,
+        clarified_topic=clarified_topic
     )
     if not isinstance(retrieved_resources, dict):
         retrieved_resources = _get_empty_retrieved_resources()

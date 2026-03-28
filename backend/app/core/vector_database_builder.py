@@ -12,7 +12,7 @@ import chromadb
 from chromadb.config import Settings
 
 from .resource_table_parser import ResourceTableParser
-from .model_config import ModelConfig
+from .model_config import model_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -56,13 +56,14 @@ class VectorDatabaseBuilder:
         
         # 使用正确的learning_resource_path初始化ResourceTableParser
         self.parser = ResourceTableParser(str(self.learning_resource_path))
-        self.model_config = ModelConfig()
+        # 使用全局单例model_config，避免重复创建模型实例
+        self.model_config = model_config
         
         # 设置数据库路径
         if db_path is None:
-            # 默认路径：backend/app/data/chroma_db
-            current_dir = Path(__file__).parent.parent
-            db_path = current_dir / 'data' / 'chroma_db'
+            # 默认路径：backend/chroma_db（与服务实际使用的路径一致）
+            current_dir = Path(__file__).parent.parent.parent
+            db_path = current_dir / 'chroma_db'
         
         self.db_path = Path(db_path).resolve()
         self.db_path.mkdir(parents=True, exist_ok=True)
@@ -126,7 +127,12 @@ class VectorDatabaseBuilder:
             logger.info("创建新向量数据库...")
             collection = client.create_collection(
                 name=self.COLLECTION_NAME,
-                metadata={"description": "数学教学资源向量数据库"}
+                metadata={
+                    "description": "数学教学资源向量数据库",
+                    "hnsw:space": "cosine",
+                    "hnsw:construction_ef": 200,
+                    "hnsw:M": 16
+                }
             )
             
             # 解析所有资源汇总表
@@ -149,8 +155,11 @@ class VectorDatabaseBuilder:
                     document = self.parser.format_resource_for_search(resource)
                     
                     # 准备元数据
+                    # V62.0改进：使用数据库类型作为resource_type，确保与资源检索器的过滤条件匹配
+                    from ..config.resource_type_config import get_db_type
+                    db_resource_type = get_db_type(resource_type) or resource_type
                     metadata = {
-                        'resource_type': resource_type,
+                        'resource_type': db_resource_type,
                         'source_file': resource.get('source_file', ''),
                         'title': resource.get('title', ''),
                         **{k: v for k, v in resource.items() if k not in ['resource_type', 'source_file', 'title']}

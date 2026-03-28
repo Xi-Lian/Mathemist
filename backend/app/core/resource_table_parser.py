@@ -1,6 +1,14 @@
 """
 资源汇总表解析模块
 用于解析learning_resource文件夹中的markdown表格数据
+
+V12.0改进2：年级元数据体系重构
+- 集成GradeMetadataEnricher自动推断年级信息
+
+V54.0改进：动态关键词提取和资源格式化增强
+- 添加通用关键词提取方法
+- 增强教学大纲、课件、课例视频资源的搜索文本
+- 动态从文件路径和内容中提取主题信息
 """
 
 import re
@@ -10,6 +18,9 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# V12.0改进2：导入年级元数据丰富器
+from .grade_metadata_enricher import get_grade_enricher
 
 
 class ResourceTableParser:
@@ -24,6 +35,135 @@ class ResourceTableParser:
         """
         # 确保learning_resource_path是绝对路径
         self.learning_resource_path = Path(learning_resource_path).resolve()
+        
+        # V54.0改进：初始化关键词映射表
+        self._init_keyword_mappings()
+    
+    def _init_keyword_mappings(self):
+        """
+        V54.0改进：初始化关键词映射表
+        动态从资源库中提取常见关键词
+        """
+        # 函数类型关键词
+        self.function_types = [
+            "三角函数", "指数函数", "对数函数", "二次函数", "幂函数", 
+            "一次函数", "反比例函数", "分段函数", "复合函数"
+        ]
+        
+        # 函数性质关键词
+        self.function_properties = [
+            "单调性", "奇偶性", "周期性", "最值", "最大值", "最小值",
+            "零点", "定义域", "值域", "解析式", "表示法", "概念", "图象", "图像"
+        ]
+        
+        # 数学主题关键词
+        self.math_topics = [
+            "函数", "方程", "不等式", "数列", "概率", "统计",
+            "向量", "立体几何", "解析几何", "导数", "积分",
+            "三角恒等变换", "诱导公式", "二倍角公式", "和差化积",
+            "数形结合", "分类讨论", "转化与化归", "函数与方程"
+        ]
+        
+        # 教学场景关键词
+        self.teaching_scenarios = [
+            "新授课", "复习课", "练习课", "讲评课", "实验课",
+            "概念课", "定理课", "应用课", "综合课"
+        ]
+        
+        # 年级关键词映射
+        self.grade_keywords = {
+            "高一": ["必修一", "必修第一册", "第一章", "第二章", "第三章", "第四章", "第五章"],
+            "高二": ["必修二", "必修第二册", "选择性必修一", "选择性必修二"],
+            "高三": ["高考", "复习", "综合", "模拟", "真题"]
+        }
+    
+    def _extract_keywords_from_text(self, text: str, keyword_list: List[str]) -> List[str]:
+        """
+        V54.0改进：从文本中提取匹配的关键词
+        
+        Args:
+            text: 待提取的文本
+            keyword_list: 关键词列表
+            
+        Returns:
+            匹配到的关键词列表
+        """
+        matched_keywords = []
+        text_lower = text.lower()
+        
+        for keyword in keyword_list:
+            if keyword.lower() in text_lower:
+                matched_keywords.append(keyword)
+        
+        return matched_keywords
+    
+    def _enhance_search_text(self, base_text: str, resource_type: str, resource: Dict[str, str]) -> str:
+        """
+        V54.0改进：增强搜索文本，动态添加相关关键词
+        
+        Args:
+            base_text: 基础搜索文本
+            resource_type: 资源类型
+            resource: 资源字典
+            
+        Returns:
+            增强后的搜索文本
+        """
+        enhanced_parts = [base_text]
+        
+        # 获取资源内容
+        content = resource.get('内容', '') or resource.get('教学任务（教学内容）', '') or resource.get('分析', '') or resource.get('题干', '')
+        filename = resource.get('文件名', '') or resource.get('视频文件名/网址', '') or resource.get('题目文件名', '')
+        chapter = resource.get('章节', '')
+        source_file = resource.get('source_file', '')
+        
+        # 合并所有文本进行分析
+        all_text = f"{base_text} {content} {filename} {chapter} {source_file}"
+        
+        # 动态提取函数类型
+        function_types = self._extract_keywords_from_text(all_text, self.function_types)
+        for func_type in function_types:
+            if func_type not in base_text:
+                enhanced_parts.append(func_type)
+        
+        # 动态提取函数性质
+        function_props = self._extract_keywords_from_text(all_text, self.function_properties)
+        for prop in function_props:
+            # 如果是函数性质，确保包含"函数"前缀
+            if prop not in base_text:
+                if '函数' not in prop:
+                    enhanced_parts.append(f"函数的{prop}")
+                else:
+                    enhanced_parts.append(prop)
+        
+        # 动态提取数学主题
+        math_topics = self._extract_keywords_from_text(all_text, self.math_topics)
+        for topic in math_topics:
+            if topic not in base_text:
+                enhanced_parts.append(topic)
+        
+        # 动态提取年级信息
+        for grade, keywords in self.grade_keywords.items():
+            if any(kw in all_text for kw in keywords):
+                if grade not in base_text:
+                    enhanced_parts.append(grade)
+                break
+        
+        # 动态提取教学场景
+        scenarios = self._extract_keywords_from_text(all_text, self.teaching_scenarios)
+        for scenario in scenarios:
+            if scenario not in base_text:
+                enhanced_parts.append(scenario)
+        
+        # 去重并返回
+        unique_parts = []
+        seen = set()
+        for part in enhanced_parts:
+            if part not in seen:
+                unique_parts.append(part)
+                seen.add(part)
+        
+        return '，'.join(unique_parts)
         
     def parse_markdown_table(self, content: str) -> List[Dict[str, str]]:
         """
@@ -100,6 +240,19 @@ class ResourceTableParser:
                     # 检测到Excel导出的表格
                     is_excel_table = True
         
+        # V53.9改进：检测并处理两行表头的情况
+        # 如果表格第一行包含"Unnamed"，说明是Excel导出的错误表头，需要跳过
+        has_two_headers = False
+        if len(table_lines) >= 4:
+            first_row = self._parse_table_row(table_lines[0])
+            # 检查第一行是否包含"Unnamed"或文件名（如"课件汇总"）
+            if any('Unnamed' in cell for cell in first_row) or any('.xlsx' in cell for cell in first_row):
+                # 检查第三行是否是实际的列名（不包含Unnamed）
+                third_row = self._parse_table_row(table_lines[2])
+                if not any('Unnamed' in cell for cell in third_row):
+                    has_two_headers = True
+                    print(f"   📝 V53.9检测到两行表头，跳过第一行错误表头")
+        
         # 如果是Excel导出的表格，跳过原始文件的第2行（Excel导出的文件名），保留表头行
         if is_excel_table:
             # 重新提取表格行，跳过原始文件的第2行
@@ -112,12 +265,20 @@ class ResourceTableParser:
                 if '|' in line:
                     table_lines.append(line)
         
-        # 解析表头
-        header_line = table_lines[0]
-        headers = self._parse_table_row(header_line)
+        # V53.9改进：如果检测到两行表头，跳过第一行（错误表头）和第二行（分隔线），使用第三行（实际列名）
+        if has_two_headers and len(table_lines) >= 4:
+            # 跳过第一行（错误表头）和第二行（分隔线），使用第三行作为表头
+            header_line = table_lines[2]
+            # 数据行从第四行开始
+            data_lines = table_lines[3:] if len(table_lines) > 3 else []
+            print(f"   📝 V53.9使用第三行作为表头: {header_line[:80]}...")
+        else:
+            # 解析表头
+            header_line = table_lines[0]
+            # 跳过分隔线（第二行），数据行从第三行开始
+            data_lines = table_lines[1:] if len(table_lines) > 1 else []
         
-        # 跳过分隔线（第二行），数据行从第三行开始
-        data_lines = table_lines[1:] if len(table_lines) > 1 else []
+        headers = self._parse_table_row(header_line)
         
         # 过滤掉分隔线行，并合并多行表格单元格
         filtered_data_lines = []
@@ -387,27 +548,71 @@ class ResourceTableParser:
     def parse_ggb_table(self) -> List[Dict[str, str]]:
         """
         解析GGB资源汇总表
+        支持.md和.xlsx格式
         
         Returns:
             GGB资源列表
         """
+        # 首先尝试查找.md文件
         ggb_file = self.learning_resource_path / 'ggb' / 'ggb信息.md'
         
-        if not ggb_file.exists():
-            logger.warning(f"GGB汇总表不存在: {ggb_file}")
-            return []
+        if ggb_file.exists():
+            # 解析markdown文件
+            with open(ggb_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            data = self.parse_markdown_table(content)
+            
+            # 添加资源类型
+            for item in data:
+                item['resource_type'] = 'ggb'
+            
+            logger.info(f"解析GGB汇总表(md)，共{len(data)}条记录")
+            return data
         
-        with open(ggb_file, 'r', encoding='utf-8') as f:
-            content = f.read()
+        # 如果没有.md文件，尝试.xlsx文件
+        ggb_xlsx = self.learning_resource_path / 'ggb' / 'ggb信息.xlsx'
         
-        data = self.parse_markdown_table(content)
+        if ggb_xlsx.exists():
+            try:
+                import pandas as pd
+                
+                # 读取Excel文件
+                df = pd.read_excel(ggb_xlsx)
+                
+                # 转换为字典列表
+                data = []
+                i = 1
+                for _, row in df.iterrows():
+                    # 为GGB资源创建有效的标题
+                    title_parts = []
+                    if pd.notna(row.get('章节')) and row['章节'].strip():
+                        title_parts.append(row['章节'].strip())
+                    if pd.notna(row.get('ggb文件名')) and row['ggb文件名'].strip():
+                        title_parts.append(row['ggb文件名'].strip())
+                    if pd.notna(row.get('教学用途')) and row['教学用途'].strip():
+                        title_parts.append(row['教学用途'].strip())
+                    
+                    title = ' - '.join(title_parts) if title_parts else f"GGB资源_{i}"
+                    
+                    item = {
+                        'resource_type': 'ggb',
+                        'source_file': str(ggb_xlsx.relative_to(self.learning_resource_path)),
+                        'title': title,
+                        **{k: str(v) if pd.notna(v) else '' for k, v in row.items()}
+                    }
+                    data.append(item)
+                    i += 1
+                
+                logger.info(f"解析GGB汇总表(xlsx)，共{len(data)}条记录")
+                return data
+                
+            except Exception as e:
+                logger.error(f"解析GGB Excel文件失败: {e}")
+                return []
         
-        # 添加资源类型
-        for item in data:
-            item['resource_type'] = 'ggb'
-        
-        logger.info(f"解析GGB汇总表，共{len(data)}条记录")
-        return data
+        logger.warning(f"GGB汇总表不存在: {ggb_file} 或 {ggb_xlsx}")
+        return []
     
     def parse_syllabus_table(self) -> List[Dict[str, str]]:
         """
@@ -477,9 +682,15 @@ class ResourceTableParser:
                     '教学任务（教学内容）': current_task
                 })
         
-        # 添加资源类型
-        for item in all_data:
+        # 添加资源类型、源文件路径和标题
+        for i, item in enumerate(all_data):
             item['resource_type'] = 'syllabus'
+            item['source_file'] = str(syllabus_file.relative_to(self.learning_resource_path))
+            # 为教学大纲资源创建标题
+            chapter = item.get('章节', '')
+            task = item.get('教学任务（教学内容）', '')
+            title = f"{chapter} - {task[:30]}" if task else f"{chapter}" if chapter else f"教学大纲资源_{i+1}"
+            item['title'] = title
         
         logger.info(f"解析教学大纲汇总表，共{len(all_data)}条记录")
         return all_data
@@ -515,6 +726,65 @@ class ResourceTableParser:
                 for item in data:
                     item['resource_type'] = 'exercise'
                     item['source_file'] = str(md_file.relative_to(self.learning_resource_path))
+                    
+                    # 添加标题：从文件名或题干中提取
+                    # 优先使用文件名（不包含扩展名）
+                    title = md_file.stem
+                    # 如果文件名是数字，尝试从文件路径中提取章节信息
+                    if title.isdigit():
+                        # 从文件路径中提取章节信息
+                        path_parts = md_file.relative_to(self.learning_resource_path).parts
+                        # 找到包含章节信息的部分（如"必修一第二章-二次函数与一元二次方程"）
+                        for part in path_parts:
+                            if '二次函数' in part or '函数' in part or '三角函数' in part or '指数函数' in part or '对数函数' in part or '幂函数' in part or '三角恒等' in part:
+                                title = part
+                                break
+                    
+                    # 特殊处理：如果文件路径包含三角恒等变换相关内容，添加到知识点中
+                    source_file = str(md_file.relative_to(self.learning_resource_path))
+                    if '三角恒等' in source_file or '恒等变换' in source_file or '恒等变化' in source_file:
+                        # 优先使用'知识点'字段，其次使用'知识点标签'
+                        knowledge_points = item.get('知识点', item.get('知识点标签', ''))
+                        if '三角恒等变换' not in knowledge_points:
+                            knowledge_points = knowledge_points + ';三角恒等变换' if knowledge_points else '三角恒等变换'
+                        # 更新知识点字段
+                        item['知识点'] = knowledge_points
+                        if '知识点标签' not in item or not item['知识点标签']:
+                            item['知识点标签'] = knowledge_points
+                    # 如果标题太长，截取前50个字符
+                    if len(title) > 50:
+                        title = title[:50]
+                    item['title'] = title
+                    
+                    # 添加应用题识别逻辑
+                    # 检查题干内容，看看是否包含应用题特征
+                    question = item.get('题干', '')
+                    if question:
+                        # 定义应用题特征关键词（只保留真正与应用场景相关的关键词）
+                        application_keywords = [
+                            '实际应用', '应用', '生活', '工程', '经济', '物理', '化学', '生物',
+                            '建筑', '施工', '设计', '测量', '机械', '电力', '水利', '交通',
+                            '购物', '消费', '工资', '收入', '支出', '成本', '利润', '收益',
+                            '价格', '销售', '市场', '需求', '供给', '投资', '理财', '股票',
+                            '债券', '利率', '利息', '人口增长', '放射性衰变', '指数增长', '指数衰减',
+                            '周期性变化', '波形', '最优化', '最优解', '实际问题', '生活场景',
+                            '经济问题', '工程问题', '物理问题', '化学问题', '生物问题'
+                        ]
+                        
+                        # 检查题干是否包含应用题特征关键词
+                        is_application = any(keyword in question for keyword in application_keywords)
+                        
+                        # 如果题干包含应用题特征，修改题目类型为"应用题"
+                        if is_application:
+                            original_type = item.get('题目类型', '')
+                            # 在原有题目类型后添加"应用题"标识
+                            if '应用题' not in original_type:
+                                item['题目类型'] = f"{original_type},应用题" if original_type else "应用题"
+                
+                # V12.0改进2：为每个习题添加年级元数据
+                grade_enricher = get_grade_enricher()
+                for item in data:
+                    grade_enricher.enrich_resource_grade(item)
                 
                 all_exercises.extend(data)
                 logger.info(f"解析习题汇总表: {md_file.name}, 共{len(data)}条记录")
@@ -522,12 +792,18 @@ class ResourceTableParser:
             except Exception as e:
                 logger.error(f"解析习题文件失败: {md_file}, 错误: {e}")
         
+        # V12.0改进2：记录年级分布统计
+        if all_exercises:
+            grade_stats = get_grade_enricher().get_grade_statistics(all_exercises)
+            logger.info(f"习题年级分布: {grade_stats}")
+        
         logger.info(f"解析习题汇总表完成，共{len(all_exercises)}条记录")
         return all_exercises
     
     def parse_lesson_plan_tables(self) -> List[Dict[str, str]]:
         """
         解析教案资源汇总表
+        改进：从文件名和文件路径中提取章节和主题信息
         
         Returns:
             教案资源列表
@@ -554,20 +830,65 @@ class ResourceTableParser:
                 with open(md_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                 
+                # 改进：从文件名中提取章节和主题信息
+                filename = md_file.stem
+                relative_path = md_file.relative_to(lesson_plan_folder)
+                
+                # 提取章节信息（如 "3.2.2"）
+                import re
+                chapter_match = re.match(r'(\d+\.\d+(?:\.\d+)?)', filename)
+                chapter = chapter_match.group(1) if chapter_match else ''
+                
+                # 提取主题信息（如 "奇偶性"、"单调性"）
+                # 从文件名中提取关键词
+                topic_keywords = [
+                    '单调性', '奇偶性', '周期性', '对称性', '最值', '最大值', '最小值',
+                    '概念', '表示法', '性质', '应用', '图像', '图象',
+                    '幂函数', '指数函数', '对数函数', '三角函数', '二次函数', '一次函数',
+                    '诱导公式', '三角恒等变换', '零点', '二分法',
+                    '任意角', '弧度制', '同角三角函数',
+                    # 添加语义关联关键词
+                    '抛物线', '顶点', '对称轴', '开口',
+                    '方程', '方程求解', '解方程',
+                    '实际应用', '生活应用', '数学建模',
+                    '放射性衰变', '指数增长', '指数衰减',
+                    '周期性变化', '波形', '正弦', '余弦', '正切'
+                ]
+                
+                extracted_topics = []
+                for keyword in topic_keywords:
+                    if keyword in filename or keyword in str(relative_path):
+                        extracted_topics.append(keyword)
+                
+                # 构建知识点标签
+                knowledge_tags = ', '.join(extracted_topics) if extracted_topics else ''
+                
                 # 对于教案文件，始终使用完整内容，不解析表格
                 # 教案文件中的表格是教学设计的一部分，不应该被单独解析
                 item = {
                     'resource_type': 'lesson_plan',
                     'source_file': str(md_file.relative_to(self.learning_resource_path)),
-                    'title': md_file.stem,
-                    'content': content  # 使用完整内容
+                    'title': filename,
+                    'content': content,  # 使用完整内容
+                    '章节': chapter,
+                    '知识点标签': knowledge_tags,
+                    '文件名主题': extracted_topics[0] if extracted_topics else ''
                 }
+                # V12.0改进2：为教案添加年级元数据
+                grade_enricher = get_grade_enricher()
+                grade_enricher.enrich_resource_grade(item)
+                
                 all_lesson_plans.append(item)
                 
-                logger.info(f"解析教案汇总表: {md_file.name}")
+                logger.info(f"解析教案: {md_file.name}, 章节: {chapter}, 主题: {knowledge_tags}, 年级: {item.get('grade', '未知')}")
                 
             except Exception as e:
                 logger.error(f"解析教案文件失败: {md_file}, 错误: {e}")
+        
+        # V12.0改进2：记录年级分布统计
+        if all_lesson_plans:
+            grade_stats = get_grade_enricher().get_grade_statistics(all_lesson_plans)
+            logger.info(f"教案年级分布: {grade_stats}")
         
         logger.info(f"解析教案汇总表完成，共{len(all_lesson_plans)}条记录")
         return all_lesson_plans
@@ -672,16 +993,66 @@ class ResourceTableParser:
                 
                 data = self.parse_markdown_table(content)
                 
-                # 添加资源类型和文件路径
-                for item in data:
+                # 添加资源类型、文件路径和标题
+                for i, item in enumerate(data):
                     item['resource_type'] = 'courseware'
                     item['source_file'] = str(md_file.relative_to(self.learning_resource_path))
+                    # 为课件资源创建标题
+                    content = item.get('内容', '')
+                    filename = item.get('文件名', '')
+                    title_parts = []
+                    if filename:
+                        title_parts.append(filename)
+                    if content:
+                        title_parts.append(content[:20])
+                    title = ' - '.join(title_parts) if title_parts else f"课件资源_{i+1}"
+                    item['title'] = title
                 
                 all_courseware.extend(data)
                 logger.info(f"解析课件汇总表: {md_file.name}, 共{len(data)}条记录")
                 
             except Exception as e:
                 logger.error(f"解析课件文件失败: {md_file}, 错误: {e}")
+        
+        # 遍历课件文件夹中的所有.xlsx文件
+        for xlsx_file in courseware_folder.rglob('*.xlsx'):
+            try:
+                import pandas as pd
+                
+                df = pd.read_excel(xlsx_file)
+                data = []
+                
+                # 遍历DataFrame的每一行
+                for i, row in df.iterrows():
+                    item = {}
+                    # 遍历每一列
+                    for col in df.columns:
+                        if pd.notna(row[col]):
+                            item[col] = str(row[col])
+                        else:
+                            item[col] = ''
+                    
+                    # 添加资源类型、文件路径和标题
+                    item['resource_type'] = 'courseware'
+                    item['source_file'] = str(xlsx_file.relative_to(self.learning_resource_path))
+                    # 为课件资源创建标题
+                    content = item.get('内容', '')
+                    filename = item.get('文件名', '')
+                    title_parts = []
+                    if filename:
+                        title_parts.append(filename)
+                    if content:
+                        title_parts.append(content[:20])
+                    title = ' - '.join(title_parts) if title_parts else f"课件资源_{i+1}"
+                    item['title'] = title
+                    
+                    data.append(item)
+                
+                all_courseware.extend(data)
+                logger.info(f"解析课件汇总表(xlsx): {xlsx_file.name}, 共{len(data)}条记录")
+                
+            except Exception as e:
+                logger.error(f"解析课件文件失败: {xlsx_file}, 错误: {e}")
         
         logger.info(f"解析课件汇总表完成，共{len(all_courseware)}条记录")
         return all_courseware
@@ -709,10 +1080,23 @@ class ResourceTableParser:
                 
                 data = self.parse_markdown_table(content)
                 
-                # 添加资源类型和文件路径
-                for item in data:
+                # 添加资源类型、文件路径和标题
+                for i, item in enumerate(data):
                     item['resource_type'] = 'lesson_case'
                     item['source_file'] = str(md_file.relative_to(self.learning_resource_path))
+                    # 为课例资源创建标题
+                    chapter = item.get('章节', '')
+                    filename = item.get('视频文件名/网址', '')
+                    analysis = item.get('分析', '')
+                    title_parts = []
+                    if chapter:
+                        title_parts.append(chapter)
+                    if filename and not filename.startswith('http'):
+                        title_parts.append(filename)
+                    if analysis:
+                        title_parts.append(analysis[:20])
+                    title = ' - '.join(title_parts) if title_parts else f"课例资源_{i+1}"
+                    item['title'] = title
                 
                 all_lesson_cases.extend(data)
                 logger.info(f"解析课例视频汇总表: {md_file.name}, 共{len(data)}条记录")
@@ -750,82 +1134,252 @@ class ResourceTableParser:
     def format_resource_for_search(self, resource: Dict[str, str]) -> str:
         """
         将资源格式化为用于搜索的文本
-        
+
         Args:
             resource: 资源字典
-            
+
         Returns:
             格式化后的文本
         """
         resource_type = resource.get('resource_type', '')
-        
+
         if resource_type == 'ggb':
-            return f"章节：{resource.get('章节', '')}，教学用途：{resource.get('教学用途', '')}"
-        
+            # 增强GGB资源的搜索文本，包含更多字段
+            chapter = resource.get('章节', '')
+            textbook = resource.get('教材', '')
+            filename = resource.get('ggb文件名', '')
+            steps = resource.get('演示步骤', '')
+            purpose = resource.get('教学用途', '')
+            
+            # 构建更丰富的搜索文本
+            search_parts = []
+            if chapter:
+                search_parts.append(f"章节：{chapter}")
+            if textbook:
+                search_parts.append(f"教材：{textbook}")
+            if filename:
+                search_parts.append(f"文件名：{filename}")
+            if steps:
+                search_parts.append(f"演示步骤：{steps}")
+            if purpose:
+                search_parts.append(f"教学用途：{purpose}")
+            
+            # 使用增强方法动态添加关键词
+            base_text = "，".join(search_parts)
+            enhanced_text = self._enhance_search_text(base_text, 'ggb', resource)
+            
+            return enhanced_text
+
         elif resource_type == 'syllabus':
-            return f"章节：{resource.get('章节', '')}，教学任务：{resource.get('教学任务（教学内容）', '')}"
-        
+            # V54.0改进：增强教学大纲资源的搜索文本
+            chapter = resource.get('章节', '')
+            task = resource.get('教学任务（教学内容）', '')
+            source_file = resource.get('source_file', '')
+            
+            # 构建基础搜索文本
+            base_text = f"章节：{chapter}，教学任务：{task}"
+            
+            # 使用增强方法动态添加关键词
+            enhanced_text = self._enhance_search_text(base_text, 'syllabus', resource)
+            
+            return enhanced_text
+
         elif resource_type == 'exercise':
             # 习题资源特殊处理
             question = resource.get('题干', '')
             filename = resource.get('题目文件名', '')
             source_file = resource.get('source_file', '')
+
+            # 优先使用'知识点'字段，其次使用'知识点标签'
+            knowledge_points = resource.get('知识点', resource.get('知识点标签', ''))
             
+            # 特殊处理：如果文件路径包含三角恒等变换相关内容，添加到知识点中
+            if '三角恒等' in source_file or '恒等变换' in source_file or '恒等变化' in source_file:
+                if '三角恒等变换' not in knowledge_points:
+                    knowledge_points = knowledge_points + ';三角恒等变换' if knowledge_points else '三角恒等变换'
+
             # 如果有文件名，说明是图片题目
             if filename:
-                return f"题目类型：{resource.get('题目类型', '')}，题目描述：{question}，知识点：{resource.get('知识点标签', '')}，来源：{source_file}"
+                base_text = f"题目类型：{resource.get('题目类型', '')}，题目描述：{question}，知识点：{knowledge_points}，来源：{source_file}"
             else:
                 # 文字题目，显示完整题目
-                return f"题目类型：{resource.get('题目类型', '')}，题目：{question}，知识点：{resource.get('知识点标签', '')}，来源：{source_file}"
-        
+                base_text = f"题目类型：{resource.get('题目类型', '')}，题目：{question}，知识点：{knowledge_points}，来源：{source_file}"
+            
+            # 使用增强方法动态添加关键词
+            enhanced_text = self._enhance_search_text(base_text, 'exercise', resource)
+            
+            return enhanced_text
+
         elif resource_type == 'lesson_plan':
-            return f"标题：{resource.get('title', '')}，内容：{resource.get('content', '')}"
+            # V54.0改进：教案资源使用完整内容作为搜索文本，确保教案解析器能正确解析
+            title = resource.get('title', '')
+            chapter = resource.get('章节', '')
+            knowledge_tags = resource.get('知识点标签', '')
+            file_topic = resource.get('文件名主题', '')
+            content = resource.get('content', '')  # 获取完整内容
+            
+            # 提取所有相关主题词
+            search_parts = ['教案']
+
+            # 首先检查标题中是否包含函数性质关键词
+            function_properties = ['单调性', '奇偶性', '周期性', '最值', '最大值', '最小值', 
+                                   '零点', '定义域', '值域', '解析式', '表示法', '概念']
+            
+            # 检查标题中是否包含函数性质关键词
+            title_lower = title.lower()
+            for prop in function_properties:
+                if prop in title:
+                    search_parts.append(f"函数的{prop}")
+                    break
+
+            # 检查文件名主题
+            if file_topic:
+                # 检查是否是函数的性质
+                is_function_property = any(prop in file_topic for prop in function_properties)
+                if is_function_property and '函数' not in file_topic:
+                    search_parts.append(f"函数的{file_topic}")
+                else:
+                    search_parts.append(file_topic)
+
+            # 检查知识点标签
+            if knowledge_tags:
+                tags = [tag.strip() for tag in knowledge_tags.split(',')]
+                for tag in tags:
+                    if tag and tag not in search_parts:
+                        # 检查是否是函数的性质
+                        is_function_property = any(prop in tag for prop in function_properties)
+                        if is_function_property and '函数' not in tag:
+                            search_parts.append(f"函数的{tag}")
+                        else:
+                            search_parts.append(tag)
+
+            # 添加章节
+            if chapter:
+                search_parts.append(chapter)
+
+            # 添加标题中的关键部分
+            title_cleaned = title.replace('教学设计', '').replace('教案', '').replace('导学案', '').strip(' -（）()【】[]')
+            if title_cleaned:
+                search_parts.append(title_cleaned)
+
+            # 确保搜索文本包含函数性质关键词
+            # 检查标题中是否包含函数性质关键词
+            for prop in function_properties:
+                if prop in title and f"函数的{prop}" not in search_parts:
+                    search_parts.append(f"函数的{prop}")
+
+            # V54.2改进：添加完整内容，确保教案解析器能正确解析教学目标、教学过程、重难点
+            if content:
+                # V54.3改进：去除Markdown格式和图片引用，提高向量检索相似度
+                import re
+                # 去除图片引用 ![](image.png)
+                content = re.sub(r'!\[.*?\]\(.*?\)', '', content)
+                # 去除图片引用 ![...](...) 格式
+                content = re.sub(r'!\[.*?\]\[.*?\]', '', content)
+                # 去除Markdown链接 [text](url)
+                content = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', content)
+                # 去除Markdown粗体 **text**
+                content = re.sub(r'\*\*([^*]+)\*\*', r'\1', content)
+                # 去除Markdown斜体 *text*
+                content = re.sub(r'\*([^*]+)\*', r'\1', content)
+                # 去除Markdown标题 # text
+                content = re.sub(r'^#+\s+', '', content, flags=re.MULTILINE)
+                # V54.4改进：去除表格格式
+                # 去除表格宽度高度信息 {width="..." height="..."}
+                content = re.sub(r'\{width="[^"]*"\s+height="[^"]*"\}', '', content)
+                content = re.sub(r'\{width="[^"]*"\}', '', content)
+                content = re.sub(r'\{height="[^"]*"\}', '', content)
+                # 去除表格分隔符行
+                content = re.sub(r'\|?[-:]+\|?[-:]+\|?[-:]+\|?', '', content)
+                content = re.sub(r'\+[-:]+\+[-:]+\+[-:]+\+', '', content)
+                # 去除表格中的竖线分隔符
+                content = re.sub(r'\|', '，', content)
+                # 去除表格中的加号分隔符
+                content = re.sub(r'\+', '，', content)
+                # 去除表格中的横线分隔符
+                content = re.sub(r'-+', '', content)
+                # 去除表格中的冒号分隔符
+                content = re.sub(r':+', '，', content)
+                # 去除表格中的点号分隔符
+                content = re.sub(r'\.+', '，', content)
+                # 去除表格中的空格分隔符
+                content = re.sub(r'\s+', ' ', content)
+                # 去除表格中的特殊符号
+                content = re.sub(r'[锛岋紝锛?锛?]+', '，', content)
+                content = re.sub(r'[锛?锛?]+', '，', content)
+                content = re.sub(r'[锛?锛?]+', '，', content)
+                content = re.sub(r'[锛?锛?]+', '，', content)
+                content = re.sub(r'[锛?锛?]+', '，', content)
+                content = content.strip()
+                
+                # V54.1改进：增加内容长度限制到10000字符，确保教案解析器能正确解析
+                max_content_length = 10000
+                if len(content) > max_content_length:
+                    content = content[:max_content_length] + '...'
+                search_parts.append(f"内容：{content}")
+            
+            return '，'.join(search_parts)
         
         elif resource_type == 'theory':
             return f"标题：{resource.get('title', '')}，内容：{resource.get('content', '')}"
         
         elif resource_type == 'courseware':
-            # 课件资源
+            # V54.0改进：增强课件资源的搜索文本
             content = resource.get('内容', '')
             filename = resource.get('文件名', '')
             usage = resource.get('教学用途', '')
-            return f"内容：{content}，文件名：{filename}，教学用途：{usage}"
+            source_file = resource.get('source_file', '')
+            
+            # 构建基础搜索文本
+            base_text = f"内容：{content}，文件名：{filename}，教学用途：{usage}"
+            
+            # 使用增强方法动态添加关键词
+            enhanced_text = self._enhance_search_text(base_text, 'courseware', resource)
+            
+            return enhanced_text
         
         elif resource_type == 'lesson_case':
-            # 课例资源
+            # V54.0改进：增强课例视频资源的搜索文本
             chapter = resource.get('章节', '')
             filename = resource.get('视频文件名/网址', '')
             analysis = resource.get('分析', '')
             textbook = resource.get('教材', '')
+            source_file = resource.get('source_file', '')
             
-            # 构建描述，优先使用分析内容，如果为空则使用章节和文件名
-            description_parts = []
+            # 构建基础搜索文本
+            base_parts = []
             
             # 添加资源类型关键词
-            description_parts.append("课例")
-            description_parts.append("教学视频")
-            description_parts.append("课堂实录")
+            base_parts.append("课例")
+            base_parts.append("教学视频")
+            base_parts.append("课堂实录")
             
             if textbook:
-                description_parts.append(f"教材：{textbook}")
+                base_parts.append(f"教材：{textbook}")
             
             if chapter:
-                description_parts.append(f"章节：{chapter}")
+                base_parts.append(f"章节：{chapter}")
             
             # 尝试从文件名中提取知识点信息
             if filename and not filename.startswith('http'):
                 # 从文件名中提取关键信息
                 topic_info = self._extract_topic_from_filename(filename)
                 if topic_info:
-                    description_parts.append(f"知识点：{topic_info}")
+                    base_parts.append(f"知识点：{topic_info}")
             
             if analysis and analysis.strip():
-                description_parts.append(f"分析：{analysis}")
+                base_parts.append(f"分析：{analysis}")
             elif filename:
                 # 如果分析为空，从文件名中提取关键信息
-                description_parts.append(f"视频：{filename}")
+                base_parts.append(f"视频：{filename}")
             
-            return "，".join(description_parts)
+            # 构建基础搜索文本
+            base_text = '，'.join(base_parts)
+            
+            # 使用增强方法动态添加关键词
+            enhanced_text = self._enhance_search_text(base_text, 'lesson_case', resource)
+            
+            return enhanced_text
         
         else:
             return str(resource)

@@ -97,12 +97,18 @@ def _patch_langgraph_node_alias():
 def main():
     _patch_langgraph_node_alias()
 
+    # 设置环境变量PORT为8001
+    os.environ["PORT"] = "8001"
+    # 设置环境变量HOST为0.0.0.0
+    os.environ["HOST"] = "0.0.0.0"
+
     from main import app
     import uvicorn
 
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8000"))
 
+    print(f"🚀 启动后端服务器: http://{host}:{port}")
     uvicorn.run(app, host=host, port=port)
 
 

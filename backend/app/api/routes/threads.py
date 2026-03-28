@@ -25,7 +25,7 @@ router = APIRouter()
 threads: Dict[str, Dict[str, Any]] = {}
 
 
-@router.post("/threads", response_model=Thread)
+@router.post("/", response_model=Thread)
 async def create_thread(request: ThreadCreateRequest):
     """
     创建新线程（不关联用户，向后兼容）
@@ -74,7 +74,7 @@ async def create_thread_for_user(user_id: str, request: ThreadCreateWithUserRequ
     return ThreadWithUser(**thread)
 
 
-@router.get("/threads/{thread_id}", response_model=Thread)
+@router.get("/{thread_id}", response_model=Thread)
 async def get_thread(thread_id: str):
     """
     获取线程信息
@@ -129,7 +129,7 @@ async def get_user_threads(
     return [ThreadWithUser(**t) for t in user_threads]
 
 
-@router.post("/threads/search")
+@router.post("/search")
 async def search_threads(query: Dict[str, Any] = Body(default={})):
     """
     搜索线程
@@ -170,7 +170,7 @@ async def search_threads(query: Dict[str, Any] = Body(default={})):
     }
 
 
-@router.get("/threads")
+@router.get("/")
 async def list_threads(limit: int = 100, offset: int = 0):
     """
     列出所有线程
@@ -183,7 +183,7 @@ async def list_threads(limit: int = 100, offset: int = 0):
     }
 
 
-@router.post("/threads/{thread_id}/history")
+@router.post("/{thread_id}/history")
 async def get_thread_history(thread_id: str):
     """
     获取线程历史消息

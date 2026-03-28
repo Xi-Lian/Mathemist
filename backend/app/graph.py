@@ -27,7 +27,6 @@ def create_math_agent_graph():
     graph.add_node("lesson_plan_generation", lesson_plan_generation_node)
     graph.add_node("visualization_suggestions", visualization_suggestions_node)
     graph.add_node("ggb_design_advisor", ggb_design_advisor_node)
-    graph.add_node("multi_intent_processor", multi_intent_processor_node)
     graph.add_node("response_formatting", response_formatting_node)
     
     # 定义边和路由
@@ -112,8 +111,8 @@ def create_math_agent_graph():
         
         if len(high_confidence_intents) > 1:
             print(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
-            # 有多个意图，使用多意图处理器
-            return "multi_intent_processor"
+            # 有多个意图，直接路由到响应格式化节点
+            return "response_formatting"
         
         # 如果包含资源获取指令词，强制使用响应格式化，不生成教案
         if has_resource_retrieval:
@@ -123,7 +122,9 @@ def create_math_agent_graph():
         # 如果用户明确指定了资源类型，检查是否是教案生成意图
         if resource_types:
             print(f"🔀 检测到资源类型: {resource_types}")
-            if intent == "generate_lesson_plan" or any(i.get("type") == "generate_lesson_plan" for i in intents):
+            # 只有当主要意图是generate_lesson_plan时，才走统一教案流程
+            # 如果主要意图是search，即使intents中包含generate_lesson_plan（低置信度），也应该走资源检索流程
+            if intent == "generate_lesson_plan":
                 print(f"🔀 检测到教案生成意图，继续走统一教案流程")
                 return "unified_lesson_plan"
             else:
@@ -155,7 +156,7 @@ def create_math_agent_graph():
             "lesson_plan_generation": "lesson_plan_generation",
             "visualization_suggestions": "visualization_suggestions",
             "ggb_design_advisor": "ggb_design_advisor",
-            "multi_intent_processor": "multi_intent_processor",
+
             "response_formatting": "response_formatting"
         }
     )
@@ -185,7 +186,7 @@ def create_math_agent_graph():
     )
     
     # 多意图处理器 -> 响应格式化
-    graph.add_edge("multi_intent_processor", "response_formatting")
+
     
     # 所有处理节点 -> 响应格式化节点
     graph.add_edge("lesson_plan_generation", "response_formatting")
@@ -201,74 +202,4 @@ def create_math_agent_graph():
     return compiled_graph
 
 
-def multi_intent_processor_node(state) -> dict:
-    """
-    多意图处理器节点
-    同时处理多个高置信度意图
-    
-    Args:
-        state: 状态对象
-    
-    Returns:
-        更新的状态
-    """
-    from .nodes import (
-        unified_lesson_plan_node,
-        visualization_suggestions_node,
-        ggb_design_advisor_node
-    )
-    
-    print(f"\n🔄 多意图处理器启动")
-    
-    # 获取高置信度意图
-    if isinstance(state, dict):
-        intents = state.get("intents", [])
-    else:
-        intents = getattr(state, "intents", [])
-    
-    high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
-    print(f"🎯 待处理的高置信度意图: {high_confidence_intents}")
-    
-    updates = {
-        "current_step": "multi_intent_processor",
-        "error": None,
-        "processed_intents": []
-    }
-    
-    # 按优先级处理各个意图
-    intent_types = [i.get("type") for i in high_confidence_intents]
-    
-    # 1. 处理教案生成意图
-    if "generate_lesson_plan" in intent_types:
-        print(f"📝 处理教案生成意图")
-        lesson_plan_result = unified_lesson_plan_node(state)
-        updates.update(lesson_plan_result)
-        updates["processed_intents"].append("generate_lesson_plan")
-    
-    # 2. 处理可视化意图
-    if "visualization" in intent_types:
-        print(f"🎨 处理可视化意图")
-        viz_result = visualization_suggestions_node(state)
-        updates.update(viz_result)
-        updates["processed_intents"].append("visualization")
-    
-    # 3. 检查是否有GGB资源并处理
-    if isinstance(state, dict):
-        retrieved_resources = state.get("retrieved_resources", {})
-    else:
-        retrieved_resources = getattr(state, "retrieved_resources", {})
 
-    # 兜底：防止检索阶段返回 None 导致后续 .get 崩溃
-    if not isinstance(retrieved_resources, dict):
-        retrieved_resources = {}
-    
-    ggb_resources = retrieved_resources.get("ggb_resources", [])
-    if ggb_resources and "visualization" in intent_types:
-        print(f"🔧 处理GGB设计建议")
-        ggb_result = ggb_design_advisor_node(state)
-        updates.update(ggb_result)
-        updates["processed_intents"].append("ggb_design")
-    
-    print(f"✅ 多意图处理完成，已处理: {updates['processed_intents']}")
-    
-    return updates

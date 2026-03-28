@@ -9,8 +9,9 @@
 - 匹配结果可视化
 """
 
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from pathlib import Path
+import re
 
 
 class ThemeMatcher:
@@ -27,11 +28,32 @@ class ThemeMatcher:
     #     }
     # }
     THEME_KEYWORD_MAP = {
+        "函数的单调性": {
+            "core_keywords": ["函数的单调性", "单调性", "单调递增", "单调递减", "增函数", "减函数"],
+            "related_keywords": ["单调区间", "最值", "最大值", "最小值", "极值", "单调性与最值"],
+            "chapter_indicators": ["3.2.1", "3-2-1"],
+            "conflict_themes": ["函数的奇偶性", "函数的周期性", "函数的概念", "函数的表示法", "函数的应用"],
+            "path_keywords": ["单调性", "单调"]
+        },
+        "函数的奇偶性": {
+            "core_keywords": ["函数的奇偶性", "奇偶性", "奇函数", "偶函数"],
+            "related_keywords": ["对称性", "关于原点对称", "关于y轴对称", "f(-x)"],
+            "chapter_indicators": ["3.2.2", "3-2-2"],
+            "conflict_themes": ["函数的单调性", "函数的周期性", "函数的概念", "函数的表示法"],
+            "path_keywords": ["奇偶性", "奇偶"]
+        },
+        "函数的周期性": {
+            "core_keywords": ["函数的周期性", "周期性", "周期函数", "最小正周期"],
+            "related_keywords": ["周期", "T", "f(x+T)", "正弦周期", "余弦周期"],
+            "chapter_indicators": ["5.4"],
+            "conflict_themes": ["函数的单调性", "函数的奇偶性", "函数的概念"],
+            "path_keywords": ["周期性", "周期"]
+        },
         "函数的概念": {
             "core_keywords": ["函数的概念", "函数概念", "函数定义"],
             "related_keywords": ["什么是函数", "函数意义", "函数本质"],
             "chapter_indicators": ["3.1", "3.2"],
-            "conflict_themes": ["函数的应用", "函数的性质", "函数的表示法"],
+            "conflict_themes": ["函数的应用", "函数的性质", "函数的表示法", "函数的单调性", "函数的奇偶性"],
             "path_keywords": ["概念", "定义"]
         },
         "指数函数的概念": {
@@ -52,7 +74,7 @@ class ThemeMatcher:
             "core_keywords": ["函数应用", "函数的应用"],
             "related_keywords": ["应用", "建模", "实际问题", "数学建模"],
             "chapter_indicators": ["4.5"],
-            "conflict_themes": ["函数的概念", "函数的性质", "函数的表示法"],
+            "conflict_themes": ["函数的概念", "函数的性质", "函数的表示法", "函数的单调性", "函数的奇偶性"],
             "path_keywords": ["应用"]
         },
         "函数的性质": {
@@ -70,25 +92,48 @@ class ThemeMatcher:
             "path_keywords": ["表示法"]
         },
         "指数函数": {
-            "core_keywords": ["指数函数", "指数与指数函数", "指数"],
+            "core_keywords": ["指数函数", "指数与指数函数"],
             "related_keywords": ["2^x", "a^x", "e^", "指数增长", "指数衰减"],
-            "chapter_indicators": ["4.2"],
-            "conflict_themes": ["对数函数", "幂函数", "三角函数", "二次函数", "一次函数", "分段函数"],
-            "path_keywords": ["指数"]
+            "chapter_indicators": ["4.2", "4.1"],
+            "conflict_themes": ["幂函数", "三角函数", "二次函数", "一次函数", "分段函数"],
+            "path_keywords": ["指数函数"]
+        },
+        "指数运算": {
+            "core_keywords": ["指数运算", "分数指数幂", "根式运算", "指数幂"],
+            "related_keywords": ["8^", "2^(", "a^(2/3)", "分数指数", "有理指数幂", "n次根式"],
+            "chapter_indicators": ["4.1", "4-1"],
+            "conflict_themes": ["幂函数", "三角函数", "二次函数"],
+            "path_keywords": ["指数", "4-1"],
+            "description": "指数运算是计算 a^b 形式的值，底数是常数，指数可以是分数"
         },
         "对数函数": {
-            "core_keywords": ["对数函数", "对数与对数函数", "对数"],
-            "related_keywords": ["log", "ln", "对数增长", "对数衰减"],
+            "core_keywords": ["对数函数", "对数与对数函数"],
+            "related_keywords": ["log", "ln", "对数增长", "对数衰减", "对数运算", "对数方程", "换底公式", "对数性质"],
             "chapter_indicators": ["4.3", "4.4"],
-            "conflict_themes": ["指数函数", "幂函数", "三角函数", "二次函数", "一次函数", "分段函数"],
+            "conflict_themes": ["幂函数", "三角函数", "二次函数", "一次函数", "分段函数"],
             "path_keywords": ["对数"]
         },
+        "对数函数运算": {
+            "core_keywords": ["对数函数运算", "对数运算", "换底公式"],
+            "related_keywords": ["log", "ln", "对数性质", "对数方程"],
+            "chapter_indicators": ["4.3.2", "4-3-2"],
+            "conflict_themes": ["指数函数", "幂函数", "三角函数", "二次函数"],
+            "path_keywords": ["对数运算", "换底公式"]
+        },
+        "指数与对数函数综合": {
+            "core_keywords": ["指数与对数函数综合", "指数对数综合", "综合应用"],
+            "related_keywords": ["指数函数", "对数函数", "综合题", "实际应用", "函数模型"],
+            "chapter_indicators": ["4.4", "4.5"],
+            "conflict_themes": ["三角函数", "二次函数", "幂函数"],
+            "path_keywords": ["综合", "应用"]
+        },
         "幂函数": {
-            "core_keywords": ["幂函数", "幂"],
-            "related_keywords": ["x^a", "x的幂", "幂运算"],
-            "chapter_indicators": ["3.3"],
-            "conflict_themes": ["指数函数", "对数函数", "三角函数", "二次函数", "一次函数", "分段函数"],
-            "path_keywords": ["幂"]
+            "core_keywords": ["幂函数", "y=x^a", "y = x^a", "幂函数的图像", "幂函数的性质"],
+            "related_keywords": ["x^a", "x的幂", "幂运算", "幂函数图像"],
+            "chapter_indicators": ["3.3", "3-3"],
+            "conflict_themes": ["指数函数", "对数函数", "三角函数", "二次函数", "一次函数", "分段函数", "指数运算"],
+            "path_keywords": ["幂函数", "3-3幂函数", "3.3幂函数"],
+            "exclude_keywords": ["指数运算", "分数指数幂", "根式运算", "指数幂", "8^", "2^(", "a^x", "a^(2/3)", "分数指数"]
         },
         "二次函数": {
             "core_keywords": ["二次函数"],
@@ -106,10 +151,17 @@ class ThemeMatcher:
         },
         "三角函数": {
             "core_keywords": ["三角函数", "正弦", "余弦", "正切"],
-            "related_keywords": ["三角", "sin", "cos", "tan", "cot", "sec", "csc", "任意角", "诱导公式", "三角恒等变换"],
-            "chapter_indicators": ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6"],
+            "related_keywords": ["三角", "sin", "cos", "tan", "cot", "sec", "csc", "任意角", "诱导公式"],
+            "chapter_indicators": ["5.1", "5.2", "5.3", "5.4", "5.6"],
             "conflict_themes": ["指数函数", "对数函数", "二次函数", "幂函数", "一次函数", "分段函数"],
             "path_keywords": ["三角"]
+        },
+        "三角恒等变换": {
+            "core_keywords": ["三角恒等变换", "三角恒等式", "恒等变换", "和差化积", "积化和差", "二倍角", "半角公式"],
+            "related_keywords": ["sin", "cos", "tan", "诱导公式", "两角和与差", "三角公式"],
+            "chapter_indicators": ["5.5", "5-5"],
+            "conflict_themes": ["指数函数", "对数函数", "二次函数", "幂函数", "一次函数"],
+            "path_keywords": ["三角恒等变换", "5-5", "恒等变换"]
         },
         "分段函数": {
             "core_keywords": ["分段函数"],
@@ -117,18 +169,32 @@ class ThemeMatcher:
             "chapter_indicators": ["3.1", "3.2"],
             "conflict_themes": ["指数函数", "对数函数", "三角函数", "幂函数", "二次函数", "一次函数"],
             "path_keywords": ["分段"]
+        },
+        "导数": {
+            "core_keywords": ["导数", "导函数", "微分", "求导"],
+            "related_keywords": ["f'", "y'", "dy/dx", "导数的几何意义", "切线方程", "瞬时变化率"],
+            "chapter_indicators": ["6.1", "6.2", "6-1", "6-2"],
+            "conflict_themes": ["指数函数", "对数函数", "三角函数", "幂函数", "二次函数", "一次函数"],
+            "path_keywords": ["导数", "微分", "求导"]
+        },
+        "导数的应用": {
+            "core_keywords": ["导数的应用", "导数应用"],
+            "related_keywords": ["单调性", "极值", "最值", "优化问题", "切线", "曲率"],
+            "chapter_indicators": ["6.3", "6.4", "6-3", "6-4"],
+            "conflict_themes": ["指数函数", "对数函数", "三角函数", "幂函数", "二次函数", "一次函数"],
+            "path_keywords": ["导数应用", "应用"]
         }
     }
     
-    # 加分配置
+    # 加分配置（提高主题匹配的权重）
     BOOST_CONFIG = {
-        "filename_core_keyword_match": 0.40,  # 文件名包含核心关键词（最高优先级）
-        "title_core_keyword_match": 0.38,  # 标题包含核心关键词
-        "core_keyword_match": 0.35,  # 其他地方核心关键词匹配
-        "chapter_indicator_match": 0.30,  # 章节标识匹配
-        "path_keyword_match": 0.25,  # 路径关键词匹配
-        "related_keyword_match": 0.20,  # 相关关键词匹配
-        "weak_match": 0.15  # 弱匹配
+        "filename_core_keyword_match": 0.80,  # 文件名包含核心关键词（最高优先级）
+        "title_core_keyword_match": 0.75,  # 标题包含核心关键词
+        "core_keyword_match": 0.70,  # 其他地方核心关键词匹配
+        "chapter_indicator_match": 0.65,  # 章节标识匹配
+        "path_keyword_match": 0.60,  # 路径关键词匹配
+        "related_keyword_match": 0.55,  # 相关关键词匹配
+        "weak_match": 0.50  # 弱匹配
     }
     
     # 减分配置
@@ -145,7 +211,8 @@ class ThemeMatcher:
         core_theme: str,
         metadata: Dict[str, Any],
         document: str,
-        verbose: bool = True
+        verbose: bool = True,
+        all_themes: List[str] = None
     ) -> Dict[str, Any]:
         """
         多维度主题匹配（带详细日志）
@@ -155,6 +222,7 @@ class ThemeMatcher:
             metadata: 资源元数据
             document: 文档内容
             verbose: 是否输出详细日志
+            all_themes: 查询中包含的所有主题列表（用于排除多主题查询中的主题冲突）
         
         Returns:
             匹配结果字典
@@ -184,9 +252,10 @@ class ThemeMatcher:
         tags = metadata.get('知识点标签', '')
         stem = metadata.get('题干', '')
         chapter = metadata.get('章节', '')
+        file_topic = metadata.get('文件名主题', '')  # 教案文件名中提取的主题
         
         if verbose:
-            print(f"   📄 资源信息: 标题={title}, 源文件={Path(source_file).name if source_file else 'N/A'}, 章节={chapter}")
+            print(f"   📄 资源信息: 标题={title}, 源文件={Path(source_file).name if source_file else 'N/A'}, 章节={chapter}, 文件名主题={file_topic}")
         
         # 检查多维度匹配（优先级从高到低）
         match_evidence = []
@@ -202,7 +271,16 @@ class ThemeMatcher:
         elif verbose and filename:
             match_log.append(f"✗ 文件名不匹配: {filename}")
         
-        # 2. 检查标题是否包含核心关键词
+        # 2. 检查文件名主题（从教案文件名中提取的主题关键词，高优先级）
+        if not result["is_theme_match"] and file_topic and self._check_keywords_in_text(file_topic, theme_config["core_keywords"]):
+            result["is_theme_match"] = True
+            result["relevance_boost"] = self.BOOST_CONFIG["filename_core_keyword_match"]
+            match_evidence.append(("文件名主题", file_topic))
+            match_log.append(f"✓ 文件名主题匹配: {file_topic} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
+        elif verbose and file_topic and not result["is_theme_match"]:
+            match_log.append(f"✗ 文件名主题不匹配: {file_topic}")
+        
+        # 3. 检查标题是否包含核心关键词
         if not result["is_theme_match"] and title and self._check_keywords_in_text(title, theme_config["core_keywords"]):
             result["is_theme_match"] = True
             result["relevance_boost"] = self.BOOST_CONFIG["title_core_keyword_match"]
@@ -211,7 +289,7 @@ class ThemeMatcher:
         elif verbose and title and not result["is_theme_match"]:
             match_log.append(f"✗ 标题不匹配: {title}")
         
-        # 3. 检查知识点标签（强匹配）
+        # 4. 检查知识点标签（强匹配）
         if not result["is_theme_match"] and tags and self._check_keywords_in_text(tags, theme_config["core_keywords"]):
             result["is_theme_match"] = True
             result["relevance_boost"] = self.BOOST_CONFIG["core_keyword_match"]
@@ -220,14 +298,14 @@ class ThemeMatcher:
         elif verbose and tags and not result["is_theme_match"]:
             match_log.append(f"✗ 知识点标签不匹配: {tags}")
         
-        # 4. 检查题干（中匹配）
+        # 5. 检查题干（中匹配）
         if not result["is_theme_match"] and stem and self._check_keywords_in_text(stem, theme_config["core_keywords"] + theme_config["related_keywords"]):
             result["is_theme_match"] = True
             result["relevance_boost"] = self.BOOST_CONFIG["related_keyword_match"]
             match_evidence.append(("题干", stem))
             match_log.append(f"✓ 题干匹配 (+{self.BOOST_CONFIG['related_keyword_match']:.0%})")
         
-        # 5. 检查文件名是否包含幂函数相关关键词（针对幂函数特殊处理）
+        # 6. 检查文件名是否包含幂函数相关关键词（针对幂函数特殊处理）
         if not result["is_theme_match"] and core_theme == "幂函数" and filename:
             power_function_keywords = ["幂函数", "3-3", "3.3"]
             if any(keyword in filename for keyword in power_function_keywords):
@@ -236,7 +314,7 @@ class ThemeMatcher:
                 match_evidence.append(("文件名", filename))
                 match_log.append(f"✓ 幂函数文件名匹配: {filename} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
         
-        # 6. 检查源文件路径是否包含幂函数相关关键词（针对幂函数特殊处理）
+        # 7. 检查源文件路径是否包含幂函数相关关键词（针对幂函数特殊处理）
         if not result["is_theme_match"] and core_theme == "幂函数" and source_file:
             power_function_keywords = ["幂函数", "3-3", "3.3"]
             if any(keyword in source_file for keyword in power_function_keywords):
@@ -245,7 +323,7 @@ class ThemeMatcher:
                 match_evidence.append(("源文件路径", source_file))
                 match_log.append(f"✓ 幂函数源文件路径匹配: {source_file} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
         
-        # 7. 检查知识点标签是否包含幂函数相关关键词（针对幂函数特殊处理）
+        # 8. 检查知识点标签是否包含幂函数相关关键词（针对幂函数特殊处理）
         if not result["is_theme_match"] and core_theme == "幂函数" and tags:
             power_function_keywords = ["幂函数"]
             if any(keyword in tags for keyword in power_function_keywords):
@@ -254,7 +332,7 @@ class ThemeMatcher:
                 match_evidence.append(("知识点标签", tags))
                 match_log.append(f"✓ 幂函数知识点标签匹配: {tags} (+{self.BOOST_CONFIG['filename_core_keyword_match']:.0%})")
         
-        # 6. 检查章节标识（强匹配）
+        # 9. 检查章节标识（强匹配）
         if not result["is_theme_match"] and self._check_keywords_in_text(chapter, theme_config["chapter_indicators"]):
             result["is_theme_match"] = True
             result["relevance_boost"] = self.BOOST_CONFIG["chapter_indicator_match"]
@@ -263,7 +341,7 @@ class ThemeMatcher:
         elif verbose and chapter and not result["is_theme_match"]:
             match_log.append(f"✗ 章节标识不匹配: {chapter}")
         
-        # 6. 检查路径关键词 + 章节标识（中匹配）
+        # 10. 检查路径关键词 + 章节标识（中匹配）
         if not result["is_theme_match"]:
             path_has_keyword = self._check_keywords_in_text(source_file, theme_config["path_keywords"])
             path_has_chapter = self._check_keywords_in_text(source_file, theme_config["chapter_indicators"])
@@ -297,15 +375,28 @@ class ThemeMatcher:
         # 检查冲突主题（始终执行）
         conflict_evidence = []
         
+        # 获取实际需要检测的冲突主题（排除查询中包含的其他主题）
+        actual_conflict_themes = theme_config["conflict_themes"]
+        if all_themes:
+            actual_conflict_themes = [ct for ct in theme_config["conflict_themes"] if ct not in all_themes]
+        
         # 特别检查：如果文件名或标题明确包含冲突主题词，应该优先判定为冲突
         strong_conflict = False
         filename = Path(source_file).name if source_file else ""
-        check_strong_conflict_texts = [filename, title]
+        check_strong_conflict_texts = [filename, title, chapter]
         
         for text in check_strong_conflict_texts:
             if text:
-                for ct in theme_config["conflict_themes"]:
+                for ct in actual_conflict_themes:
+                    # 避免将章节名称中的"函数的概念"误判为冲突
+                    # 例如："第三章函数的概念与性质"中的"函数的概念"只是章节名称的一部分
                     if ct in text:
+                        # 检查是否是"函数的概念"冲突，且文本是章节名称或路径
+                        if ct == "函数的概念":
+                            # 检查是否是在章节路径中，而不是实际主题
+                            if "章" in text or "第" in text or "函数的概念与性质" in text:
+                                continue  # 跳过章节名称中的"函数的概念"
+                        
                         strong_conflict = True
                         result["is_conflict_theme"] = True
                         result["relevance_penalty"] = self.PENALTY_CONFIG["conflict_theme"]
@@ -314,6 +405,26 @@ class ThemeMatcher:
                         break
             if strong_conflict:
                 break
+        
+        # 增强冲突检测：检查文件路径中的章节信息
+        if not strong_conflict and source_file:
+            # 检查是否在三角函数章节
+            trigonometry_paths = ["第五章三角函数", "5.4", "5.5", "5.6"]
+            for trig_path in trigonometry_paths:
+                if trig_path in source_file:
+                    # 检查当前主题是否与三角函数相关
+                    current_theme_is_trig = any(trig_keyword in core_theme for trig_keyword in ["三角函数", "正弦", "余弦", "正切", "三角恒等变换", "诱导公式"])
+                    if not current_theme_is_trig:
+                        # 只有当当前主题与三角函数完全无关时才标记为冲突
+                        # 避免将函数性质主题错误标记为冲突
+                        function_property_themes = ["函数的单调性", "函数的奇偶性", "函数的周期性", "函数的概念", "函数的性质"]
+                        if core_theme not in function_property_themes:
+                            strong_conflict = True
+                            result["is_conflict_theme"] = True
+                            result["relevance_penalty"] = self.PENALTY_CONFIG["conflict_theme"]
+                            conflict_evidence.append(("三角函数", source_file))
+                            match_log.append(f"⚠️ 路径冲突检测: 三角函数章节 (-{self.PENALTY_CONFIG['conflict_theme']:.0%})")
+                            break
         
         # 如果有强冲突，取消主题匹配（即使内容匹配了）
         if strong_conflict:
@@ -334,7 +445,7 @@ class ThemeMatcher:
                 check_texts = [tags, chapter, stem, document, source_file]
                 for text in check_texts:
                     if text:
-                        for ct in theme_config["conflict_themes"]:
+                        for ct in actual_conflict_themes:
                             if ct in text:
                                 result["is_conflict_theme"] = True
                                 result["relevance_penalty"] = self.PENALTY_CONFIG["conflict_theme"]
@@ -431,6 +542,209 @@ class ThemeMatcher:
                 self.THEME_KEYWORD_MAP[theme][key].append(kw)
         
         return True
+    
+    def dynamic_theme_detection(self, content: str, title: str = "") -> List[Dict[str, Any]]:
+        """
+        动态主题检测
+        
+        Args:
+            content: 资源内容
+            title: 资源标题
+        
+        Returns:
+            检测到的主题列表
+        """
+        detected_themes = []
+        
+        # 1. 基于主题关键词映射的检测
+        for theme, config in self.THEME_KEYWORD_MAP.items():
+            # 检查核心关键词
+            if self._check_keywords_in_text(content, config["core_keywords"]) or \
+               self._check_keywords_in_text(title, config["core_keywords"]):
+                detected_themes.append({
+                    "theme": theme,
+                    "confidence": 0.9,
+                    "evidence": "core_keyword",
+                    "matched_keywords": [kw for kw in config["core_keywords"] 
+                                        if kw in content or kw in title]
+                })
+            # 检查相关关键词
+            elif self._check_keywords_in_text(content, config["related_keywords"]) or \
+                 self._check_keywords_in_text(title, config["related_keywords"]):
+                detected_themes.append({
+                    "theme": theme,
+                    "confidence": 0.7,
+                    "evidence": "related_keyword",
+                    "matched_keywords": [kw for kw in config["related_keywords"] 
+                                        if kw in content or kw in title]
+                })
+        
+        # 2. 基于数学公式的动态检测
+        formula_themes = self._detect_formula_themes(content)
+        detected_themes.extend(formula_themes)
+        
+        # 3. 基于上下文的动态检测
+        context_themes = self._detect_context_themes(content, title)
+        detected_themes.extend(context_themes)
+        
+        # 4. 去重并按置信度排序
+        unique_themes = {}
+        for theme_info in detected_themes:
+            theme = theme_info["theme"]
+            if theme not in unique_themes or theme_info["confidence"] > unique_themes[theme]["confidence"]:
+                unique_themes[theme] = theme_info
+        
+        return sorted(unique_themes.values(), key=lambda x: -x["confidence"])
+    
+    def _detect_formula_themes(self, content: str) -> List[Dict[str, Any]]:
+        """
+        基于公式的主题检测
+        """
+        formula_themes = []
+        
+        # 幂函数: y = x^a
+        if re.search(r'y\s*=\s*x\s*\^\s*[a-zA-Z]', content):
+            formula_themes.append({
+                "theme": "幂函数",
+                "confidence": 0.85,
+                "evidence": "formula",
+                "matched_keywords": ["y = x^a"]
+            })
+        
+        # 指数函数: y = a^x
+        if re.search(r'y\s*=\s*[a-zA-Z]\s*\^\s*x', content):
+            formula_themes.append({
+                "theme": "指数函数",
+                "confidence": 0.85,
+                "evidence": "formula",
+                "matched_keywords": ["y = a^x"]
+            })
+        
+        # 二次函数: y = ax² + bx + c
+        if re.search(r'y\s*=\s*[a-zA-Z]\s*[xX]\s*[\^2²]', content):
+            formula_themes.append({
+                "theme": "二次函数",
+                "confidence": 0.85,
+                "evidence": "formula",
+                "matched_keywords": ["y = ax²"]
+            })
+        
+        # 三角函数
+        if re.search(r'[sS][iI][nN]|cos|tan|sin|cos|tan', content):
+            formula_themes.append({
+                "theme": "三角函数",
+                "confidence": 0.75,
+                "evidence": "formula",
+                "matched_keywords": ["sin", "cos", "tan"]
+            })
+        
+        return formula_themes
+    
+    def _detect_context_themes(self, content: str, title: str) -> List[Dict[str, Any]]:
+        """
+        基于上下文的主题检测
+        """
+        context_themes = []
+        
+        # 基于教学目标
+        if any(keyword in content for keyword in ["教学目标", "学习目标", "教学重难点"]):
+            # 分析教学目标中的主题
+            lines = content.split('\n')
+            for line in lines:
+                if "目标" in line or "重点" in line:
+                    for theme in self.THEME_KEYWORD_MAP:
+                        if theme in line:
+                            context_themes.append({
+                                "theme": theme,
+                                "confidence": 0.7,
+                                "evidence": "teaching_goal",
+                                "matched_keywords": [theme]
+                            })
+        
+        # 基于章节信息
+        chapter_patterns = [r'第[一二三四五六七八九十]+章', r'第[0-9]+章', r'模块[0-9]+']
+        for pattern in chapter_patterns:
+            match = re.search(pattern, content + title)
+            if match:
+                chapter = match.group()
+                # 映射章节到主题
+                chapter_theme_map = {
+                    "第三章": ["函数的概念", "函数的性质", "二次函数", "幂函数"],
+                    "第四章": ["指数函数", "对数函数"],
+                    "第五章": ["三角函数"],
+                    "第六章": ["三角恒等变换"]
+                }
+                for chapter_key, themes in chapter_theme_map.items():
+                    if chapter_key in chapter:
+                        for theme in themes:
+                            context_themes.append({
+                                "theme": theme,
+                                "confidence": 0.6,
+                                "evidence": "chapter",
+                                "matched_keywords": [chapter]
+                            })
+        
+        return context_themes
+    
+    def update_theme_weights(self, theme_feedback: Dict[str, float]) -> None:
+        """
+        根据用户反馈更新主题权重
+        
+        Args:
+            theme_feedback: 主题反馈字典 {theme: score}
+        """
+        # 这里可以实现权重更新逻辑
+        # 例如：调整关键词权重、添加新关键词等
+        print(f"📊 更新主题权重: {theme_feedback}")
+    
+    def process_feedback(self, user_feedback: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        处理用户反馈
+        
+        Args:
+            user_feedback: 用户反馈，包含feedback_type和相关数据
+        
+        Returns:
+            处理结果
+        """
+        feedback_type = user_feedback.get('feedback_type')
+        
+        if feedback_type == 'theme_correction':
+            # 主题修正反馈
+            correct_theme = user_feedback.get('correct_theme')
+            wrong_theme = user_feedback.get('wrong_theme')
+            content = user_feedback.get('content', '')
+            
+            if correct_theme and wrong_theme:
+                # 调整主题权重
+                self.update_theme_weights({correct_theme: 0.1, wrong_theme: -0.1})
+                print(f"   🔄 主题反馈处理: 修正 {wrong_theme} -> {correct_theme}")
+                
+                # 重新检测主题
+                new_themes = self.dynamic_theme_detection(content)
+                return {
+                    'status': 'success',
+                    'message': '主题权重已更新',
+                    'new_themes': new_themes
+                }
+        
+        elif feedback_type == 'relevance_feedback':
+            # 相关性反馈
+            resource_id = user_feedback.get('resource_id')
+            relevance_score = user_feedback.get('relevance_score')
+            
+            if resource_id and relevance_score is not None:
+                # 这里可以实现更复杂的相关性反馈处理
+                print(f"   🔄 相关性反馈: {resource_id} -> {relevance_score}")
+                return {
+                    'status': 'success',
+                    'message': '相关性反馈已记录'
+                }
+        
+        return {
+            'status': 'error',
+            'message': '无效的反馈类型'
+        }
 
 
 # 全局主题匹配器实例

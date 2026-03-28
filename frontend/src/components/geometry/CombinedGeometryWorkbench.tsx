@@ -25,7 +25,7 @@ export function CombinedGeometryWorkbench() {
   const searchParams = useSearchParams();
   const initialApiFromQuery = searchParams.get("apiUrl")?.trim() ?? "";
   const [apiBaseUrl, setApiBaseUrl] = useState(
-    initialApiFromQuery || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+    initialApiFromQuery || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001",
   );
   const [chapter, setChapter] = useState("");
   const [topic, setTopic] = useState("");

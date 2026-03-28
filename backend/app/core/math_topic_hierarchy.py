@@ -327,3 +327,7 @@ class MathTopicHierarchy:
             相关关键词列表
         """
         return cls.TOPIC_KEYWORDS.get(topic, [])
+
+
+# 全局实例
+MATH_TOPIC_HIERARCHY = MathTopicHierarchy()

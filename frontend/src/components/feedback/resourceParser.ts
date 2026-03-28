@@ -55,12 +55,31 @@ export function parseResourcesFromResponse(content: string): ParsedResource[] {
 
     if (!currentCategory) continue;
 
+    // 跳过分隔线和标题行
+    if (
+      line.startsWith("=") ||
+      line.startsWith("---") ||
+      line.startsWith("#") ||
+      line.startsWith("⭐ 【") ||
+      line.startsWith("📌 【") ||
+      line.startsWith("📎 【") ||
+      line.startsWith("💡 【") ||
+      line.startsWith("📄 【")
+    ) {
+      continue;
+    }
+
+    // 跳过内容详情行，但保留 pendingTitle
     if (
       line.startsWith("内容:") ||
       line.startsWith("相似度:") ||
-      line.startsWith("=") ||
-      line.startsWith("---") ||
-      line.startsWith("#")
+      line.startsWith("相关性:") ||
+      line.startsWith("综合得分:") ||
+      line.startsWith("资源质量:") ||
+      line.startsWith("内容完整性:") ||
+      line.startsWith("教学价值:") ||
+      line.startsWith("综合性:") ||
+      line.startsWith("💡 已隐藏")
     ) {
       continue;
     }
@@ -85,7 +104,11 @@ export function parseResourcesFromResponse(content: string): ParsedResource[] {
       continue;
     }
 
-    pendingTitle = line;
+    // 只保留以图标开头的行作为资源标题
+    // 后端格式: "📝 ⭐ 习题（图片）: 课后巩固 [核心主题: xxx]"
+    if (/^[📝📚📊🎬🔧📋🎨📂📖]/.test(line)) {
+      pendingTitle = line;
+    }
   }
 
   return resources;

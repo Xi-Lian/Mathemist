@@ -27,7 +27,7 @@ from app.utils.constants import (
 router = APIRouter()
 
 
-@router.get("/assistants/{assistant_id}", response_model=AssistantInfo)
+@router.get("/{assistant_id}", response_model=AssistantInfo)
 async def get_assistant(assistant_id: str):
     """
     获取助手信息
@@ -50,7 +50,7 @@ async def get_assistant(assistant_id: str):
     )
 
 
-@router.get("/assistants/{assistant_id}/graph", response_model=GraphInfo)
+@router.get("/{assistant_id}/graph", response_model=GraphInfo)
 async def get_assistant_graph(assistant_id: str, xray: int = None):
     """
     获取助手的图结构
@@ -79,7 +79,7 @@ async def get_assistant_graph(assistant_id: str, xray: int = None):
     )
 
 
-@router.get("/assistants/{assistant_id}/schemas", response_model=SchemaInfo)
+@router.get("/{assistant_id}/schemas", response_model=SchemaInfo)
 async def get_assistant_schemas(assistant_id: str):
     """
     获取助手的图模式
@@ -118,7 +118,7 @@ async def get_assistant_schemas(assistant_id: str):
     )
 
 
-@router.post("/assistants/search")
+@router.post("/search")
 async def search_assistants(query: Dict[str, Any] = None):
     """
     搜索助手
@@ -167,7 +167,7 @@ async def search_assistants(query: Dict[str, Any] = None):
     }
 
 
-@router.get("/assistants")
+@router.get("/")
 async def list_assistants():
     """
     列出所有助手

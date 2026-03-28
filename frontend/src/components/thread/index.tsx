@@ -309,7 +309,7 @@ export function Thread() {
     (m) => m.type === "ai" || m.type === "tool",
   );
   const feedbackApiBaseUrl =
-    apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
   const geometryToolUrl = `/combined-geometry?apiUrl=${encodeURIComponent(feedbackApiBaseUrl)}`;
   const visibleMessages = messages.filter(
     (m) => !m.id?.startsWith(DO_NOT_RENDER_ID_PREFIX),

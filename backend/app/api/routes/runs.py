@@ -45,7 +45,7 @@ def get_math_agent_graph():
     return create_math_agent_graph()
 
 
-@router.post("/threads/{thread_id}/runs", response_model=Run)
+@router.post("/{thread_id}/runs", response_model=Run)
 async def create_run(thread_id: str, request: RunCreateRequest):
     """
     创建运行（非流式）
@@ -147,12 +147,15 @@ async def get_user_runs(
     return [RunWithUser(**r) for r in user_runs]
 
 
-@router.post("/threads/{thread_id}/runs/stream")
+@router.post("/{thread_id}/runs/stream")
 async def create_run_stream(thread_id: str, request: RunCreateRequest):
     """
     创建运行（流式）
     LangGraph API 标准端点
     """
+    logger.info(f"收到流式请求: thread_id={thread_id}, assistant_id={request.assistant_id}")
+    logger.info(f"请求输入: {request.input}")
+    
     # 如果线程不存在，自动创建
     if thread_id not in threads:
         now = get_current_timestamp()
@@ -400,5 +403,11 @@ def _convert_input_format(input_data: Dict[str, Any]) -> Dict[str, Any]:
         if isinstance(context, dict) and "lesson_plan_session_id" in context:
             graph_input["lesson_plan_session_id"] = context["lesson_plan_session_id"]
             print(f"💾 从context中提取教案会话ID: {context['lesson_plan_session_id']}")
+    
+    # 确保user_input存在
+    if "user_input" not in graph_input:
+        graph_input["user_input"] = ""
+    
+    print(f"🔄 转换输入格式: {graph_input}")
     
     return graph_input

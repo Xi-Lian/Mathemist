@@ -16,12 +16,16 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from langserve import add_routes
 from langgraph.types import StreamMode
-from app.graph import create_math_agent_graph
 from app.state import MathAgentState
 from app.langgraph_api import router as langgraph_api_router
 from app.core import generate_ggb_innovation_suggestions
 from app.core.model_config import model_config
 from app.api.routes import feedback_router
+
+# 延迟导入 create_math_agent_graph，避免启动时卡住
+def get_math_agent_graph():
+    from app.graph import create_math_agent_graph
+    return create_math_agent_graph()
 
 # 配置日志
 logging.basicConfig(
@@ -161,6 +165,30 @@ class MathAgentRequest(BaseModel):
     chat_history: Optional[list] = None
     context: Optional[dict] = None
 
+# 兼容旧的API端点（用于前端）
+class QueryRequest(BaseModel):
+    query: str
+    intent: str = "search"
+    resource_types: Optional[List[str]] = None
+
+@app.post("/api/query")
+async def api_query(request: QueryRequest) -> Dict[str, Any]:
+    """
+    兼容旧的API端点，用于前端
+    """
+    # 转换为MathAgentRequest格式
+    math_request = MathAgentRequest(
+        user_input=request.query,
+        chat_history=[],
+        context={
+            "intent": request.intent,
+            "resource_types": request.resource_types
+        }
+    )
+    
+    # 调用现有的math-agent/invoke端点
+    return await invoke_math_agent(math_request)
+
 @app.post("/math-agent/invoke")
 async def invoke_math_agent(request: MathAgentRequest) -> Dict[str, Any]:
     """
@@ -188,7 +216,7 @@ async def invoke_math_agent(request: MathAgentRequest) -> Dict[str, Any]:
         logger.info(f"Input state: {input_state}")
         
         # 重新创建math_agent_graph实例，确保使用最新的节点函数
-        math_agent_graph = create_math_agent_graph()
+        math_agent_graph = get_math_agent_graph()
         
         print(f"开始调用LangGraph...")
         print(f"输入状态类型: {type(input_state)}")
@@ -237,42 +265,29 @@ async def generate_lesson_plan(request: MathAgentRequest) -> Dict[str, Any]:
         教案生成结果
     """
     try:
-        logger.info(f"Generating lesson plan for: {request.user_input}")
+        # 重新创建math_agent_graph实例
+        math_agent_graph = get_math_agent_graph()
         
-        # 导入必要的函数
-        from app.nodes import retrieve_resources, lesson_plan_generation_node
-        from app.state import MathAgentState
-        
-        # 检索资源
-        retrieved_resources = retrieve_resources(
-            query=request.user_input,
-            intent="generate_lesson_plan"
-        )
-        
-        # 创建状态对象
-        state = MathAgentState(
+        # 构建输入状态，强制设置意图为generate_lesson_plan
+        input_state = MathAgentState(
             user_input=request.user_input,
             chat_history=request.chat_history or [],
             context=request.context or {},
-            intent="generate_lesson_plan",
-            retrieved_resources=retrieved_resources
+            intent="generate_lesson_plan"
         )
         
-        # 直接调用教案生成节点
-        result = lesson_plan_generation_node(state)
+        # 调用LangGraph
+        result = await math_agent_graph.ainvoke(input_state)
         
-        logger.info(f"Lesson plan generation completed successfully")
-        
-        # 构建响应
-        response = {
+        return {
             "status": "success",
             "data": {
                 "lesson_plan": result.get("lesson_plan"),
+                "retrieved_resources": result.get("retrieved_resources"),
+                "current_step": result.get("current_step"),
                 "error": result.get("error")
             }
         }
-        
-        return response
         
     except Exception as e:
         logger.error(f"Error generating lesson plan: {str(e)}")
@@ -301,7 +316,7 @@ async def stream_math_agent(request: MathAgentRequest):
         }
         
         # 重新创建math_agent_graph实例，确保使用最新的节点函数
-        math_agent_graph = create_math_agent_graph()
+        math_agent_graph = get_math_agent_graph()
         
         # 流式调用LangGraph
         async for chunk in math_agent_graph.astream(
@@ -320,6 +335,20 @@ app.include_router(langgraph_api_router)
 # 添加反馈 API 路由
 app.include_router(feedback_router)
 
+# 添加 LangServe 路由
+# 延迟导入，避免启动时卡住
+def add_langserve_routes():
+    from app.graph import create_math_agent_graph
+    math_agent_graph = create_math_agent_graph()
+    add_routes(
+        app,
+        math_agent_graph,
+        path="/langgraph/math-agent"
+    )
+
+# 调用添加LangServe路由的函数
+add_langserve_routes()
+
 # ============================================
 # GGB创新设计建议 API
 # ============================================
@@ -329,57 +358,88 @@ async def get_ggb_innovation_suggestions(request: GGBInnovationRequest):
     获取GGB创新设计建议
     
     Args:
-        request: 包含章节、主题、教学目的的请求
-    
+        request: GGB创新设计建议请求
+        
     Returns:
         GGB创新设计建议
     """
     try:
-        result = generate_ggb_innovation_suggestions(
+        suggestions = generate_ggb_innovation_suggestions(
             chapter=request.chapter,
             topic=request.topic,
             teaching_purpose=request.teaching_purpose,
             existing_ggb_info=request.existing_ggb_info
         )
-        return {"status": "success", "data": result}
+        
+        return {
+            "status": "success",
+            "data": {
+                "suggestions": suggestions
+            }
+        }
+        
     except Exception as e:
         logger.error(f"Error generating GGB suggestions: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-# 挂载静态文件服务
-app.mount("/static", StaticFiles(directory="."), name="static")
 
-# 图形库页面
+# ============================================
+# 静态文件服务
+# ============================================
+# 挂载静态文件目录
+import os
+from pathlib import Path
+# 使用绝对路径确保正确找到静态文件目录
+static_dir = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+# 几何图形库页面
 @app.get("/geometry-library")
 async def geometry_library():
     """
     几何图形库页面
     """
-    return FileResponse("ggb_complete.html")
+    return FileResponse("geometry_library.html")
 
-# 演示页面：设计建议展示
-@app.get("/demo-suggestions")
-async def demo_suggestions():
-    """
-    设计建议展示演示页面
-    """
-    return FileResponse("demo_suggestions.html")
-
-# 组合页面：画图建议 + 图形库
+# 画图建议 + 图形库组合页面
 @app.get("/geometry-with-suggestions")
-@app.get("/combined-geometry")
 async def geometry_with_suggestions():
     """
     画图建议 + 图形库组合页面
     """
     return FileResponse("geometry_with_suggestions.html")
 
-# 添加LangServe路由（必须放在最后）
-add_routes(
-    app,
-    create_math_agent_graph(),
-    path="/langserve/math-agent"
-)
+# 组合页面别名
+@app.get("/combined-geometry")
+async def geometry_with_suggestions_alias():
+    """
+    画图建议 + 图形库组合页面
+    """
+    return FileResponse("geometry_with_suggestions.html")
+
+# 应用启动事件：预加载Embedding模型和添加LangServe路由
+# 注意：暂时禁用预加载，因为会导致服务卡住
+# @app.on_event("startup")
+# def preload_models():
+#     """
+#     应用启动时预加载模型，避免运行时动态加载导致的延迟
+#     """
+#     logger.info("🚀 应用启动，开始预加载模型...")
+#     try:
+#         # 预加载Embedding模型
+#         logger.info("📦 预加载Embedding模型...")
+#         embedding_model = model_config.get_embedding_model()
+#         logger.info("✅ Embedding模型预加载完成")
+#         
+#         # 预加载ChromaDB客户端
+#         logger.info("📦 预加载ChromaDB客户端...")
+#         chroma_client = model_config.get_chroma_client()
+#         logger.info("✅ ChromaDB客户端预加载完成")
+#         
+#         logger.info("🎉 所有模型预加载完成，应用已就绪")
+#     except Exception as e:
+#         logger.error(f"⚠️ 模型预加载失败: {e}")
+#         logger.warning("应用将继续运行，但首次检索可能会较慢")
 
 # 根路径
 @app.get("/")
@@ -408,7 +468,7 @@ if __name__ == "__main__":
     import uvicorn
     
     # 获取端口配置
-    port = int(os.getenv("PORT", "8000"))
+    port = int(os.getenv("PORT", "8001"))
     host = os.getenv("HOST", "0.0.0.0")
     
     logger.info(f"Starting server on {host}:{port}")
@@ -418,5 +478,5 @@ if __name__ == "__main__":
         "main:app",
         host=host,
         port=port,
-        reload=True  # 在开发环境中启用热重载
+        reload=False
     )

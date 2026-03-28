@@ -2,7 +2,7 @@
 用户反馈API路由
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from app.core.user_feedback import get_feedback_system
@@ -18,6 +18,7 @@ class ResourceFeedbackRequest(BaseModel):
     resource_type: str = Field(default="", description="资源类型")
     metadata: Optional[Dict[str, Any]] = Field(default=None, description="资源元数据")
     dislike_reason: str = Field(default="", description="点踩原因")
+    user_id: str = Field(default="anonymous", description="用户ID")
 
 
 class ImprovementSuggestionRequest(BaseModel):
@@ -25,6 +26,15 @@ class ImprovementSuggestionRequest(BaseModel):
     query: str = Field(default="", description="用户查询")
     suggestion: str = Field(..., description="建议内容")
     contact: str = Field(default="", description="联系方式")
+    user_id: str = Field(default="anonymous", description="用户ID")
+
+
+class FeedbackStatusUpdateRequest(BaseModel):
+    """反馈状态更新请求"""
+    feedback_id: str = Field(..., description="反馈ID")
+    status: str = Field(..., description="状态（pending, processed, resolved, implemented）")
+    processor_id: str = Field(default="system", description="处理者ID")
+    notes: str = Field(default="", description="处理备注")
 
 
 @router.post("/resource")
@@ -45,6 +55,7 @@ async def record_resource_feedback(request: ResourceFeedbackRequest):
     - resource_type: 资源类型（可选）
     - metadata: 资源元数据（可选）
     - dislike_reason: 点踩原因（可选，当is_like为false时建议填写）
+    - user_id: 用户ID（可选，默认anonymous）
     """
     try:
         if not request.resource_id or request.resource_id.strip() == "":
@@ -61,7 +72,8 @@ async def record_resource_feedback(request: ResourceFeedbackRequest):
             query=request.query,
             resource_type=request.resource_type,
             metadata=request.metadata,
-            dislike_reason=request.dislike_reason
+            dislike_reason=request.dislike_reason,
+            user_id=request.user_id
         )
         
         if success:
@@ -99,6 +111,7 @@ async def record_improvement_suggestion(request: ImprovementSuggestionRequest):
     - query: 用户查询（可选）
     - suggestion: 建议内容（必填）
     - contact: 联系方式（可选）
+    - user_id: 用户ID（可选，默认anonymous）
     """
     try:
         if not request.suggestion or request.suggestion.strip() == "":
@@ -112,7 +125,8 @@ async def record_improvement_suggestion(request: ImprovementSuggestionRequest):
         success = feedback_system.record_improvement_suggestion(
             query=request.query,
             suggestion=request.suggestion,
-            contact=request.contact
+            contact=request.contact,
+            user_id=request.user_id
         )
         
         if success:
@@ -125,6 +139,59 @@ async def record_improvement_suggestion(request: ImprovementSuggestionRequest):
                 "success": False,
                 "message": "记录建议失败，请稍后重试",
                 "error_code": "RECORD_FAILED"
+            }, status.HTTP_500_INTERNAL_SERVER_ERROR
+            
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"服务器错误: {str(e)}",
+            "error_code": "INTERNAL_ERROR"
+        }, status.HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@router.post("/status/update")
+async def update_feedback_status(request: FeedbackStatusUpdateRequest):
+    """
+    更新反馈处理状态
+    
+    **状态码说明：**
+    - 200: 成功
+    - 400: 请求参数错误
+    - 422: 数据验证失败
+    - 500: 服务器内部错误
+    
+    **请求字段：**
+    - feedback_id: 反馈ID（必填）
+    - status: 状态（pending, processed, resolved, implemented）（必填）
+    - processor_id: 处理者ID（可选，默认system）
+    - notes: 处理备注（可选）
+    """
+    try:
+        if not request.feedback_id or request.feedback_id.strip() == "":
+            return {
+                "success": False,
+                "message": "feedback_id 不能为空",
+                "error_code": "INVALID_FEEDBACK_ID"
+            }, status.HTTP_400_BAD_REQUEST
+        
+        feedback_system = get_feedback_system()
+        success = feedback_system.update_feedback_status(
+            feedback_id=request.feedback_id,
+            status=request.status,
+            processor_id=request.processor_id,
+            notes=request.notes
+        )
+        
+        if success:
+            return {
+                "success": True,
+                "message": "反馈状态已成功更新"
+            }
+        else:
+            return {
+                "success": False,
+                "message": "更新反馈状态失败，请稍后重试",
+                "error_code": "UPDATE_FAILED"
             }, status.HTTP_500_INTERNAL_SERVER_ERROR
             
     except Exception as e:
@@ -168,3 +235,35 @@ async def export_feedback_data():
         return {"success": True, "export_path": export_path}
     else:
         raise HTTPException(status_code=500, detail="导出失败")
+
+
+@router.get("/user/{user_id}")
+async def get_user_feedback_history(user_id: str):
+    """获取用户的反馈历史"""
+    feedback_system = get_feedback_system()
+    history = feedback_system.get_user_feedback_history(user_id=user_id)
+    return {"success": True, "history": history}
+
+
+@router.get("/status/{feedback_id}")
+async def get_feedback_status(feedback_id: str):
+    """获取反馈处理状态"""
+    feedback_system = get_feedback_system()
+    status = feedback_system.get_feedback_processing_status(feedback_id=feedback_id)
+    return {"success": True, "status": status}
+
+
+@router.get("/trends")
+async def get_feedback_trends(days: int = Query(default=30, ge=1, le=365, description="统计天数")):
+    """获取反馈趋势"""
+    feedback_system = get_feedback_system()
+    trends = feedback_system.get_feedback_trends(days=days)
+    return {"success": True, "trends": trends}
+
+
+@router.get("/resource/{resource_id}/satisfaction")
+async def get_resource_satisfaction(resource_id: str):
+    """获取资源满意度"""
+    feedback_system = get_feedback_system()
+    satisfaction = feedback_system.get_resource_satisfaction(resource_id=resource_id)
+    return {"success": True, "satisfaction": satisfaction}
