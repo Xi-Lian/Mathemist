@@ -96,12 +96,13 @@ class VectorDatabaseBuilder:
         """
         return self.model_config.get_embedding_model()
     
-    def build_vector_database(self, force_rebuild: bool = False) -> bool:
+    def build_vector_database(self, force_rebuild: bool = False, batch_size: int = 50) -> bool:
         """
         构建向量数据库
         
         Args:
             force_rebuild: 是否强制重建数据库
+            batch_size: 分批生成向量和写库的批次大小
             
         Returns:
             是否构建成功
@@ -139,17 +140,19 @@ class VectorDatabaseBuilder:
             logger.info("解析资源汇总表...")
             all_resources = self.parser.parse_all_tables()
             
-            # 准备数据
-            documents = []
-            metadatas = []
-            ids = []
-            
+            # 获取embedding模型
+            embedding_model = self.get_embedding_model()
             resource_id = 0
+            total_written = 0
             
             # 处理每种类型的资源
             for resource_type, resources in all_resources.items():
                 logger.info(f"处理{resource_type}资源，共{len(resources)}条记录...")
-                
+
+                batch_documents = []
+                batch_metadatas = []
+                batch_ids = []
+
                 for resource in resources:
                     # 格式化资源为搜索文本
                     document = self.parser.format_resource_for_search(resource)
@@ -165,34 +168,41 @@ class VectorDatabaseBuilder:
                         **{k: v for k, v in resource.items() if k not in ['resource_type', 'source_file', 'title']}
                     }
                     
-                    documents.append(document)
-                    metadatas.append(metadata)
-                    ids.append(f"{resource_type}_{resource_id}")
-                    
+                    batch_documents.append(document)
+                    batch_metadatas.append(metadata)
+                    batch_ids.append(f"{resource_type}_{resource_id}")
                     resource_id += 1
-            
-            # 获取embedding模型
-            embedding_model = self.get_embedding_model()
-            
-            # 检查是否有文档需要添加
-            if not documents:
+
+                    if len(batch_documents) >= batch_size:
+                        logger.info(f"批量生成向量并写库: {resource_type}, 批次大小={len(batch_documents)}")
+                        embeddings = embedding_model.encode(batch_documents, normalize_embeddings=True).tolist()
+                        collection.add(
+                            documents=batch_documents,
+                            metadatas=batch_metadatas,
+                            ids=batch_ids,
+                            embeddings=embeddings
+                        )
+                        total_written += len(batch_documents)
+                        batch_documents = []
+                        batch_metadatas = []
+                        batch_ids = []
+
+                if batch_documents:
+                    logger.info(f"批量生成向量并写库: {resource_type}, 批次大小={len(batch_documents)}")
+                    embeddings = embedding_model.encode(batch_documents, normalize_embeddings=True).tolist()
+                    collection.add(
+                        documents=batch_documents,
+                        metadatas=batch_metadatas,
+                        ids=batch_ids,
+                        embeddings=embeddings
+                    )
+                    total_written += len(batch_documents)
+
+            if total_written == 0:
                 logger.warning("没有找到任何资源文档，向量数据库为空")
                 return True
             
-            # 生成嵌入向量
-            logger.info(f"生成{len(documents)}个文档的嵌入向量...")
-            embeddings = embedding_model.encode(documents, normalize_embeddings=True).tolist()
-            
-            # 添加到集合
-            logger.info("将数据添加到向量数据库...")
-            collection.add(
-                documents=documents,
-                metadatas=metadatas,
-                ids=ids,
-                embeddings=embeddings
-            )
-            
-            logger.info(f"向量数据库构建完成，共{len(documents)}条记录")
+            logger.info(f"向量数据库构建完成，共{total_written}条记录")
             logger.info(f"数据库路径: {self.db_path}")
             
             return True

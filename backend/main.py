@@ -391,7 +391,10 @@ import os
 from pathlib import Path
 # 使用绝对路径确保正确找到静态文件目录
 static_dir = Path(__file__).parent / "static"
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+else:
+    logger.warning(f"静态文件目录不存在，跳过挂载: {static_dir}")
 
 # 几何图形库页面
 @app.get("/geometry-library")

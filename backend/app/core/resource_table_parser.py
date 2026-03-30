@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import logging
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 from urllib.error import URLError, HTTPError
 from urllib.request import urlopen
 
@@ -65,19 +65,39 @@ class ResourceTableParser:
                 continue
         return "utf-8-sig"
 
-    def _get_cloud_lesson_plan_csv_files(self) -> List[Path]:
+    def _normalize_board_filters(self, boards: Optional[List[str]] = None) -> List[str]:
+        """
+        规范化板块过滤条件
+        """
+        if not boards:
+            return []
+        normalized: List[str] = []
+        for board in boards:
+            value = str(board).strip()
+            if value and value not in normalized:
+                normalized.append(value)
+        return normalized
+
+    def _get_cloud_lesson_plan_csv_files(self, boards: Optional[List[str]] = None) -> List[Path]:
         """
         获取根目录下的教案资源CSV索引文件
         """
         csv_files = sorted(self.project_root.glob("*教案资源信息汇总表.csv"))
-        return [path for path in csv_files if path.is_file()]
+        board_filters = set(self._normalize_board_filters(boards))
+        result = [path for path in csv_files if path.is_file()]
+        if board_filters:
+            result = [
+                path for path in result
+                if path.stem.replace("-教案资源信息汇总表", "") in board_filters
+            ]
+        return result
 
-    def _load_cloud_lesson_plan_index(self) -> List[Dict[str, str]]:
+    def _load_cloud_lesson_plan_index(self, boards: Optional[List[str]] = None) -> List[Dict[str, str]]:
         """
         读取教案资源CSV索引
         """
         rows: List[Dict[str, str]] = []
-        for csv_path in self._get_cloud_lesson_plan_csv_files():
+        for csv_path in self._get_cloud_lesson_plan_csv_files(boards=boards):
             encoding = self._detect_csv_encoding(csv_path)
             domain_name = csv_path.stem.replace("-教案资源信息汇总表", "")
             try:
@@ -155,6 +175,8 @@ class ResourceTableParser:
         if not url:
             return ""
 
+        url = self._sanitize_cloud_url(url)
+
         cache_key = hashlib.md5(url.encode("utf-8")).hexdigest()
         cache_file = self.lesson_plan_cache_dir / f"{cache_key}.json"
 
@@ -166,7 +188,8 @@ class ResourceTableParser:
                 logger.warning(f"读取教案缓存失败，重新下载: {cache_file}")
 
         try:
-            with urlopen(url, timeout=20) as response:
+            logger.info(f"开始下载云端Markdown: {url}")
+            with urlopen(url, timeout=8) as response:
                 raw = response.read()
             for encoding in ("utf-8", "utf-8-sig", "gb18030", "gbk"):
                 try:
@@ -189,6 +212,20 @@ class ResourceTableParser:
             logger.error(f"下载云端Markdown异常: {url}, 错误: {e}")
             return ""
 
+    def _sanitize_cloud_url(self, url: str) -> str:
+        """
+        规范化云端URL，避免空格/中文路径导致urlopen报错
+        """
+        if not url:
+            return ""
+
+        parts = urlsplit(url.strip())
+        sanitized_path = quote(unquote(parts.path), safe="/-_.~")
+        sanitized_query = quote(unquote(parts.query), safe="=&-_.~")
+        return urlunsplit(
+            (parts.scheme, parts.netloc, sanitized_path, sanitized_query, parts.fragment)
+        )
+
     def _derive_markdown_url(self, markdown_filename: str, linked_row: Optional[Dict[str, str]]) -> str:
         """
         当Markdown行缺少云端链接时，根据原文件链接推导Markdown链接
@@ -207,7 +244,9 @@ class ResourceTableParser:
 
         new_path = path.rsplit(".", 1)[0] + ".md"
 
-        return urlunsplit((parts.scheme, parts.netloc, new_path, parts.query, parts.fragment))
+        return self._sanitize_cloud_url(
+            urlunsplit((parts.scheme, parts.netloc, new_path, parts.query, parts.fragment))
+        )
 
     def _extract_lesson_plan_topics(self, text: str) -> List[str]:
         """
@@ -280,12 +319,16 @@ class ResourceTableParser:
         parts.append("说明：云端Markdown正文缺失，当前使用索引摘要参与检索。")
         return "\n".join(parts)
 
-    def _parse_cloud_lesson_plan_tables(self) -> List[Dict[str, str]]:
+    def _parse_cloud_lesson_plan_tables(
+        self,
+        limit: Optional[int] = None,
+        boards: Optional[List[str]] = None
+    ) -> List[Dict[str, str]]:
         """
         基于根目录CSV索引解析云端教案资源
         仅使用Markdown文件建索引，并关联原始文件与图片资源
         """
-        index_rows = self._load_cloud_lesson_plan_index()
+        index_rows = self._load_cloud_lesson_plan_index(boards=self._normalize_board_filters(boards))
         if not index_rows:
             return []
 
@@ -300,6 +343,8 @@ class ResourceTableParser:
             row for row in index_rows
             if row.get("扩展名", "").lower() == ".md" or row.get("文件类型", "") == "Markdown文件"
         ]
+        if limit is not None:
+            markdown_rows = markdown_rows[:limit]
 
         all_lesson_plans = []
         grade_enricher = get_grade_enricher()
@@ -307,6 +352,7 @@ class ResourceTableParser:
         for row in markdown_rows:
             filename = row.get("文件名", "")
             logical_path = self._build_logical_lesson_plan_path(row)
+            logger.info(f"处理云端教案: {len(all_lesson_plans) + 1}/{len(markdown_rows)} | {logical_path}")
             title = Path(filename).stem
             directory = row.get("目录", "")
             full_text = f"{title} {directory} {logical_path}"
@@ -1122,7 +1168,11 @@ class ResourceTableParser:
         logger.info(f"解析习题汇总表完成，共{len(all_exercises)}条记录")
         return all_exercises
     
-    def parse_lesson_plan_tables(self) -> List[Dict[str, str]]:
+    def parse_lesson_plan_tables(
+        self,
+        limit: Optional[int] = None,
+        boards: Optional[List[str]] = None
+    ) -> List[Dict[str, str]]:
         """
         解析教案资源汇总表
         改进：从文件名和文件路径中提取章节和主题信息
@@ -1130,7 +1180,7 @@ class ResourceTableParser:
         Returns:
             教案资源列表
         """
-        cloud_lesson_plans = self._parse_cloud_lesson_plan_tables()
+        cloud_lesson_plans = self._parse_cloud_lesson_plan_tables(limit=limit, boards=boards)
         if cloud_lesson_plans:
             return cloud_lesson_plans
 
@@ -1143,7 +1193,10 @@ class ResourceTableParser:
         all_lesson_plans = []
         
         # 遍历教案文件夹中的所有.md文件
+        processed_count = 0
         for md_file in lesson_plan_folder.rglob('*.md'):
+            if limit is not None and processed_count >= limit:
+                break
             # 跳过理论卡片和共性整合文档
             if md_file.name in ['优秀教案共性整合（最终版）.md']:
                 continue
@@ -1205,6 +1258,7 @@ class ResourceTableParser:
                 grade_enricher.enrich_resource_grade(item)
                 
                 all_lesson_plans.append(item)
+                processed_count += 1
                 
                 logger.info(f"解析教案: {md_file.name}, 章节: {chapter}, 主题: {knowledge_tags}, 年级: {item.get('grade', '未知')}")
                 
