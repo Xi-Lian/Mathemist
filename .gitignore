@@ -24,6 +24,7 @@ frontend/.env.local
 chroma_db/
 backend/chroma_db/
 paraphrase-multilingual-MiniLM-L12-v2/
+backend/data/cloud_lesson_plan_cache/
 
 # Logs
 *.log

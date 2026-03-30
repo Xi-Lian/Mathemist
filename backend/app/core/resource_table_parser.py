@@ -11,10 +11,16 @@ V54.0改进：动态关键词提取和资源格式化增强
 - 动态从文件路径和内容中提取主题信息
 """
 
+import csv
+import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import logging
+from urllib.parse import urlsplit, urlunsplit
+from urllib.error import URLError, HTTPError
+from urllib.request import urlopen
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,9 +41,325 @@ class ResourceTableParser:
         """
         # 确保learning_resource_path是绝对路径
         self.learning_resource_path = Path(learning_resource_path).resolve()
+        self.project_root = self.learning_resource_path.parent if self.learning_resource_path.name == "learning_resource" else self.learning_resource_path
+        self.lesson_plan_cache_dir = self.project_root / "backend" / "data" / "cloud_lesson_plan_cache"
+        self.lesson_plan_cache_dir.mkdir(parents=True, exist_ok=True)
         
         # V54.0改进：初始化关键词映射表
         self._init_keyword_mappings()
+
+    def _detect_csv_encoding(self, csv_path: Path) -> str:
+        """
+        检测CSV编码，兼容UTF-8和GB系列编码
+        """
+        for encoding in ("utf-8-sig", "utf-8", "gb18030", "gbk"):
+            try:
+                with open(csv_path, "r", encoding=encoding, newline="") as f:
+                    reader = csv.reader(f)
+                    header = next(reader, [])
+                    if header:
+                        return encoding
+            except UnicodeDecodeError:
+                continue
+            except Exception:
+                continue
+        return "utf-8-sig"
+
+    def _get_cloud_lesson_plan_csv_files(self) -> List[Path]:
+        """
+        获取根目录下的教案资源CSV索引文件
+        """
+        csv_files = sorted(self.project_root.glob("*教案资源信息汇总表.csv"))
+        return [path for path in csv_files if path.is_file()]
+
+    def _load_cloud_lesson_plan_index(self) -> List[Dict[str, str]]:
+        """
+        读取教案资源CSV索引
+        """
+        rows: List[Dict[str, str]] = []
+        for csv_path in self._get_cloud_lesson_plan_csv_files():
+            encoding = self._detect_csv_encoding(csv_path)
+            domain_name = csv_path.stem.replace("-教案资源信息汇总表", "")
+            try:
+                with open(csv_path, "r", encoding=encoding, newline="") as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        normalized = {str(k).strip(): (str(v).strip() if v is not None else "") for k, v in row.items() if k}
+                        if not normalized.get("文件名"):
+                            continue
+                        normalized["索引文件"] = csv_path.name
+                        normalized["板块"] = domain_name
+                        rows.append(normalized)
+                logger.info(f"读取云端教案索引: {csv_path.name}, 编码={encoding}, 记录数={sum(1 for row in rows if row.get('索引文件') == csv_path.name)}")
+            except Exception as e:
+                logger.error(f"读取云端教案索引失败: {csv_path}, 错误: {e}")
+        return rows
+
+    def _build_logical_lesson_plan_path(self, row: Dict[str, str]) -> str:
+        """
+        为云端教案记录构建逻辑路径，兼容现有路径推断逻辑
+        """
+        board = row.get("板块", "")
+        directory = row.get("目录", "").replace("\\", "/").strip("/")
+        filename = row.get("文件名", "")
+        parts = ["教案"]
+        if board:
+            parts.append(board)
+        if directory:
+            parts.append(directory)
+        if filename:
+            parts.append(filename)
+        return "/".join(part for part in parts if part)
+
+    def _normalize_filename_key(self, filename: str) -> str:
+        """
+        规范化文件名，便于关联md与原文件
+        """
+        return Path((filename or "").strip()).stem.lower()
+
+    def _find_linked_lesson_plan_row(
+        self,
+        row: Dict[str, str],
+        rows_by_path: Dict[str, Dict[str, str]],
+        rows_by_name: Dict[str, List[Dict[str, str]]]
+    ) -> Optional[Dict[str, str]]:
+        """
+        为Markdown记录查找关联的原始教案文件
+        """
+        linked_filename = row.get("关联文件", "").strip()
+        logical_path = self._build_logical_lesson_plan_path(row)
+
+        if linked_filename:
+            linked_logical_path = "/".join(logical_path.split("/")[:-1] + [linked_filename])
+            linked_row = rows_by_path.get(linked_logical_path.lower())
+            if linked_row:
+                return linked_row
+
+        # 回退策略：同目录下根据去扩展名匹配doc/docx/pdf原文件
+        stem_key = self._normalize_filename_key(row.get("文件名", ""))
+        directory = row.get("目录", "").replace("\\", "/").strip("/").lower()
+        candidates = rows_by_name.get(stem_key, [])
+        preferred_exts = {".doc", ".docx", "doc", "docx", ".pdf", "pdf"}
+        for candidate in candidates:
+            candidate_ext = candidate.get("扩展名", "").lower()
+            candidate_dir = candidate.get("目录", "").replace("\\", "/").strip("/").lower()
+            if candidate_dir == directory and candidate_ext in preferred_exts:
+                return candidate
+
+        return None
+
+    def _download_cloud_markdown(self, url: str) -> str:
+        """
+        下载云端Markdown内容，并做本地缓存
+        """
+        if not url:
+            return ""
+
+        cache_key = hashlib.md5(url.encode("utf-8")).hexdigest()
+        cache_file = self.lesson_plan_cache_dir / f"{cache_key}.json"
+
+        if cache_file.exists():
+            try:
+                cached = json.loads(cache_file.read_text(encoding="utf-8"))
+                return cached.get("content", "")
+            except Exception:
+                logger.warning(f"读取教案缓存失败，重新下载: {cache_file}")
+
+        try:
+            with urlopen(url, timeout=20) as response:
+                raw = response.read()
+            for encoding in ("utf-8", "utf-8-sig", "gb18030", "gbk"):
+                try:
+                    content = raw.decode(encoding)
+                    break
+                except UnicodeDecodeError:
+                    content = ""
+            if not content:
+                content = raw.decode("utf-8", errors="ignore")
+
+            cache_file.write_text(
+                json.dumps({"url": url, "content": content}, ensure_ascii=False),
+                encoding="utf-8"
+            )
+            return content
+        except (HTTPError, URLError, TimeoutError) as e:
+            logger.error(f"下载云端Markdown失败: {url}, 错误: {e}")
+            return ""
+        except Exception as e:
+            logger.error(f"下载云端Markdown异常: {url}, 错误: {e}")
+            return ""
+
+    def _derive_markdown_url(self, markdown_filename: str, linked_row: Optional[Dict[str, str]]) -> str:
+        """
+        当Markdown行缺少云端链接时，根据原文件链接推导Markdown链接
+        """
+        if not linked_row:
+            return ""
+
+        original_url = linked_row.get("云端链接", "").strip()
+        if not original_url:
+            return ""
+
+        parts = urlsplit(original_url)
+        path = parts.path
+        if "." not in path.rsplit("/", 1)[-1]:
+            return ""
+
+        new_path = path.rsplit(".", 1)[0] + ".md"
+
+        return urlunsplit((parts.scheme, parts.netloc, new_path, parts.query, parts.fragment))
+
+    def _extract_lesson_plan_topics(self, text: str) -> List[str]:
+        """
+        从文件名或目录中提取教案主题关键词
+        """
+        topic_keywords = [
+            '单调性', '奇偶性', '周期性', '对称性', '最值', '最大值', '最小值',
+            '概念', '表示法', '性质', '应用', '图像', '图象',
+            '幂函数', '指数函数', '对数函数', '三角函数', '二次函数', '一次函数',
+            '诱导公式', '三角恒等变换', '零点', '二分法',
+            '任意角', '弧度制', '同角三角函数',
+            '抛物线', '顶点', '对称轴', '开口',
+            '方程', '方程求解', '解方程',
+            '实际应用', '生活应用', '数学建模',
+            '放射性衰变', '指数增长', '指数衰减',
+            '周期性变化', '波形', '正弦', '余弦', '正切',
+            '概率', '统计', '抽样', '频率', '分布', '复数', '空间向量', '立体几何'
+        ]
+        return [keyword for keyword in topic_keywords if keyword in text]
+
+    def _build_lesson_plan_fallback_content(
+        self,
+        row: Dict[str, str],
+        logical_path: str,
+        linked_row: Optional[Dict[str, str]],
+        extracted_topics: List[str]
+    ) -> str:
+        """
+        当云端Markdown不可用时，用索引元数据构建可检索摘要
+        """
+        parts = ["教案资源"]
+
+        board = row.get("板块", "").strip()
+        if board:
+            parts.append(f"板块：{board}")
+
+        directory = row.get("目录", "").strip()
+        if directory:
+            parts.append(f"目录：{directory}")
+
+        filename = row.get("文件名", "").strip()
+        if filename:
+            parts.append(f"Markdown文件：{filename}")
+
+        if extracted_topics:
+            parts.append(f"知识点：{', '.join(dict.fromkeys(extracted_topics))}")
+
+        if linked_row:
+            original_name = linked_row.get("文件名", "").strip()
+            original_url = linked_row.get("云端链接", "").strip()
+            if original_name:
+                parts.append(f"原文件：{original_name}")
+            if original_url:
+                parts.append(f"原文件链接：{original_url}")
+
+        image_count = row.get("图片数量", "").strip()
+        if image_count:
+            parts.append(f"图片数量：{image_count}")
+
+        remark = row.get("备注", "").strip()
+        if remark:
+            parts.append(f"备注：{remark}")
+
+        full_path = row.get("完整路径", "").strip()
+        if full_path:
+            parts.append(f"完整路径：{full_path}")
+        else:
+            parts.append(f"逻辑路径：{logical_path}")
+
+        parts.append("说明：云端Markdown正文缺失，当前使用索引摘要参与检索。")
+        return "\n".join(parts)
+
+    def _parse_cloud_lesson_plan_tables(self) -> List[Dict[str, str]]:
+        """
+        基于根目录CSV索引解析云端教案资源
+        仅使用Markdown文件建索引，并关联原始文件与图片资源
+        """
+        index_rows = self._load_cloud_lesson_plan_index()
+        if not index_rows:
+            return []
+
+        rows_by_filename: Dict[str, Dict[str, str]] = {}
+        rows_by_name: Dict[str, List[Dict[str, str]]] = {}
+        for row in index_rows:
+            logical_path = self._build_logical_lesson_plan_path(row)
+            rows_by_filename[logical_path.lower()] = row
+            rows_by_name.setdefault(self._normalize_filename_key(row.get("文件名", "")), []).append(row)
+
+        markdown_rows = [
+            row for row in index_rows
+            if row.get("扩展名", "").lower() == ".md" or row.get("文件类型", "") == "Markdown文件"
+        ]
+
+        all_lesson_plans = []
+        grade_enricher = get_grade_enricher()
+
+        for row in markdown_rows:
+            filename = row.get("文件名", "")
+            logical_path = self._build_logical_lesson_plan_path(row)
+            title = Path(filename).stem
+            directory = row.get("目录", "")
+            full_text = f"{title} {directory} {logical_path}"
+
+            chapter_match = re.search(r'(\d+\.\d+(?:\.\d+)?)', full_text)
+            chapter = chapter_match.group(1) if chapter_match else ''
+
+            extracted_topics = self._extract_lesson_plan_topics(full_text)
+            linked_filename = row.get("关联文件", "").strip()
+            linked_row = self._find_linked_lesson_plan_row(row, rows_by_filename, rows_by_name)
+
+            markdown_url = row.get("云端链接", "").strip()
+            if not markdown_url:
+                markdown_url = self._derive_markdown_url(filename, linked_row)
+
+            content = self._download_cloud_markdown(markdown_url)
+            content_source = "cloud_markdown"
+            if not content:
+                logger.warning(f"云端教案Markdown缺失，使用索引摘要降级: {logical_path}")
+                content = self._build_lesson_plan_fallback_content(row, logical_path, linked_row, extracted_topics)
+                content_source = "index_fallback"
+
+            item = {
+                'resource_type': 'lesson_plan',
+                'source_file': logical_path,
+                'title': title,
+                'content': content,
+                '章节': chapter,
+                '知识点标签': ', '.join(dict.fromkeys(extracted_topics)),
+                '文件名主题': extracted_topics[0] if extracted_topics else '',
+                '文件名': filename,
+                '目录': directory,
+                '云端链接': markdown_url,
+                '完整路径': row.get("完整路径", ""),
+                '关联文件': linked_filename,
+                '原文件云端链接': linked_row.get("云端链接", "") if linked_row else "",
+                '原文件名': linked_row.get("文件名", "") if linked_row else linked_filename,
+                '图片数量': row.get("图片数量", ""),
+                '备注': row.get("备注", ""),
+                '板块': row.get("板块", ""),
+                '索引文件': row.get("索引文件", ""),
+                'content_source': content_source
+            }
+
+            grade_enricher.enrich_resource_grade(item)
+            all_lesson_plans.append(item)
+
+        if all_lesson_plans:
+            grade_stats = grade_enricher.get_grade_statistics(all_lesson_plans)
+            logger.info(f"云端教案年级分布: {grade_stats}")
+
+        logger.info(f"解析云端教案资源完成，共{len(all_lesson_plans)}条记录")
+        return all_lesson_plans
     
     def _init_keyword_mappings(self):
         """
@@ -808,6 +1130,10 @@ class ResourceTableParser:
         Returns:
             教案资源列表
         """
+        cloud_lesson_plans = self._parse_cloud_lesson_plan_tables()
+        if cloud_lesson_plans:
+            return cloud_lesson_plans
+
         lesson_plan_folder = self.learning_resource_path / '教案'
         
         if not lesson_plan_folder.exists():
@@ -1217,6 +1543,7 @@ class ResourceTableParser:
             knowledge_tags = resource.get('知识点标签', '')
             file_topic = resource.get('文件名主题', '')
             content = resource.get('content', '')  # 获取完整内容
+            cloud_url = resource.get('原文件云端链接', '') or resource.get('云端链接', '')
             
             # 提取所有相关主题词
             search_parts = ['教案']
@@ -1261,6 +1588,9 @@ class ResourceTableParser:
             title_cleaned = title.replace('教学设计', '').replace('教案', '').replace('导学案', '').strip(' -（）()【】[]')
             if title_cleaned:
                 search_parts.append(title_cleaned)
+
+            if cloud_url:
+                search_parts.append(f"云端资源：{cloud_url}")
 
             # 确保搜索文本包含函数性质关键词
             # 检查标题中是否包含函数性质关键词
@@ -1429,7 +1759,7 @@ class ResourceTableParser:
             return resource.get('题目文件名')
         
         elif resource_type in ['lesson_plan', 'theory']:
-            return resource.get('source_file')
+            return resource.get('原文件云端链接') or resource.get('云端链接') or resource.get('source_file')
         
         elif resource_type == 'courseware':
             return resource.get('文件名')

@@ -3667,7 +3667,7 @@ class ResourceRetriever:
         resource = {
             "title": metadata.get('title', '未知'),
             "content": doc,
-            "source": metadata.get('source_file', ''),
+            "source": metadata.get('原文件云端链接', '') or metadata.get('云端链接', '') or metadata.get('source_file', ''),
             "relevance": base_relevance,
             "metadata": metadata,
             "base_relevance": base_relevance,
@@ -4581,10 +4581,16 @@ class ResourceRetriever:
         
         resource['title'] = f"教案: {title}"
         resource['content'] = content
+        resource['source'] = metadata.get('原文件云端链接', '') or metadata.get('云端链接', '') or metadata.get('source_file', '')
         # 传递元数据给主题匹配器
         resource['章节'] = chapter
         resource['知识点标签'] = knowledge_tags
         resource['文件名主题'] = file_topic
+        resource['cloud_url'] = metadata.get('云端链接', '')
+        resource['original_file_url'] = metadata.get('原文件云端链接', '')
+        resource['original_filename'] = metadata.get('原文件名', '')
+        resource['related_file'] = metadata.get('关联文件', '')
+        resource['full_path'] = metadata.get('完整路径', '')
         
         # V9.1：提取教案内容特征（教学方法、教学环节等）
         try:
