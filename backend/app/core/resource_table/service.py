@@ -1,0 +1,43 @@
+"""
+资源汇总表解析服务实现。
+"""
+
+from ._shared import *
+from .methods.init import _InitMixin
+from .methods.detect_csv_encoding import _DetectCsvEncodingMixin
+from .methods.normalize_board_filters import _NormalizeBoardFiltersMixin
+from .methods.get_cloud_lesson_plan_csv_files import _GetCloudLessonPlanCsvFilesMixin
+from .methods.load_cloud_lesson_plan_index import _LoadCloudLessonPlanIndexMixin
+from .methods.build_logical_lesson_plan_path import _BuildLogicalLessonPlanPathMixin
+from .methods.normalize_filename_key import _NormalizeFilenameKeyMixin
+from .methods.find_linked_lesson_plan_row import _FindLinkedLessonPlanRowMixin
+from .methods.download_cloud_markdown import _DownloadCloudMarkdownMixin
+from .methods.sanitize_cloud_url import _SanitizeCloudUrlMixin
+from .methods.derive_markdown_url import _DeriveMarkdownUrlMixin
+from .methods.extract_lesson_plan_topics import _ExtractLessonPlanTopicsMixin
+from .methods.build_lesson_plan_fallback_content import _BuildLessonPlanFallbackContentMixin
+from .methods.parse_cloud_lesson_plan_tables import _ParseCloudLessonPlanTablesMixin
+from .methods.init_keyword_mappings import _InitKeywordMappingsMixin
+from .methods.extract_keywords_from_text import _ExtractKeywordsFromTextMixin
+from .methods.enhance_search_text import _EnhanceSearchTextMixin
+from .methods.parse_markdown_table import _ParseMarkdownTableMixin
+from .methods.parse_standard_table import _ParseStandardTableMixin
+from .methods.parse_special_table import _ParseSpecialTableMixin
+from .methods.parse_special_table_row import _ParseSpecialTableRowMixin
+from .methods.parse_space_separated_table import _ParseSpaceSeparatedTableMixin
+from .methods.parse_table_row import _ParseTableRowMixin
+from .methods.parse_ggb_table import _ParseGgbTableMixin
+from .methods.parse_syllabus_table import _ParseSyllabusTableMixin
+from .methods.parse_exercise_tables import _ParseExerciseTablesMixin
+from .methods.parse_lesson_plan_tables import _ParseLessonPlanTablesMixin
+from .methods.parse_theory_cards import _ParseTheoryCardsMixin
+from .methods.parse_courseware_table import _ParseCoursewareTableMixin
+from .methods.parse_lesson_case_table import _ParseLessonCaseTableMixin
+from .methods.parse_all_tables import _ParseAllTablesMixin
+from .methods.format_resource_for_search import _FormatResourceForSearchMixin
+from .methods.extract_topic_from_filename import _ExtractTopicFromFilenameMixin
+from .methods.get_resource_filename import _GetResourceFilenameMixin
+
+class ResourceTableParser(_InitMixin, _DetectCsvEncodingMixin, _NormalizeBoardFiltersMixin, _GetCloudLessonPlanCsvFilesMixin, _LoadCloudLessonPlanIndexMixin, _BuildLogicalLessonPlanPathMixin, _NormalizeFilenameKeyMixin, _FindLinkedLessonPlanRowMixin, _DownloadCloudMarkdownMixin, _SanitizeCloudUrlMixin, _DeriveMarkdownUrlMixin, _ExtractLessonPlanTopicsMixin, _BuildLessonPlanFallbackContentMixin, _ParseCloudLessonPlanTablesMixin, _InitKeywordMappingsMixin, _ExtractKeywordsFromTextMixin, _EnhanceSearchTextMixin, _ParseMarkdownTableMixin, _ParseStandardTableMixin, _ParseSpecialTableMixin, _ParseSpecialTableRowMixin, _ParseSpaceSeparatedTableMixin, _ParseTableRowMixin, _ParseGgbTableMixin, _ParseSyllabusTableMixin, _ParseExerciseTablesMixin, _ParseLessonPlanTablesMixin, _ParseTheoryCardsMixin, _ParseCoursewareTableMixin, _ParseLessonCaseTableMixin, _ParseAllTablesMixin, _FormatResourceForSearchMixin, _ExtractTopicFromFilenameMixin, _GetResourceFilenameMixin):
+    """资源汇总表解析器"""
+
