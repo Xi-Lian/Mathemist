@@ -311,17 +311,19 @@ export function Thread() {
   const feedbackApiBaseUrl =
     apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
   const geometryToolUrl = `/combined-geometry?apiUrl=${encodeURIComponent(feedbackApiBaseUrl)}`;
-  const visibleMessages = messages.filter(
-    (m) => !m.id?.startsWith(DO_NOT_RENDER_ID_PREFIX),
-  );
+  const visibleMessageEntries = messages
+    .map((message, rawIndex) => ({ message, rawIndex }))
+    .filter(
+      ({ message }) => !message.id?.startsWith(DO_NOT_RENDER_ID_PREFIX),
+    );
 
   let latestHumanQuery = "";
-  const messageEntries = visibleMessages.map((message) => {
+  const messageEntries = visibleMessageEntries.map(({ message, rawIndex }) => {
     if (message.type === "human") {
       const query = getContentString(message.content).trim();
       if (query) latestHumanQuery = query;
     }
-    return { message, query: latestHumanQuery };
+    return { message, query: latestHumanQuery, rawIndex };
   });
 
   const latestFeedbackPayload = useMemo(() => {
@@ -377,7 +379,6 @@ export function Thread() {
             "relative flex min-w-0 flex-1 flex-col overflow-hidden",
             !chatStarted && "grid-rows-[1fr]",
           )}
-          layout={isLargeScreen}
           animate={{
             marginLeft: chatHistoryOpen ? (isLargeScreen ? 300 : 0) : 0,
             width: chatHistoryOpen
@@ -481,16 +482,16 @@ export function Thread() {
               contentClassName="pt-8 pb-16 mx-auto flex w-full max-w-[min(960px,100%)] flex-col gap-4"
               content={
                 <>
-                  {messageEntries.map(({ message }, index) =>
+                  {messageEntries.map(({ message, rawIndex }) =>
                     message.type === "human" ? (
                       <HumanMessage
-                        key={message.id || `${message.type}-${index}`}
+                        key={message.id || `${message.type}-${rawIndex}`}
                         message={message}
                         isLoading={isLoading}
                       />
                     ) : (
                       <AssistantMessage
-                        key={message.id || `${message.type}-${index}`}
+                        key={message.id || `${message.type}-${rawIndex}`}
                         message={message}
                         isLoading={isLoading}
                         handleRegenerate={handleRegenerate}

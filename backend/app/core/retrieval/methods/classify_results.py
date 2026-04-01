@@ -7,6 +7,15 @@ from ..classify_results_helpers.resource_type import (
     normalize_resource_type,
 )
 
+DIFFICULTY_KEYWORD_POLICY = {
+    "基础": ["基础", "简单", "入门", "初级", "1", "2"],
+    "中等": ["中等", "一般", "普通", "常见", "3"],
+    "拔高": ["拔高", "难", "困难", "挑战", "压轴", "4", "5"],
+}
+PROOF_KEYWORDS = ["求证", "证明", "证明题", "推导", "推导题"]
+PROOF_QUERY_HINTS = ["单调性", "证明"]
+PROOF_KNOWLEDGE_HINTS = ["单调性", "单调", "增函数", "减函数"]
+
 
 class _ClassifyResultsMixin:
     def _classify_results(
@@ -85,49 +94,70 @@ class _ClassifyResultsMixin:
         return self._finalize_classified_results(classified, query)
 
     def _passes_exercise_filters(self, metadata, doc, query, classified, grade, difficulty, exam_form):
-        if grade and grade not in ["高一", "高二"]:
-            resource_grade = metadata.get("grade", "") or metadata.get("年级", "")
-            if resource_grade and grade not in resource_grade:
-                is_math_topic = any(topic in doc.lower() for topic in ["三角函数", "正弦", "余弦", "正切", "诱导公式", "二倍角"])
-                if not (is_math_topic and "高一" in resource_grade and "高二" in grade):
-                    if grade != "高三" or not any(g in resource_grade for g in ["高一", "高二", "高三"]):
-                        print(f"   ⚠️ V49.0年级过滤: 资源年级'{resource_grade}'与查询年级'{grade}'不匹配")
-                        return False
-                else:
-                    print("   ✓ V50.0年级放宽: 三角函数主题，允许'高二'查询返回'高一'题目")
-        elif grade and grade in ["高一", "高二"]:
-            print("   ✓ V62.0高一高二查询: 禁用年级过滤，重点在知识点匹配")
+        if not self._passes_grade_policy(metadata, doc, grade):
+            return False
+        if not self._passes_difficulty_policy(metadata, classified, difficulty):
+            return False
+        if not self._passes_exam_form_policy(metadata, doc, query, exam_form):
+            return False
+        return True
 
-        if difficulty:
-            resource_difficulty = metadata.get("难度（1-5）", "") or metadata.get("difficulty", "") or metadata.get("难度", "")
-            if resource_difficulty:
-                difficulty_map = {
-                    "基础": ["基础", "简单", "入门", "初级", "1", "2"],
-                    "中等": ["中等", "一般", "普通", "常见", "3"],
-                    "拔高": ["拔高", "难", "困难", "挑战", "压轴", "4", "5"],
-                }
-                is_difficulty_match = False
-                for level, keywords in difficulty_map.items():
-                    if difficulty == level and any(str(keyword) in str(resource_difficulty) for keyword in keywords):
-                        is_difficulty_match = True
-                        break
-                if not is_difficulty_match:
-                    current_count = sum(len(resources) for resources in classified.values() if isinstance(resources, list))
-                    if current_count < 5:
-                        print(f"   ✅ V95.0资源不足，放宽难度限制: 接受资源难度'{resource_difficulty}'")
-                    else:
-                        print(f"   ⚠️ V49.0难度过滤: 资源难度'{resource_difficulty}'与查询难度'{difficulty}'不匹配")
-                        return False
+    def _passes_grade_policy(self, metadata, doc, grade):
+        if not grade:
+            return True
 
-        if exam_form:
-            content = doc + (metadata.get("知识点", "") or "") + (metadata.get("知识点标签", "") or "")
-            if ("单调性" in query and "证明" in query) or ("奇偶性" in query and "证明" in query):
-                is_trig_identity = "恒等" in content or ("求证" in content and "=" in content and any(trig in content for trig in ["sin", "cos", "tan"]))
-                is_monotonicity_proof = any(keyword in content for keyword in ["单调性", "递增", "递减", "增函数", "减函数", "单调递增", "单调递减"])
-                is_parity_proof = any(keyword in content for keyword in ["奇偶性", "奇函数", "偶函数", "奇函数证明", "偶函数证明"])
-                if is_trig_identity and not is_monotonicity_proof and not is_parity_proof:
-                    print("   ⚠️ V50.0证明题过滤: 排除三角恒等式证明，需要单调性或奇偶性证明")
-                    return False
+        resource_grade = metadata.get("grade", "") or metadata.get("年级", "")
+        if not resource_grade:
+            return True
+        if grade in resource_grade or resource_grade in grade:
+            return True
+
+        # 通用放宽：同学段年级允许相邻匹配，不做主题特判硬编码。
+        grade_order = {"高一": 1, "高二": 2, "高三": 3}
+        query_level = next((v for k, v in grade_order.items() if k in grade), None)
+        resource_level = next((v for k, v in grade_order.items() if k in resource_grade), None)
+        if query_level is not None and resource_level is not None and abs(query_level - resource_level) <= 1:
+            return True
+
+        print(f"   ⚠️ 年级过滤: 资源年级'{resource_grade}'与查询年级'{grade}'不匹配")
+        return False
+
+    def _passes_difficulty_policy(self, metadata, classified, difficulty):
+        if not difficulty:
+            return True
+
+        resource_difficulty = metadata.get("难度（1-5）", "") or metadata.get("difficulty", "") or metadata.get("难度", "")
+        if not resource_difficulty:
+            return True
+
+        keywords = DIFFICULTY_KEYWORD_POLICY.get(difficulty, [])
+        if any(str(keyword) in str(resource_difficulty) for keyword in keywords):
+            return True
+
+        current_count = sum(len(resources) for resources in classified.values() if isinstance(resources, list))
+        if current_count < 5:
+            print(f"   ✅ V95.0资源不足，放宽难度限制: 接受资源难度'{resource_difficulty}'")
+            return True
+
+        print(f"   ⚠️ V49.0难度过滤: 资源难度'{resource_difficulty}'与查询难度'{difficulty}'不匹配")
+        return False
+
+    def _passes_exam_form_policy(self, metadata, doc, query, exam_form):
+        if not exam_form:
+            return True
+
+        content = doc + (metadata.get("知识点", "") or "") + (metadata.get("知识点标签", "") or "")
+        is_target_proof_query = ("单调性" in query and "证明" in query) or ("奇偶性" in query and "证明" in query)
+        if not is_target_proof_query:
+            return True
+
+        is_trig_identity = "恒等" in content or ("求证" in content and "=" in content and any(trig in content for trig in ["sin", "cos", "tan"]))
+        is_monotonicity_proof = any(keyword in content for keyword in ["单调性", "递增", "递减", "增函数", "减函数", "单调递增", "单调递减"])
+        is_parity_proof = any(keyword in content for keyword in ["奇偶性", "奇函数", "偶函数", "奇函数证明", "偶函数证明"])
+
+        if is_trig_identity and not is_monotonicity_proof and not is_parity_proof:
+            print("   ⚠️ V50.0证明题过滤: 排除三角恒等式证明，需要单调性或奇偶性证明")
+            return False
         return True
 
     def _apply_exercise_content_requirements(self, resource, resource_type, metadata, doc, query_features, query):
@@ -157,33 +187,36 @@ class _ClassifyResultsMixin:
         mapped_type = "解答题" if required_type == "计算题" else required_type
         if not exercise_type:
             return
-        if mapped_type == "证明题":
-            if any(keyword in doc for keyword in ["求证", "证明", "证明题", "推导", "推导题"]):
-                print("   ✅ V46.0证明题关键词匹配: 发现证明关键词")
-                return
-            if "解答" in exercise_type and any(keyword in doc for keyword in ["证明", "单调性", "求证"]):
-                print("   ✅ V46.0证明题匹配: 解答题包含证明内容")
-                return
-            if any(keyword in query for keyword in ["单调性", "证明"]) and "解答" in exercise_type:
-                print("   ✅ V46.0证明题匹配: 查询包含证明相关词，解答题通过")
-                return
-            if "单调性" in query and "解答" in exercise_type:
-                knowledge_tags = metadata.get("知识点标签", "")
-                if any(keyword in knowledge_tags for keyword in ["单调性", "单调", "增函数", "减函数"]):
-                    print(f"   ✅ V46.0证明题匹配: 知识点标签'{knowledge_tags}'包含单调性相关关键词")
-                    return
-            if "解答" in exercise_type:
-                print("   ✅ V46.0证明题匹配: 解答题类型，放宽匹配条件")
-                return
+        if not self._is_exercise_type_allowed(mapped_type, exercise_type, metadata, doc, query):
             print(f"   ⚠️ V18.0/V18.4跳过不匹配的习题类型: {exercise_type} != {required_type} (映射为: {mapped_type})")
             resource["should_show"] = False
             return
+        print(f"   ✅ V38.0题目类型匹配通过: {mapped_type} <-> {exercise_type}")
 
-        if mapped_type not in exercise_type and exercise_type not in mapped_type:
-            print(f"   ⚠️ V18.0/V18.4跳过不匹配的习题类型: {exercise_type} != {required_type} (映射为: {mapped_type})")
-            resource["should_show"] = False
-        else:
-            print(f"   ✅ V38.0题目类型模糊匹配: {mapped_type} 在 {exercise_type} 中")
+    def _is_exercise_type_allowed(self, mapped_type, exercise_type, metadata, doc, query):
+        if mapped_type == "证明题":
+            return self._matches_proof_type(metadata, exercise_type, doc, query)
+        return mapped_type in exercise_type or exercise_type in mapped_type
+
+    def _matches_proof_type(self, metadata, exercise_type, doc, query):
+        if any(keyword in doc for keyword in PROOF_KEYWORDS):
+            print("   ✅ V46.0证明题关键词匹配: 发现证明关键词")
+            return True
+        if "解答" not in exercise_type:
+            return False
+        if any(keyword in doc for keyword in ["证明", "单调性", "求证"]):
+            print("   ✅ V46.0证明题匹配: 解答题包含证明内容")
+            return True
+        if any(keyword in query for keyword in PROOF_QUERY_HINTS):
+            print("   ✅ V46.0证明题匹配: 查询包含证明相关词，解答题通过")
+            return True
+        if "单调性" in query:
+            knowledge_tags = metadata.get("知识点标签", "")
+            if any(keyword in knowledge_tags for keyword in PROOF_KNOWLEDGE_HINTS):
+                print(f"   ✅ V46.0证明题匹配: 知识点标签'{knowledge_tags}'包含单调性相关关键词")
+                return True
+        print("   ✅ V46.0证明题匹配: 解答题类型，放宽匹配条件")
+        return True
 
     def _is_special_resource_request(self, resource_type, resource_types):
         if not resource_types:

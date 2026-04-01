@@ -17,6 +17,14 @@ V9.2 主题匹配器 - 智能权重优化版
 13. 保持V9.1的所有优势
 """
 
+import builtins
+import os
 from typing import List, Dict, Any, Optional
 from ..theme_matcher import ThemeMatcher
 
+VERBOSE_LOGS = os.getenv("APP_VERBOSE_LOGS", "0").strip().lower() in {"1", "true", "yes", "on", "debug", "verbose"}
+
+
+def print(*args, **kwargs):
+    if VERBOSE_LOGS:
+        builtins.print(*args, **kwargs)

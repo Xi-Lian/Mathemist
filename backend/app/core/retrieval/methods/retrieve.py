@@ -117,7 +117,7 @@ class _RetrieveMixin:
             results = apply_difficulty_filter(results, difficulty_info, self._current_quantity_limit)
             results = apply_question_type_filter(results, question_type, self._current_quantity_limit)
             results = prioritize_pure_function_results(self, query, results, quantity_limit)
-            results = apply_quantity_limit(results, quantity_limit, core_theme)
+            results = apply_quantity_limit(results, quantity_limit, core_theme, query, resource_types)
 
             if results.get("documents") and results["documents"][0]:
                 print(f"     ✅ 找到 {len(results['documents'][0])} 条结果")
@@ -157,16 +157,6 @@ class _RetrieveMixin:
 
                 core_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
                 broad_themes = {"数学", "代数", "几何", "统计", "概率"}
-                if resource_types or "题" in query or "习题" in query or "练习题" in query:
-                    if any(
-                        rt in ["教案", "教学设计", "教学方案", "教学大纲", "大纲", "课程标准", "习题", "题目", "练习题"]
-                        for rt in (resource_types or [])
-                    ) or "题" in query or "习题" in query or "练习题" in query:
-                        print("   ✅ 对于包含'题'的查询，保留所有主题")
-                    elif "函数" in broad_themes:
-                        broad_themes.remove("函数")
-                        print(f"   ✅ 对于{resource_types}资源，'函数'不是过于宽泛的主题")
-
                 filtered_themes = [t for t in core_themes if t not in broad_themes]
                 if len(filtered_themes) < len(core_themes):
                     print(f"   ⚠️ 过滤过于宽泛的主题: {set(core_themes) - set(filtered_themes)}")
@@ -209,9 +199,31 @@ class _RetrieveMixin:
                     len(resources) for resources in classified_resources.values() if isinstance(resources, list)
                 )
 
+            classified_resources = self._apply_ai_rerank_stage(
+                classified_resources,
+                query,
+                intent,
+                resource_types,
+                core_theme,
+            )
+
+            classified_resources = self._apply_unified_ranking(
+                classified_resources,
+                quantity_limit,
+                query=query,
+                resource_types=resource_types,
+            )
+
+            scope_notice = getattr(self, "_current_scope_notice", None)
+            if scope_notice:
+                classified_resources["_scope_notice"] = scope_notice
+
             print(f"✅ 检索完成: {self._get_summary(classified_resources)}")
             return classified_resources
 
         except Exception as e:
             print(f"❌ 资源检索失败: {str(e)}")
             return self._get_empty_result()
+
+
+

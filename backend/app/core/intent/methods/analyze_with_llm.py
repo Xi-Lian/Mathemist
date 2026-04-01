@@ -12,7 +12,7 @@ class _AnalyzeWithLlmMixin:
         Returns:
             意图分析结果
         """
-        print("🤖 调用DeepSeek模型进行意图理解...")
+        print("🤖 调用模型进行意图理解...")
         
         # 获取模型
         model = self.model_config.get_model("intent")

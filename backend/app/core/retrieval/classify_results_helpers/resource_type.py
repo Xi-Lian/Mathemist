@@ -60,7 +60,8 @@ def matches_requested_resource_type(resource_type, resource_types):
         if not mapping:
             continue
 
-        standard_name, db_type = mapping
+        standard_name = mapping[0]
+        db_type = mapping[1]
         if resource_type == db_type:
             resource_type_matched = True
             print(f"   ✅ V80.0调试 - 资源类型匹配: {resource_type} 等于映射后的数据库类型 {db_type}")

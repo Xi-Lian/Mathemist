@@ -106,7 +106,7 @@ export function parseResourcesFromResponse(content: string): ParsedResource[] {
 
     // 只保留以图标开头的行作为资源标题
     // 后端格式: "📝 ⭐ 习题（图片）: 课后巩固 [核心主题: xxx]"
-    if (/^[📝📚📊🎬🔧📋🎨📂📖]/.test(line)) {
+    if (/^(?:📝|📚|📊|🎬|🔧|📋|🎨|📂|📖)/u.test(line)) {
       pendingTitle = line;
     }
   }

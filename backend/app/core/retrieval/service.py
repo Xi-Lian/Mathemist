@@ -9,6 +9,8 @@ from .methods.enhance_query_dynamically import _EnhanceQueryDynamicallyMixin
 from .methods.basic_query_enhancement import _BasicQueryEnhancementMixin
 from .methods.adjust_retrieval_count import _AdjustRetrievalCountMixin
 from .methods.retrieve import _RetrieveMixin
+from .methods.apply_ai_rerank import _ApplyAiRerankMixin
+from .methods.apply_unified_ranking import _ApplyUnifiedRankingMixin
 from .methods.check_vector_db_exists import _CheckVectorDbExistsMixin
 from .methods.generate_query_embedding import _GenerateQueryEmbeddingMixin
 from .methods.merge_multi_theme_results import _MergeMultiThemeResultsMixin
@@ -48,7 +50,7 @@ from .methods.extract_theme_with_llm import _ExtractThemeWithLlmMixin
 from .methods.extract_theme_with_keywords import _ExtractThemeWithKeywordsMixin
 from .methods.get_theory_resources import _GetTheoryResourcesMixin
 
-class ResourceRetriever(_InitMixin, _DetectQueryIntentsMixin, _EnhanceQueryDynamicallyMixin, _BasicQueryEnhancementMixin, _AdjustRetrievalCountMixin, _RetrieveMixin, _CheckVectorDbExistsMixin, _GenerateQueryEmbeddingMixin, _MergeMultiThemeResultsMixin, _CheckThemeRelevanceWithLlmMixin, _CheckKnowledgePointConsistencyMixin, _ClassifyResultsMixin, _DynamicClassifyResourceMixin, _ApplyGradeFilterMixin, _ApplyTopicExclusionMixin, _ApplyQuantityLimitMixin, _GetMetadataMixin, _GetDistanceMixin, _CreateResourceMixin, _CalculateOverallScoreMixin, _ProcessExerciseResourceMixin, _ProcessGgbResourceMixin, _ProcessSyllabusResourceMixin, _ProcessLessonPlanResourceMixin, _ProcessCoursewareResourceMixin, _ProcessLessonCaseResourceMixin, _ExtractTopicFromFilenameMixin, _AddToCategoryMixin, _BalanceResourceDistributionMixin, _ReclassifyByRelevanceMixin, _CheckGradeMatchMixin, _ApplySubjectiveIntentFilterMixin, _IsVagueGradeQueryMixin, _ApplyFlexibleGradeFilterMixin, _GetEmptyResultMixin, _ExtractQueryConditionsMixin, _ExtractResourceTypesFromQueryMixin, _ExtractQuestionTypeMixin, _DeduplicateResultsMixin, _GetSummaryMixin, _ExtractCoreThemeMixin, _ExtractThemeWithLlmMixin, _ExtractThemeWithKeywordsMixin, _GetTheoryResourcesMixin):
+class ResourceRetriever(_InitMixin, _DetectQueryIntentsMixin, _EnhanceQueryDynamicallyMixin, _BasicQueryEnhancementMixin, _AdjustRetrievalCountMixin, _RetrieveMixin, _ApplyAiRerankMixin, _ApplyUnifiedRankingMixin, _CheckVectorDbExistsMixin, _GenerateQueryEmbeddingMixin, _MergeMultiThemeResultsMixin, _CheckThemeRelevanceWithLlmMixin, _CheckKnowledgePointConsistencyMixin, _ClassifyResultsMixin, _DynamicClassifyResourceMixin, _ApplyGradeFilterMixin, _ApplyTopicExclusionMixin, _ApplyQuantityLimitMixin, _GetMetadataMixin, _GetDistanceMixin, _CreateResourceMixin, _CalculateOverallScoreMixin, _ProcessExerciseResourceMixin, _ProcessGgbResourceMixin, _ProcessSyllabusResourceMixin, _ProcessLessonPlanResourceMixin, _ProcessCoursewareResourceMixin, _ProcessLessonCaseResourceMixin, _ExtractTopicFromFilenameMixin, _AddToCategoryMixin, _BalanceResourceDistributionMixin, _ReclassifyByRelevanceMixin, _CheckGradeMatchMixin, _ApplySubjectiveIntentFilterMixin, _IsVagueGradeQueryMixin, _ApplyFlexibleGradeFilterMixin, _GetEmptyResultMixin, _ExtractQueryConditionsMixin, _ExtractResourceTypesFromQueryMixin, _ExtractQuestionTypeMixin, _DeduplicateResultsMixin, _GetSummaryMixin, _ExtractCoreThemeMixin, _ExtractThemeWithLlmMixin, _ExtractThemeWithKeywordsMixin, _GetTheoryResourcesMixin):
     """资源检索器"""
     
     COLLECTION_NAME = "math_resources"
@@ -94,3 +96,7 @@ def retrieve_resources(query: str, intent: str = "search") -> Dict[str, Any]:
         print(f"📋 V53.12识别到资源类型: {resource_types}")
     
     return retriever.retrieve(query, intent, resource_types=resource_types if resource_types else None)
+
+
+
+

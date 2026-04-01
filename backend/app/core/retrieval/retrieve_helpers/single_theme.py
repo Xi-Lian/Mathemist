@@ -5,6 +5,109 @@ from .filters import (
     has_specific_resource_types,
 )
 
+SEMANTIC_RESOURCE_TYPES = {
+    "教案",
+    "教学设计",
+    "教学方案",
+    "教学计划",
+    "备课",
+    "导学案",
+    "详案",
+    "简案",
+    "教学反思",
+    "核心素养",
+    "课件",
+    "PPT",
+    "幻灯片",
+    "演示文稿",
+    "课件资源",
+    "教学大纲",
+    "大纲",
+    "课程标准",
+}
+
+
+def _should_preserve_query_text(resource_types):
+    return bool(resource_types) and any(rt in SEMANTIC_RESOURCE_TYPES for rt in resource_types)
+
+
+def _is_general_material_query(query, resource_types):
+    generic_words = ["资料", "学习资料", "教学资源", "资源", "内容"]
+    return (not resource_types or any(rt in {"资料", "资源", "教学资源", "学习资料"} for rt in resource_types)) and any(
+        word in (query or "") for word in generic_words
+    )
+
+
+def _should_apply_semantic_supplement(query, resource_types, core_theme):
+    return bool(core_theme) and (_should_preserve_query_text(resource_types) or _is_general_material_query(query, resource_types))
+
+
+def _text_match_score(core_theme, metadata, document):
+    title = metadata.get("title", "") or ""
+    source_file = metadata.get("source_file", "") or ""
+    knowledge_tags = metadata.get("知识点标签", "") or metadata.get("知识点", "") or ""
+    text = f"{title} {source_file} {knowledge_tags} {document or ''}"
+
+    if core_theme in title:
+        return 1.0
+    if core_theme in source_file:
+        return 0.9
+    if core_theme in knowledge_tags:
+        return 0.85
+    if core_theme in text:
+        return 0.7
+    return 0.0
+
+
+def _build_semantic_supplement(collection, where_filter, core_theme, limit):
+    try:
+        if where_filter:
+            raw = collection.get(where=where_filter, include=["documents", "metadatas"])
+        else:
+            raw = collection.get(include=["documents", "metadatas"])
+    except Exception as exc:
+        print(f"   ⚠️ 语义补召回失败: {exc}")
+        return None
+
+    documents = raw.get("documents") or []
+    metadatas = raw.get("metadatas") or []
+    ids = raw.get("ids") or []
+    scored = []
+
+    for index, metadata in enumerate(metadatas):
+        document = documents[index] if index < len(documents) else ""
+        score = _text_match_score(core_theme, metadata or {}, document or "")
+        if score <= 0:
+            continue
+        scored.append((score, document, metadata or {}, ids[index] if index < len(ids) else f"supplement_{index}"))
+
+    if not scored:
+        return None
+
+    scored.sort(key=lambda item: -item[0])
+    top_items = scored[:limit]
+    print(f"   🔎 语义补召回命中 {len(top_items)} 条，主题='{core_theme}'")
+
+    return {
+        "documents": [[item[1] for item in top_items]],
+        "metadatas": [[item[2] for item in top_items]],
+        "distances": [[max(0.05, 0.6 - item[0] * 0.4) for item in top_items]],
+        "ids": [[f"semantic_{item[3]}" for item in top_items]],
+    }
+
+
+def _merge_query_results(primary_results, supplement_results):
+    if not primary_results:
+        return supplement_results
+    if not supplement_results:
+        return primary_results
+
+    merged = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
+    for key in ("documents", "metadatas", "distances", "ids"):
+        merged[key][0].extend(primary_results.get(key, [[]])[0] if primary_results.get(key) else [])
+        merged[key][0].extend(supplement_results.get(key, [[]])[0] if supplement_results.get(key) else [])
+    return merged
+
 
 def execute_single_theme_retrieval(
     retriever,
@@ -29,8 +132,12 @@ def execute_single_theme_retrieval(
     detected_intents = retriever._detect_query_intents(query)
 
     if core_theme:
-        enhanced_query = core_theme
-        print(f"   🔍 V51.0使用核心主题作为查询文本: '{enhanced_query}'")
+        if _should_preserve_query_text(resource_types):
+            enhanced_query = query_to_use
+            print(f"   🔍 V51.1保留资源类型语义作为查询文本: '{enhanced_query}'")
+        else:
+            enhanced_query = core_theme
+            print(f"   🔍 V51.0使用核心主题作为查询文本: '{enhanced_query}'")
     else:
         enhanced_query = retriever._enhance_query_dynamically(query_to_use, detected_intents)
         print(f"   🔍 V51.0动态查询增强: '{query_to_use}' -> '{enhanced_query}'")
@@ -89,6 +196,19 @@ def execute_single_theme_retrieval(
         )
         results["ids"] = [[f"query_{i}" for i in range(len(results["documents"][0]))]]
 
+    supplement_where = where_filter
+    if _is_general_material_query(query, resource_types):
+        supplement_where = None
+
+    if _should_apply_semantic_supplement(query, resource_types, core_theme):
+        supplement_results = _build_semantic_supplement(
+            collection,
+            supplement_where,
+            core_theme,
+            limit=min(40, max(10, n_results_adjusted // 4)),
+        )
+        results = _merge_query_results(results, supplement_results)
+
     return query_to_use, core_theme, results
 
 
@@ -106,41 +226,15 @@ def postprocess_single_theme_results(retriever, query, results, resource_types, 
 
     filtered_results = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
 
-    if has_specific_resource_types(resource_types):
-        for doc, meta, dist, id_ in zip(results["documents"][0], results["metadatas"][0], results["distances"][0], results["ids"][0]):
-            resource_type = meta.get("resource_type", "")
-            strict_threshold = _get_specific_resource_threshold(retriever, query, resource_types, resource_type)
-            contains_core_theme = core_theme and (
-                core_theme in doc or core_theme in meta.get("title", "") or core_theme in str(meta)
-            )
-            if dist < strict_threshold or contains_core_theme:
-                filtered_results["documents"][0].append(doc)
-                filtered_results["metadatas"][0].append(meta)
-                filtered_results["distances"][0].append(dist)
-                filtered_results["ids"][0].append(id_)
-                if contains_core_theme:
-                    print(f"   ✅ 保留（包含核心主题）：'{meta.get('title', '未知')}' (距离: {dist:.3f})")
-                else:
-                    print(f"   ✅ 保留：'{meta.get('title', '未知')}' (距离: {dist:.3f} < {strict_threshold})")
-            else:
-                print(f"   ⚠️ 过滤：'{meta.get('title', '未知')}' 相似度过低 (距离: {dist:.3f} >= {strict_threshold})")
-    else:
-        for doc, meta, dist, id_ in zip(results["documents"][0], results["metadatas"][0], results["distances"][0], results["ids"][0]):
-            resource_type = meta.get("resource_type", "")
-            strict_threshold = _get_default_threshold(retriever, query, resource_type)
-            print(f"   🔍 动态阈值调整：为{resource_type}资源使用阈值 {strict_threshold:.2f}")
-            contains_core_theme = core_theme and (core_theme in doc or core_theme in meta.get("title", ""))
-            if dist < strict_threshold or contains_core_theme:
-                filtered_results["documents"][0].append(doc)
-                filtered_results["metadatas"][0].append(meta)
-                filtered_results["distances"][0].append(dist)
-                filtered_results["ids"][0].append(id_)
-                if contains_core_theme:
-                    print(f"   ✅ 保留（包含核心主题）：'{meta.get('title', '未知')}' (距离: {dist:.3f})")
-                else:
-                    print(f"   ✅ 保留：'{meta.get('title', '未知')}' (距离: {dist:.3f} < {strict_threshold:.2f})")
-            else:
-                print(f"   ⚠️ 过滤：'{meta.get('title', '未知')}' 相似度过低 (距离: {dist:.3f} >= {strict_threshold:.2f})")
+    for doc, meta, dist, id_ in zip(results["documents"][0], results["metadatas"][0], results["distances"][0], results["ids"][0]):
+        if _passes_unified_semantic_gate(query, core_theme, doc, meta, dist):
+            filtered_results["documents"][0].append(doc)
+            filtered_results["metadatas"][0].append(meta)
+            filtered_results["distances"][0].append(dist)
+            filtered_results["ids"][0].append(id_)
+            print(f"   ✅ 保留：'{meta.get('title', '未知')}' (距离: {dist:.3f})")
+        else:
+            print(f"   ⚠️ 过滤：'{meta.get('title', '未知')}' 语义门控未通过 (距离: {dist:.3f})")
 
     if filtered_results["documents"][0]:
         print(f"   ✅ V64.0单主题查询过滤完成，保留 {len(filtered_results['documents'][0])} 条结果")
@@ -150,68 +244,15 @@ def postprocess_single_theme_results(retriever, query, results, resource_types, 
     return None
 
 
-def _get_specific_resource_threshold(retriever, query, resource_types, resource_type=None):
-    base_threshold = 1.5
-    resource_type_adjustment = 0
-    if any(rt in ["教案", "教学设计", "教学方案", "课件", "PPT", "幻灯片"] for rt in resource_types):
-        resource_type_adjustment = 8.5
-    elif any(rt in ["GGB", "GeoGebra", "动态图", "可视化"] for rt in resource_types):
-        resource_type_adjustment = 6.0
-    elif any(rt in ["习题", "题目", "练习题", "测试题"] for rt in resource_types):
-        resource_type_adjustment = 1.5
-    elif any(rt in ["课例", "教学视频", "课堂实录"] for rt in resource_types):
-        resource_type_adjustment = 4.0
-    elif any(rt in ["教学大纲", "大纲", "课程标准"] for rt in resource_types):
-        resource_type_adjustment = 5.0
+def _passes_unified_semantic_gate(query, core_theme, doc, meta, distance):
+    if distance is None:
+        return False
+    if distance <= 0.95:
+        return True
+    if not core_theme:
+        return distance <= 1.10
 
-    intent_adjustment = 0
-    intent = retriever._extract_query_conditions(query).get("intent", "")
-    if intent == "练习":
-        intent_adjustment = 0.5
-    elif intent == "学习":
-        intent_adjustment = 1.0
-    elif intent == "教学":
-        intent_adjustment = 2.0
-    elif intent == "复习":
-        intent_adjustment = 1.5
-    elif intent == "比较":
-        intent_adjustment = 2.5
-
-    complexity_adjustment = 1.0 if len(query) > 30 else -0.5 if len(query) < 10 else 0
-
-    if resource_type:
-        if resource_type in {"courseware", "lesson_plan"}:
-            resource_type_adjustment += 1.0
-        elif resource_type == "exercise":
-            resource_type_adjustment -= 0.5
-
-    return max(1.0, min(15.0, base_threshold + resource_type_adjustment + intent_adjustment + complexity_adjustment))
-
-
-def _get_default_threshold(retriever, query, resource_type):
-    base_threshold = 1.5
-    resource_type_adjustment = 0
-    if resource_type in {"courseware", "lesson_plan"}:
-        resource_type_adjustment = 1.5
-    elif resource_type == "ggb":
-        resource_type_adjustment = 2.0
-    elif resource_type == "syllabus":
-        resource_type_adjustment = 2.5
-    elif resource_type == "lesson_case":
-        resource_type_adjustment = 2.0
-
-    intent_adjustment = 0
-    intent = retriever._extract_query_conditions(query).get("intent", "")
-    if intent == "练习":
-        intent_adjustment = -0.5
-    elif intent == "学习":
-        intent_adjustment = 0.5
-    elif intent == "教学":
-        intent_adjustment = 1.0
-    elif intent == "复习":
-        intent_adjustment = 0.8
-    elif intent == "比较":
-        intent_adjustment = 1.2
-
-    complexity_adjustment = 0.5 if len(query) > 30 else -0.3 if len(query) < 10 else 0
-    return max(0.8, min(10.0, base_threshold + resource_type_adjustment + intent_adjustment + complexity_adjustment))
+    text = f"{doc} {meta.get('title', '')} {meta.get('知识点', '')} {meta.get('知识点标签', '')} {meta.get('source_file', '')}"
+    if core_theme in text:
+        return True
+    return distance <= 1.05

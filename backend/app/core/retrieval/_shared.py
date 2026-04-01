@@ -17,6 +17,7 @@
 - sentence_transformers (Embedding模型)
 """
 
+import builtins
 import os
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
@@ -37,5 +38,12 @@ from ...config.resource_type_config import (
     get_all_db_types
 )
 from ...config.dynamic_config_loader import get_config_loader
+
+VERBOSE_LOGS = os.getenv("APP_VERBOSE_LOGS", "0").strip().lower() in {"1", "true", "yes", "on", "debug", "verbose"}
+
+
+def print(*args, **kwargs):
+    if VERBOSE_LOGS:
+        builtins.print(*args, **kwargs)
 
 

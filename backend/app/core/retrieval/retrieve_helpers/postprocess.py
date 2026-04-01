@@ -13,6 +13,20 @@ FUNCTION_CONCEPT_KEYWORDS = [
     "函数的零点",
     "函数的应用",
 ]
+GENERAL_MATERIAL_HINTS = ["资料", "学习资料", "教学资源", "教学资料", "资源", "内容"]
+EXPLICIT_EXERCISE_HINTS = ["习题", "题目", "练习题", "练习", "测试题", "选择题", "填空题", "解答题", "证明题"]
+SEMANTIC_RESOURCE_HINTS = [
+    "教案",
+    "教学设计",
+    "教学方案",
+    "课件",
+    "PPT",
+    "演示文稿",
+    "教学大纲",
+    "课程标准",
+    "课例",
+    "GGB",
+]
 
 
 def apply_difficulty_filter(results, difficulty_info, quantity_limit):
@@ -129,9 +143,121 @@ def prioritize_pure_function_results(retriever, query, results, quantity_limit):
     return combined_results
 
 
-def apply_quantity_limit(results, quantity_limit, core_theme):
+def _contains_any(text, keywords):
+    return any(keyword in (text or "") for keyword in keywords)
+
+
+def _is_general_material_query(query, resource_types):
+    has_general = _contains_any(query, GENERAL_MATERIAL_HINTS) or any(
+        rt in {"资料", "资源", "教学资源", "教学资料", "学习资料"} for rt in (resource_types or [])
+    )
+    return has_general and not _contains_any(query, EXPLICIT_EXERCISE_HINTS)
+
+
+def _normalize_result_category(meta):
+    source_file = meta.get("source_file", "") or ""
+    resource_type = meta.get("resource_type", "") or ""
+    title = meta.get("title", "") or ""
+    text = f"{resource_type} {source_file} {title}"
+
+    if "lesson_plan" in resource_type or "教案" in text:
+        return "lesson_plan"
+    if "courseware" in resource_type or any(keyword in text for keyword in ["课件", "PPT", "幻灯片", "演示文稿"]):
+        return "courseware"
+    if "syllabus" in resource_type or any(keyword in text for keyword in ["教学大纲", "课程标准", "大纲"]):
+        return "syllabus"
+    if "lesson_case" in resource_type or any(keyword in text for keyword in ["课例", "课堂实录", "教学视频"]):
+        return "lesson_case"
+    if "ggb" in resource_type or "geogebra" in text.lower():
+        return "ggb"
+    if "theory" in resource_type:
+        return "theory"
+    if "exercise" in resource_type or "习题" in text:
+        return "exercise"
+    return "general"
+
+
+def _raw_theme_score(core_theme, meta, doc):
+    if not core_theme:
+        return 0.0
+
+    title = meta.get("title", "") or ""
+    source_file = meta.get("source_file", "") or ""
+    knowledge_tags = meta.get("知识点", "") or meta.get("知识点标签", "") or ""
+    text = f"{title} {source_file} {knowledge_tags} {doc or ''}"
+
+    if core_theme in title:
+        return 1.0
+    if core_theme in source_file:
+        return 0.9
+    if core_theme in knowledge_tags:
+        return 0.85
+    if core_theme in text:
+        return 0.7
+    return 0.0
+
+
+def _build_diverse_indices(results, quantity_limit, core_theme):
+    buckets = {
+        "theory": [],
+        "lesson_plan": [],
+        "courseware": [],
+        "syllabus": [],
+        "lesson_case": [],
+        "ggb": [],
+        "exercise": [],
+        "general": [],
+    }
+
+    for i, meta in enumerate(results["metadatas"][0]):
+        category = _normalize_result_category(meta)
+        score = _raw_theme_score(core_theme, meta, results["documents"][0][i])
+        buckets.setdefault(category, []).append((score, i))
+
+    for category, items in buckets.items():
+        items.sort(key=lambda item: (-item[0], item[1]))
+
+    prioritized = []
+    preferred_order = ["theory", "lesson_plan", "courseware", "syllabus", "lesson_case", "ggb", "general", "exercise"]
+
+    # 第一轮每类先拿一个，避免资料查询在预截断阶段被单一类型吞掉。
+    for category in preferred_order:
+        if buckets.get(category):
+            prioritized.append(buckets[category].pop(0)[1])
+            if len(prioritized) >= quantity_limit:
+                return prioritized
+
+    exercise_cap = max(2, quantity_limit // 4)
+    exercise_taken = 0
+    for category in preferred_order:
+        for _, idx in buckets.get(category, []):
+            if category == "exercise" and exercise_taken >= exercise_cap:
+                continue
+            prioritized.append(idx)
+            if category == "exercise":
+                exercise_taken += 1
+            if len(prioritized) >= quantity_limit:
+                return prioritized
+
+    return prioritized[:quantity_limit]
+
+
+def apply_quantity_limit(results, quantity_limit, core_theme, query="", resource_types=None):
     if not quantity_limit or len(results["documents"][0]) <= quantity_limit:
         return results
+
+    if _is_general_material_query(query, resource_types):
+        prioritized_indices = _build_diverse_indices(results, quantity_limit, core_theme)
+        prioritized_results = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
+        for idx in prioritized_indices:
+            prioritized_results["documents"][0].append(results["documents"][0][idx])
+            prioritized_results["metadatas"][0].append(results["metadatas"][0][idx])
+            prioritized_results["distances"][0].append(results["distances"][0][idx])
+            prioritized_results["ids"][0].append(results["ids"][0][idx])
+
+        print(f"🔍 资料查询预截断改为多类型保留: {quantity_limit}")
+        print(f"     ✅ 预留类型数: {len({_normalize_result_category(results['metadatas'][0][idx]) for idx in prioritized_indices})}")
+        return prioritized_results
 
     core_theme_resources = []
     other_resources = []

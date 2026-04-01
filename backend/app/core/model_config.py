@@ -14,7 +14,9 @@
 - smart_content_processor
 """
 
+import builtins
 import os
+import threading
 # 设置 HuggingFace 镜像源，避免连接超时
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
@@ -33,7 +35,23 @@ except ImportError:
 
 from sentence_transformers import SentenceTransformer
 import chromadb
+from chromadb.config import Settings
 from ..smart_content_processor import SmartContentProcessor
+
+_PROCESS_SINGLETONS_ATTR = "_mathemist_process_singletons"
+_PROCESS_SINGLETONS_LOCK = threading.Lock()
+
+
+def _get_process_singletons() -> dict:
+    singletons = getattr(builtins, _PROCESS_SINGLETONS_ATTR, None)
+    if singletons is None:
+        singletons = {}
+        setattr(builtins, _PROCESS_SINGLETONS_ATTR, singletons)
+    return singletons
+
+
+def _is_truthy_env(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 class ModelConfig:
@@ -43,8 +61,15 @@ class ModelConfig:
     _initialized = False
     
     def __new__(cls):
+        process_singletons = _get_process_singletons()
+        cached_instance = process_singletons.get("model_config_instance")
+        if cached_instance is not None:
+            cls._instance = cached_instance
+            return cached_instance
+
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            process_singletons["model_config_instance"] = cls._instance
         return cls._instance
     
     def __init__(self):
@@ -139,6 +164,33 @@ class ModelConfig:
             return
         
         print("⚠️  未找到可用模型配置，请检查 .env 中的 API Key")
+
+    @staticmethod
+    def _resolve_local_embedding_path(model_path: str) -> Optional[str]:
+        path = Path(model_path)
+        if path.exists():
+            return str(path)
+
+        if "/" not in model_path:
+            return None
+
+        hub_root = Path(
+            os.getenv("HUGGINGFACE_HUB_CACHE")
+            or (Path.home() / ".cache" / "huggingface" / "hub")
+        )
+        repo_cache_dir = hub_root / f"models--{model_path.replace('/', '--')}" / "snapshots"
+        if not repo_cache_dir.exists():
+            return None
+
+        snapshots = sorted(
+            (item for item in repo_cache_dir.iterdir() if item.is_dir()),
+            key=lambda item: item.stat().st_mtime,
+            reverse=True,
+        )
+        if not snapshots:
+            return None
+
+        return str(snapshots[0])
     
     def _init_deepseek_model(self) -> bool:
         """
@@ -245,10 +297,32 @@ class ModelConfig:
         Returns:
             SentenceTransformer实例
         """
-        if self._embedding_model is None:
+        if self._embedding_model is not None:
+            return self._embedding_model
+
+        process_singletons = _get_process_singletons()
+        cached_model = process_singletons.get("embedding_model")
+        if cached_model is not None:
+            self._embedding_model = cached_model
+            return cached_model
+
+        with _PROCESS_SINGLETONS_LOCK:
+            cached_model = process_singletons.get("embedding_model")
+            if cached_model is not None:
+                self._embedding_model = cached_model
+                return cached_model
+
             try:
-                self._embedding_model = SentenceTransformer(self.EMBEDDING_MODEL_PATH)
-                print("✅ Embedding模型初始化成功")
+                resolved_model_path = self._resolve_local_embedding_path(self.EMBEDDING_MODEL_PATH)
+                model_source = resolved_model_path or self.EMBEDDING_MODEL_PATH
+                local_files_only = bool(resolved_model_path) or _is_truthy_env("HF_HUB_OFFLINE") or _is_truthy_env("TRANSFORMERS_OFFLINE")
+
+                self._embedding_model = SentenceTransformer(
+                    model_source,
+                    local_files_only=local_files_only,
+                )
+                process_singletons["embedding_model"] = self._embedding_model
+                print(f"✅ Embedding模型初始化成功: {model_source}")
             except Exception as e:
                 print(f"⚠️  Embedding模型初始化失败: {e}")
                 raise ValueError(f"Embedding模型初始化失败: {e}")
@@ -262,7 +336,13 @@ class ModelConfig:
             ChromaDB客户端实例
         """
         if self._chroma_client is None:
-            self._chroma_client = chromadb.PersistentClient(path=str(self.CHROMA_DB_DIR))
+            self._chroma_client = chromadb.PersistentClient(
+                path=str(self.CHROMA_DB_DIR),
+                settings=Settings(
+                    anonymized_telemetry=False,
+                    allow_reset=True,
+                ),
+            )
             print(f"✅ ChromaDB客户端初始化成功: {self.CHROMA_DB_DIR}")
         return self._chroma_client
     

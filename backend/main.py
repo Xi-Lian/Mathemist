@@ -420,29 +420,31 @@ async def geometry_with_suggestions_alias():
     """
     return FileResponse("geometry_with_suggestions.html")
 
-# 应用启动事件：预加载Embedding模型和添加LangServe路由
-# 注意：暂时禁用预加载，因为会导致服务卡住
-# @app.on_event("startup")
-# def preload_models():
-#     """
-#     应用启动时预加载模型，避免运行时动态加载导致的延迟
-#     """
-#     logger.info("🚀 应用启动，开始预加载模型...")
-#     try:
-#         # 预加载Embedding模型
-#         logger.info("📦 预加载Embedding模型...")
-#         embedding_model = model_config.get_embedding_model()
-#         logger.info("✅ Embedding模型预加载完成")
-#         
-#         # 预加载ChromaDB客户端
-#         logger.info("📦 预加载ChromaDB客户端...")
-#         chroma_client = model_config.get_chroma_client()
-#         logger.info("✅ ChromaDB客户端预加载完成")
-#         
-#         logger.info("🎉 所有模型预加载完成，应用已就绪")
-#     except Exception as e:
-#         logger.error(f"⚠️ 模型预加载失败: {e}")
-#         logger.warning("应用将继续运行，但首次检索可能会较慢")
+@app.on_event("startup")
+def preload_runtime_dependencies():
+    """
+    应用启动时预热关键依赖，避免首个检索请求现场冷启动。
+    """
+    preload_embedding = os.getenv("PRELOAD_EMBEDDING_ON_STARTUP", "1").strip().lower() in {
+        "1", "true", "yes", "on"
+    }
+
+    if not preload_embedding:
+        logger.info("跳过 embedding 预热：PRELOAD_EMBEDDING_ON_STARTUP=0")
+        return
+
+    logger.info("开始预热运行时依赖")
+    try:
+        model_config.get_embedding_model()
+        logger.info("Embedding 预热完成")
+    except Exception as e:
+        logger.warning(f"Embedding 预热失败，服务继续启动: {e}")
+
+    try:
+        model_config.get_chroma_client()
+        logger.info("ChromaDB 客户端预热完成")
+    except Exception as e:
+        logger.warning(f"ChromaDB 客户端预热失败，服务继续启动: {e}")
 
 # 根路径
 @app.get("/")

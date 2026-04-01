@@ -2,6 +2,8 @@
 响应构建服务实现。
 """
 
+import uuid
+
 from ._shared import *
 from .methods.init import _InitMixin
 from .methods.build import _BuildMixin
@@ -39,6 +41,17 @@ from .methods.get_state_value import _GetStateValueMixin
 class ResponseBuilder(_InitMixin, _BuildMixin, _BuildMultiIntentResponseMixin, _BuildLessonPlanResponseMixin, _BuildVisualizationResponseMixin, _BuildSearchResponseMixin, _FormatResourcesMixin, _ClassifyResourceDomainMixin, _GetPriorityDomainsMixin, _IsParallelQueryMixin, _CalculateQuerySpecificityMixin, _GenerateDynamicCategoriesMixin, _GenerateCoarseGrainedCategoriesMixin, _GenerateMediumGrainedCategoriesMixin, _GenerateFineGrainedCategoriesMixin, _RecordUserFeedbackMixin, _AnalyzeFeedbackDataMixin, _OptimizeRankingWithFeedbackMixin, _CalculateMultiDimensionScoreMixin, _CalculateUnifiedScoreMixin, _SortResourcesGloballyMixin, _FormatResourcesByThemeMixin, _FormatResourcesByDomainMixin, _FormatResourceCategoryMixin, _AppendResourceInfoMixin, _FilterByRelevanceMixin, _ProcessResourceContentMixin, _GetErrorResponseMixin, _CheckTimeoutMixin, _GetTimeoutResponseMixin, _GetFallbackResponseMixin, _GetStateValueMixin):
     """响应构建器"""
 
+
+def _get_existing_messages(state) -> list[dict]:
+    if isinstance(state, dict):
+        messages = state.get("messages", [])
+    else:
+        messages = getattr(state, "messages", [])
+    if not isinstance(messages, list):
+        return []
+    return [message for message in messages if isinstance(message, dict)]
+
+
 def response_formatting_node(state) -> Dict[str, Any]:
     """
     响应格式化节点（向后兼容接口）
@@ -52,10 +65,18 @@ def response_formatting_node(state) -> Dict[str, Any]:
     # 构建响应
     builder = ResponseBuilder()
     response = builder.build(state)
+
+    assistant_message = {
+        "id": f"msg_{uuid.uuid4().hex}",
+        "type": "ai",
+        "content": response,
+    }
+    updated_messages = [*_get_existing_messages(state), assistant_message]
     
     return {
         "response": response,
         "current_step": "response_formatting",
         "error": None,
-        "messages": [{"role": "assistant", "content": response}]
+        "message": assistant_message,
+        "messages": updated_messages,
     }

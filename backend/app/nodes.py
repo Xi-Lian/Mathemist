@@ -59,15 +59,27 @@ def intent_understanding_node(state: MathAgentState) -> Dict[str, Any]:
     """
     意图理解节点
     分析用户输入，确定用户意图
-    
+
     Args:
         state: 状态对象
-    
+
     Returns:
         更新的状态，包含意图信息
     """
     analyzer = IntentAnalyzer()
-    return analyzer.analyze(state.user_input)
+
+    # 从 state.chat_history 获取对话历史（优先）
+    chat_history = []
+    if hasattr(state, 'chat_history') and state.chat_history:
+        chat_history = state.chat_history
+    # 兼容：从 context 中获取 chat_history（备用）
+    elif hasattr(state, 'context') and state.context:
+        chat_history = state.context.get('chat_history', [])
+    elif isinstance(state, dict):
+        chat_history = state.get('chat_history', []) or state.get('context', {}).get('chat_history', [])
+
+    # 传递给 analyze 方法
+    return analyzer.analyze(state.user_input, chat_history=chat_history)
 
 
 def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
@@ -286,16 +298,16 @@ def response_formatting_node(state: MathAgentState) -> Dict[str, Any]:
     """
     响应格式化节点
     根据意图和生成的结果构建最终响应
-    
+
     Args:
         state: 状态对象
-    
+
     Returns:
         更新的状态，包含格式化的响应
     """
     builder = ResponseBuilder()
     response = builder.build(state)
-    
+
     # 创建 AI 消息
     ai_message = {
         "type": "ai",
@@ -312,17 +324,29 @@ def response_formatting_node(state: MathAgentState) -> Dict[str, Any]:
 
     if export_data:
         ai_message["export_data"] = export_data
-    
+
     # 将 AI 消息添加到 messages 列表
     messages = state.messages if state.messages else []
     messages.append(ai_message)
-    
+
+    # 更新 chat_history：保存用户输入和 AI 响应
+    chat_history = state.chat_history if state.chat_history else []
+    chat_history.append({
+        "role": "user",
+        "content": state.user_input
+    })
+    chat_history.append({
+        "role": "assistant",
+        "content": response
+    })
+
     return {
         "response": response,
         "current_step": "response_formatting",
         "error": None,
         "messages": messages,
         "message": ai_message,
+        "chat_history": chat_history,  # 更新 chat_history
         "lesson_plan_session_id": lesson_plan_session_id,
         "export_data": export_data,
     }

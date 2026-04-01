@@ -1,4 +1,5 @@
 from .._shared import *
+from ..grade_policy import strict_grade_match
 
 
 def calculate_relevance_boost(retriever, classified, metadata, doc, distance, resource_type, resource_types, core_theme, query, question_type, grade, difficulty):
@@ -26,7 +27,8 @@ def calculate_relevance_boost(retriever, classified, metadata, doc, distance, re
         for user_type in resource_types:
             mapping = get_resource_type_mapping(user_type)
             if mapping:
-                standard_name, db_type = mapping
+                standard_name = mapping[0]
+                db_type = mapping[1]
                 if resource_type in {db_type, user_type, standard_name}:
                     type_match_score = 0.2
                     break
@@ -50,11 +52,10 @@ def calculate_relevance_boost(retriever, classified, metadata, doc, distance, re
     if grade:
         resource_grade = metadata.get("grade", "") or metadata.get("年级", "")
         if resource_grade:
-            if grade in resource_grade or resource_grade in grade:
+            passed, reason = strict_grade_match({"grade": resource_grade}, {"grade": grade})
+            if passed and reason == "exact_grade_match":
                 grade_match_score = 0.1
-            elif grade == "高三" and any(g in resource_grade for g in ["高一", "高二", "高三"]):
-                grade_match_score = 0.05
-            elif any(target_grade in grade for target_grade in ["高一", "高二", "高三"]) and any(g in resource_grade for g in ["高一", "高二", "高三"]):
+            elif passed:
                 grade_match_score = 0.05
 
     difficulty_match_score = 0.0

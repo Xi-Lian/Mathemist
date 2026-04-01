@@ -12,6 +12,8 @@
 - smart_content_processor (内容处理)
 """
 
+import builtins
+import os
 import time
 from typing import Dict, Any, List
 from ..model_config import model_config
@@ -22,5 +24,12 @@ from ...config.resource_type_config import (
     get_standard_name,
     get_resource_type_mapping
 )
+
+VERBOSE_LOGS = os.getenv("APP_VERBOSE_LOGS", "0").strip().lower() in {"1", "true", "yes", "on", "debug", "verbose"}
+
+
+def print(*args, **kwargs):
+    if VERBOSE_LOGS:
+        builtins.print(*args, **kwargs)
 
 

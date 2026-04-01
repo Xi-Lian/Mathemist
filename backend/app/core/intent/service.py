@@ -112,10 +112,10 @@ class IntentAnalyzer(_InitMixin, _AnalyzeMixin, _AnalyzeContextMixin, _UpdateCon
 def intent_understanding_node(state) -> Dict[str, Any]:
     """
     意图理解节点（向后兼容接口）
-    
+
     Args:
         state: 状态对象
-    
+
     Returns:
         意图分析结果
     """
@@ -125,10 +125,20 @@ def intent_understanding_node(state) -> Dict[str, Any]:
         user_input = getattr(state, 'user_input', '')
     elif isinstance(state, dict):
         user_input = state.get('user_input', '')
-    
+
     # 确保是字符串
     user_input = str(user_input) if user_input else ''
-    
-    # 分析意图
+
+    # 从 state.chat_history 获取对话历史（优先）
+    chat_history = []
+    if hasattr(state, 'chat_history') and state.chat_history:
+        chat_history = state.chat_history
+    # 兼容：从 context 中获取 chat_history（备用）
+    elif hasattr(state, 'context') and state.context:
+        chat_history = state.context.get('chat_history', [])
+    elif isinstance(state, dict):
+        chat_history = state.get('chat_history', []) or state.get('context', {}).get('chat_history', [])
+
+    # 分析意图，传递对话历史
     analyzer = IntentAnalyzer()
-    return analyzer.analyze(user_input)
+    return analyzer.analyze(user_input, chat_history=chat_history)

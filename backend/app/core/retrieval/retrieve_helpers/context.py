@@ -63,7 +63,7 @@ def validate_resource_types(retriever, resource_types):
     if not resource_types:
         resource_types = retriever._extract_resource_types_from_query(retriever._current_query)
         if resource_types:
-            print(f"📋 V61.0自动识别资源类型: {resource_types}")
+            print(f"📋 自动识别资源类型: {resource_types}")
 
     if resource_types:
         from ....config.resource_type_config import (
@@ -73,20 +73,20 @@ def validate_resource_types(retriever, resource_types):
 
         invalid_types = [rt for rt in resource_types if not is_valid_resource_type(rt)]
         if invalid_types:
-            print(f"⚠️ V92.0检测到无效资源类型: {invalid_types}")
-            print(f"📋 V92.0支持的资源类型: {[rt['name'] for rt in get_supported_resource_types()]}")
+            print(f"⚠️ 检测到无效资源类型: {invalid_types}")
+            print(f"📋 支持的资源类型: {[rt['name'] for rt in get_supported_resource_types()]}")
             resource_types = [rt for rt in resource_types if is_valid_resource_type(rt)]
             if not resource_types:
-                print("❌ V92.0没有有效的资源类型，返回空结果")
+                print("❌ 没有有效的资源类型，返回空结果")
                 return None, retriever._get_empty_result()
-            print(f"✅ V92.0过滤后的资源类型: {resource_types}")
+            print(f"✅ 过滤后的资源类型: {resource_types}")
 
     return resource_types, None
 
 
 def apply_loose_mode(retriever, query, quantity_limit):
     if "还要多一点" in query or "再要一点" in query or "多一点" in query:
-        print("🔍 V33.0检测到'还要一点'查询，使用宽松模式")
+        print("🔍 检测到'还要一点'查询，使用宽松模式")
         if quantity_limit:
             quantity_limit *= 2
         retriever._loose_mode = True
@@ -110,33 +110,34 @@ def prepare_runtime_context(
     retriever._current_grade_info = grade_info
     retriever._current_clarified_topic = clarified_topic
     retriever._current_difficulty_info = difficulty_info
+    retriever._current_scope_notice = None
 
     if query_features["has_content_requirement"]:
-        print("🔍 V9.1检测到内容查询要求:")
+        print("🔍 检测到内容查询要求:")
         print(f"   - 教学方法: {query_features['required_methods']}")
         print(f"   - 教学环节: {query_features['required_stages']}")
         print(f"   - 教学手段: {query_features['required_tools']}")
 
     if grade_info:
-        print(f"🎓 V33.0年级信息（来自意图分析）: {grade_info}")
+        print(f"🎓 年级信息（来自意图分析）: {grade_info}")
     else:
         fallback_grade = retriever.grade_enricher.extract_grade_from_query(query)
         if fallback_grade:
-            print(f"🎓 V33.0年级解析（回退）: {fallback_grade}")
+            print(f"🎓 年级解析（回退）: {fallback_grade}")
             retriever._current_grade_info = fallback_grade
         else:
-            print("🎓 V33.0年级解析: 未检测到年级信息")
+            print("🎓 年级解析: 未检测到年级信息")
 
     subjective_intent = retriever.subjective_interpreter.interpret(query)
     if subjective_intent:
-        print("💭 V28.0主观意图解析:")
+        print("💭 主观意图解析:")
         print(f"   - 主观词汇: {subjective_intent.get('subjective_words', [])}")
         print(f"   - 难度范围: {subjective_intent.get('difficulty_range', None)}")
         print(f"   - 认知层次: {subjective_intent.get('cognitive_level', [])}")
         print(f"   - 用户场景: {subjective_intent.get('user_scenario', None)}")
         retriever._current_subjective_intent = subjective_intent
     else:
-        print("💭 V28.0主观意图解析: 未检测到主观意图")
+        print("💭 主观意图解析: 未检测到主观意图")
         retriever._current_subjective_intent = None
 
     return query_features
@@ -155,7 +156,7 @@ def ensure_collection_ready(retriever):
 
 
 def extract_query_context(retriever, query, quantity_limit):
-    print("\n🔍 V49.0开始提取多维度查询条件...")
+    print("\n🔍 开始提取多维度查询条件...")
     query_conditions = retriever._extract_query_conditions(query)
 
     core_themes = query_conditions["knowledge_points"]
@@ -164,12 +165,21 @@ def extract_query_context(retriever, query, quantity_limit):
 
     if not core_theme:
         core_theme = retriever._extract_core_theme(query)
-        print(f"   📝 V68.0使用_extract_core_theme提取核心主题: '{core_theme}'")
+        print(f"   📝 使用_extract_core_theme提取核心主题: '{core_theme}'")
         core_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
 
+    scope_notice = None
     if has_non_function_theme(retriever, query, core_theme):
-        print("⚠️ V53.4检测到非函数主题查询，直接返回空结果（资源库只有函数板块）")
-        return None, retriever._get_empty_result()
+        scope_notice = {
+            "scope": "function_only",
+            "message": "当前资源库以函数板块为主，已返回最相关的函数板块资源作为降级结果。",
+            "original_query": query,
+            "detected_theme": core_theme,
+        }
+        retriever._current_scope_notice = scope_notice
+        print("⚠️ 检测到非函数主题：改为降级检索，不再直接空返回")
+        core_theme = ""
+        core_themes = []
 
     question_type = query_conditions["question_type"]
     difficulty = query_conditions["difficulty"]
@@ -179,7 +189,7 @@ def extract_query_context(retriever, query, quantity_limit):
 
     if quantity > 0:
         quantity_limit = quantity
-        print(f"📝 V49.0使用用户指定的数量: {quantity}")
+        print(f"📝 使用用户指定的数量: {quantity}")
 
     if question_type:
         print(f"📝 提取到题目类型: {question_type}")
@@ -199,6 +209,7 @@ def extract_query_context(retriever, query, quantity_limit):
         "grade": grade,
         "exam_form": exam_form,
         "quantity_limit": quantity_limit,
+        "scope_notice": scope_notice,
     }, None
 
 
@@ -214,7 +225,8 @@ def has_non_function_theme(retriever, query, core_theme):
             return True
         if theme in retriever.knowledge_hierarchy and theme not in FUNCTION_RELATED_THEME_NAMES:
             return True
-        if any(keyword in query_lower for keyword in NON_FUNCTION_KEYWORDS):
-            return True
+
+    if any(keyword in query_lower for keyword in NON_FUNCTION_KEYWORDS):
+        return True
 
     return False

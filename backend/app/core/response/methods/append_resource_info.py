@@ -90,56 +90,78 @@ class _AppendResourceInfoMixin:
                 if "三角函数" not in query_themes:
                     query_themes.append("三角函数")
         
-        # V9.0：构建精准主题匹配标签
         theme_tags = ""
+        short_theme_hint = ""
         if core_theme:
             # 核心主题匹配
             if matched_theme_count > 1:
                 # 多主题匹配，只显示与查询相关的主题
                 relevant_themes = [theme for theme in matched_themes if not query_themes or theme in query_themes or any(qt in theme for qt in query_themes)]
                 if relevant_themes:
-                    theme_tags = f" [匹配主题: {', '.join(relevant_themes)}]"
+                    short_theme_hint = ", ".join(relevant_themes)
+                    theme_tags = f" [匹配主题: {short_theme_hint}]"
             else:
                 # 单主题匹配，只显示与查询相关的主题
                 if not query_themes or core_theme in query_themes or any(qt in core_theme for qt in query_themes):
+                    short_theme_hint = core_theme
                     theme_tags = f" [核心主题: {core_theme}]"
         elif related_themes:
             # 相关主题匹配，只显示与查询相关的主题
             relevant_related = [theme for theme in related_themes if not query_themes or theme in query_themes or any(qt in theme for qt in query_themes)]
             if relevant_related:
+                short_theme_hint = relevant_related[0]
                 theme_tags = f" [相关主题: {relevant_related[0]}]"
         elif mentioned_themes:
             # 提及主题匹配，只显示与查询相关的主题
             relevant_mentioned = [theme for theme in mentioned_themes if not query_themes or theme in query_themes or any(qt in theme for qt in query_themes)]
             if relevant_mentioned:
+                short_theme_hint = relevant_mentioned[0]
                 theme_tags = f" [提及主题: {relevant_mentioned[0]}]"
         elif matched_theme_count > 1:
-            theme_tags = f" [匹配主题: {', '.join(matched_themes)}]"
+            short_theme_hint = ", ".join(matched_themes)
+            theme_tags = f" [匹配主题: {short_theme_hint}]"
         elif matched_themes:
+            short_theme_hint = matched_themes[0]
             theme_tags = f" [主题: {matched_themes[0]}]"
 
         # V9.0：核心主题匹配添加特殊标记
         if is_core_match:
-            response_parts.append(f"{icon} ⭐ {title}{theme_tags}")
+            response_parts.append(f"{icon} ⭐ {title}")
         elif is_comprehensive:
-            response_parts.append(f"{icon} 🔥 {title}{theme_tags}")
+            response_parts.append(f"{icon} 🔥 {title}")
         else:
-            response_parts.append(f"{icon} {title}{theme_tags}")
+            response_parts.append(f"{icon} {title}")
 
-        response_parts.append(f"   内容: {processed_content}")
-        
-        # V8.2：显示真实相关性分数
-        if is_core_match:
-            response_parts.append(f"   相关性: {relevance*100:.1f}% (核心匹配)")
-        else:
-            response_parts.append(f"   相关性: {relevance*100:.1f}%")
-        
-        # V10.0：显示多维度评估结果
-        response_parts.append(f"   综合得分: {overall_score*100:.1f}%")
-        response_parts.append(f"   资源质量: {resource_quality*100:.1f}%")
-        response_parts.append(f"   内容完整性: {content_completeness*100:.1f}%")
-        response_parts.append(f"   教学价值: {teaching_value*100:.1f}%")
-        response_parts.append(f"   综合性: {comprehensiveness*100:.1f}%")
-            
+        match_label_map = {
+            "exact": "高度匹配",
+            "direct": "直接相关",
+            "related": "较为相关",
+            "mentioned": "可作补充",
+            "none": "弱相关",
+        }
+        priority_name = resource.get("priority_name", "")
+        match_label = "核心匹配" if is_core_match else match_label_map.get(match_level, priority_name or "相关资源")
+        reason_parts = [match_label]
+        if short_theme_hint:
+            reason_parts.append(f"主题：{short_theme_hint}")
+        if match_explanation:
+            reason_parts.append(match_explanation)
+
+        response_parts.append(f"   适配说明: {'；'.join(reason_parts)}")
+        response_parts.append(f"   内容预览: {processed_content}")
+
+        if self.show_debug_scores:
+            debug_parts = []
+            if is_core_match:
+                debug_parts.append(f"相关性 {relevance*100:.1f}% (核心匹配)")
+            else:
+                debug_parts.append(f"相关性 {relevance*100:.1f}%")
+            debug_parts.append(f"综合得分 {overall_score*100:.1f}%")
+            debug_parts.append(f"资源质量 {resource_quality*100:.1f}%")
+            debug_parts.append(f"内容完整性 {content_completeness*100:.1f}%")
+            debug_parts.append(f"教学价值 {teaching_value*100:.1f}%")
+            debug_parts.append(f"综合性 {comprehensiveness*100:.1f}%")
+            response_parts.append(f"   调试分数: {' | '.join(debug_parts)}")
+
         response_parts.append(f"   文件路径: {source}")
         response_parts.append("")

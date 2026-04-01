@@ -1,5 +1,15 @@
 from .._shared import *
 
+RESOURCE_RELEVANCE_POLICY = {
+    "lesson_plan": {"min_relevance": None, "min_overall_score": 0.20},
+    "courseware": {"min_relevance": 0.10, "min_overall_score": None},
+    "exercise": {"min_relevance": 0.25, "min_overall_score": None},
+    "ggb": {"min_relevance": 0.15, "min_overall_score": None},
+    "lesson_case": {"min_relevance": 0.20, "min_overall_score": None},
+    "syllabus": {"min_relevance": 0.20, "min_overall_score": None},
+    "default": {"min_relevance": 0.30, "min_overall_score": None},
+}
+
 
 def update_resource_with_match(resource, match_result):
     resource["matched_themes"] = match_result["matched_themes"]
@@ -29,30 +39,18 @@ def apply_relevance_thresholds(resource, resource_type, resource_types):
     is_core_match = resource["is_core_match"]
     should_show = resource["should_show"]
     overall_score = resource["overall_score"]
+    policy = RESOURCE_RELEVANCE_POLICY.get(resource_type, RESOURCE_RELEVANCE_POLICY["default"])
+    min_relevance = policy["min_relevance"]
+    min_overall_score = policy["min_overall_score"]
 
-    if resource_type == "lesson_plan" and overall_score > 0:
-        if overall_score >= 0.20:
+    if min_overall_score is not None and overall_score > 0:
+        if overall_score >= min_overall_score:
             should_show = True
             final_relevance = max(final_relevance, overall_score)
         else:
             should_show = False
-    elif resource_type == "courseware":
-        if final_relevance < 0.10 and not is_core_match:
             final_relevance = 0.0
-            should_show = False
-    elif resource_type == "exercise":
-        if final_relevance < 0.25 and not is_core_match:
-            final_relevance = 0.0
-            should_show = False
-    elif resource_type == "ggb":
-        if final_relevance < 0.15 and not is_core_match:
-            final_relevance = 0.0
-            should_show = False
-    elif resource_type in {"lesson_case", "syllabus"}:
-        if final_relevance < 0.20 and not is_core_match:
-            final_relevance = 0.0
-            should_show = False
-    elif final_relevance < 0.30 and not is_core_match:
+    elif min_relevance is not None and final_relevance < min_relevance and not is_core_match:
         final_relevance = 0.0
         should_show = False
 

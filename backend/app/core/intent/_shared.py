@@ -17,11 +17,20 @@
 - visualization: 可视化建议
 """
 
+import builtins
 import json
+import os
 import re
 from typing import Dict, Any, List, Optional
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from ..model_config import model_config
+
+VERBOSE_LOGS = os.getenv("APP_VERBOSE_LOGS", "0").strip().lower() in {"1", "true", "yes", "on", "debug", "verbose"}
+
+
+def print(*args, **kwargs):
+    if VERBOSE_LOGS:
+        builtins.print(*args, **kwargs)
 
 

@@ -1,5 +1,16 @@
+import logging
+import os
+
 from langgraph.graph import StateGraph, END, START
 from .state import MathAgentState
+
+logger = logging.getLogger(__name__)
+GRAPH_VERBOSE_LOGS = os.getenv("APP_VERBOSE_LOGS", "0").strip().lower() in {"1", "true", "yes", "on", "debug", "verbose"}
+
+
+def _debug(message: str) -> None:
+    if GRAPH_VERBOSE_LOGS:
+        logger.info(message)
 
 def create_math_agent_graph():
     """
@@ -62,28 +73,28 @@ def create_math_agent_graph():
         if not isinstance(retrieved_resources, dict):
             retrieved_resources = {}
         
-        print(f"🔀 路由函数: state 类型 = {type(state)}")
-        print(f"🔀 路由函数: intent = {intent}")
-        print(f"🔀 路由函数: intents = {intents}")
-        print(f"🔀 路由函数: resource_types = {resource_types}")
-        print(f"🔀 路由函数: lesson_plan_session_id = {lesson_plan_session_id}")
+        _debug(f"🔀 路由函数: state 类型 = {type(state)}")
+        _debug(f"🔀 路由函数: intent = {intent}")
+        _debug(f"🔀 路由函数: intents = {intents}")
+        _debug(f"🔀 路由函数: resource_types = {resource_types}")
+        _debug(f"🔀 路由函数: lesson_plan_session_id = {lesson_plan_session_id}")
         
         # 检查指令词，避免生成教案和推送资源的场景混淆
         resource_retrieval_keywords = ["推送", "给", "找", "推荐", "有没有", "我要", "帮我找", "想要", "需要"]
         has_resource_retrieval = any(keyword in user_input for keyword in resource_retrieval_keywords)
         
-        print(f"🔀 包含资源获取指令词: {has_resource_retrieval}")
-        print(f"🔀 用户输入: {user_input}")
-        print(f"🔀 输入类型: {type(user_input)}")
+        _debug(f"🔀 包含资源获取指令词: {has_resource_retrieval}")
+        _debug(f"🔀 用户输入: {user_input}")
+        _debug(f"🔀 输入类型: {type(user_input)}")
         
         # 检查是否为"查看完整教案"请求或修改意见
         if isinstance(user_input, str):
             normalized_input = user_input.replace(' ', '')  # 移除所有空格
-            print(f"🔀 归一化输入: {normalized_input}")
-            print(f"🔀 包含'查看完整教案': {'查看完整教案' in normalized_input}")
-            print(f"包含'完整教案': {'完整教案' in normalized_input}")
+            _debug(f"🔀 归一化输入: {normalized_input}")
+            _debug(f"🔀 包含'查看完整教案': {'查看完整教案' in normalized_input}")
+            _debug(f"包含'完整教案': {'完整教案' in normalized_input}")
             if "查看完整教案" in normalized_input or "完整教案" in normalized_input:
-                print(f"🔀 检测到'查看完整教案'请求，路由到统一教案节点")
+                _debug(f"🔀 检测到'查看完整教案'请求，路由到统一教案节点")
                 return "unified_lesson_plan"
             
             # 检查是否为修改意见
@@ -101,40 +112,40 @@ def create_math_agent_graph():
             ]
             has_revision_request = any(keyword in user_input for keyword in revision_keywords)
             if has_revision_request:
-                print(f"🔀 检测到修改意见，路由到统一教案节点（无论是否有session_id）")
+                _debug(f"🔀 检测到修改意见，路由到统一教案节点（无论是否有session_id）")
                 return "unified_lesson_plan"
         else:
-            print(f"⚠️ 用户输入不是字符串: {user_input}")
+            _debug(f"⚠️ 用户输入不是字符串: {user_input}")
         
         # 检查是否有多个高置信度意图
         high_confidence_intents = [i for i in intents if i.get("confidence", 0) > 0.6]
         
         if len(high_confidence_intents) > 1:
-            print(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
+            _debug(f"🔀 检测到多个高置信度意图: {high_confidence_intents}")
             # 有多个意图，直接路由到响应格式化节点
             return "response_formatting"
         
         # 如果包含资源获取指令词，强制使用响应格式化，不生成教案
         if has_resource_retrieval:
-            print(f"🔀 检测到资源获取指令词，强制使用响应格式化，不生成教案")
+            _debug(f"🔀 检测到资源获取指令词，强制使用响应格式化，不生成教案")
             return "response_formatting"
         
         # 如果用户明确指定了资源类型，检查是否是教案生成意图
         if resource_types:
-            print(f"🔀 检测到资源类型: {resource_types}")
+            _debug(f"🔀 检测到资源类型: {resource_types}")
             # 只有当主要意图是generate_lesson_plan时，才走统一教案流程
             # 如果主要意图是search，即使intents中包含generate_lesson_plan（低置信度），也应该走资源检索流程
             if intent == "generate_lesson_plan":
-                print(f"🔀 检测到教案生成意图，继续走统一教案流程")
+                _debug(f"🔀 检测到教案生成意图，继续走统一教案流程")
                 return "unified_lesson_plan"
             else:
-                print(f"🔀 非教案生成资源类型，直接跳到响应格式化")
+                _debug(f"🔀 非教案生成资源类型，直接跳到响应格式化")
                 return "response_formatting"
         
         # 检查是否有GGB资源，如果有，优先生成GGB设计建议
         ggb_resources = retrieved_resources.get("ggb_resources", [])
         if ggb_resources:
-            print(f"🔀 检测到GGB资源: {len(ggb_resources)}个，路由到GGB设计建议节点")
+            _debug(f"🔀 检测到GGB资源: {len(ggb_resources)}个，路由到GGB设计建议节点")
             return "ggb_design_advisor"
         
         # 根据主要意图路由
@@ -145,7 +156,7 @@ def create_math_agent_graph():
         elif intent == "search":
             return "response_formatting"
         else:
-            print(f"⚠️ 未知意图 {intent}，使用默认路由")
+            _debug(f"⚠️ 未知意图 {intent}，使用默认路由")
             return "response_formatting"
     
     graph.add_conditional_edges(
@@ -172,7 +183,7 @@ def create_math_agent_graph():
             response = getattr(state, "response", None)
         
         if response:
-            print(f"🔀 统一教案已生成响应，直接结束")
+            _debug(f"🔀 统一教案已生成响应，直接结束")
             return "response_formatting"
         
         return "response_formatting"

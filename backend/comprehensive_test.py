@@ -88,7 +88,7 @@ def is_resource_relevant(resource, expected_topic, query=""):
 def analyze_relevance(resources, expected_topic, query):
     """分析资源与查询的相关性"""
     if not resources:
-        return {"relevant_count": 0, "total_count": 0, "relevance_rate": 0, "analysis": "未找到资源"}
+        return {"relevant_count": 0, "total_count": 0, "relevance_rate": 0, "analysis": "未找到资源", "irrelevant_resources": []}
     
     relevant_count = 0
     irrelevant_resources = []
@@ -221,3 +221,4 @@ sys.stdout = sys.__stdout__
 output_file.close()
 
 print("测试完成，结果已保存到 comprehensive_test_output.txt")
+

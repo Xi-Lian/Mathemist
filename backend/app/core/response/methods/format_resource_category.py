@@ -73,7 +73,7 @@ class _FormatResourceCategoryMixin:
                 icon_emoji = priority_icons[level]
                 category_label = priority_names[level]
                 response_parts.append(f"\n{icon_emoji} 【{category_label}】（{len(priority_groups[level])}个）：\n")
-                for resource in priority_groups[level][:15]:  # 每个分类最多显示15个资源
+                for resource in priority_groups[level][:self.max_display_per_group]:
                     self._append_resource_info(response_parts, resource, icon, category_name, scenario, is_comprehensive=False, state=state)
 
         # 如果过滤掉了资源，添加提示

@@ -56,6 +56,8 @@ if (-not $env:NEXT_PUBLIC_API_URL) { $env:NEXT_PUBLIC_API_URL = "http://localhos
 if (-not $env:NEXT_PUBLIC_ASSISTANT_ID) { $env:NEXT_PUBLIC_ASSISTANT_ID = "math-agent" }
 if (-not $env:PYTHONIOENCODING) { $env:PYTHONIOENCODING = "utf-8" }
 if (-not $env:PYTHONUTF8) { $env:PYTHONUTF8 = "1" }
+if (-not $env:HF_HUB_OFFLINE) { $env:HF_HUB_OFFLINE = "1" }
+if (-not $env:TRANSFORMERS_OFFLINE) { $env:TRANSFORMERS_OFFLINE = "1" }
 
 if (Test-Path -LiteralPath $BackendVenvPython) {
     $PythonCmd = $BackendVenvPython

@@ -45,13 +45,7 @@ class _IsVagueGradeQueryMixin:
         
         # 宽泛查询 = 只有年级，没有其他具体要求
         is_vague = not (has_theme or has_difficulty or has_knowledge or has_type)
-        
-        # V52.0改进：对于高三查询，放宽年级筛选条件
-        # 高三学生需要复习所有年级的知识，所以即使包含主题，也应该被认为是宽泛查询
-        if grade_info.get('grade') == '高三':
-            print(f"   🔍 V52.0高三查询: 放宽年级筛选条件")
-            is_vague = True
-        
+
         if is_vague:
             print(f"   🔍 V32.0检测到宽泛查询: 年级={grade_info.get('grade')}, 无具体主题/难度/类型要求")
         else:
