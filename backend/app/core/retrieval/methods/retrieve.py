@@ -9,6 +9,7 @@ from ..retrieve_helpers.context import (
 from ..retrieve_helpers.multi_theme import execute_multi_theme_retrieval
 from ..retrieve_helpers.postprocess import (
     apply_difficulty_filter,
+    enforce_specific_theme_precision,
     apply_quantity_limit,
     apply_question_type_filter,
     prioritize_pure_function_results,
@@ -213,6 +214,7 @@ class _RetrieveMixin:
                 query=query,
                 resource_types=resource_types,
             )
+            classified_resources = enforce_specific_theme_precision(classified_resources, core_theme)
 
             scope_notice = getattr(self, "_current_scope_notice", None)
             if scope_notice:

@@ -4,10 +4,17 @@ from .._shared import *
 class _ParseLlmResponseMixin:
     def _normalize_primary_intent(self, value: Any) -> str:
         text = str(value or "").strip()
-        if text in {self.INTENT_SEARCH, self.INTENT_LESSON_PLAN, self.INTENT_VISUALIZATION}:
+        if text in {
+            self.INTENT_SEARCH,
+            self.INTENT_LESSON_PLAN,
+            self.INTENT_VISUALIZATION,
+            self.INTENT_CONVERSATION,
+        }:
             return text
 
         text_lower = text.lower()
+        if "conversation" in text_lower or "chat" in text_lower or "闲聊" in text or "对话" in text:
+            return self.INTENT_CONVERSATION
         if "visual" in text_lower or "ggb" in text_lower:
             return self.INTENT_VISUALIZATION
         if "lesson" in text_lower or "教案" in text:
@@ -45,16 +52,25 @@ class _ParseLlmResponseMixin:
                     {"type": self.INTENT_SEARCH, "confidence": 0.9},
                     {"type": self.INTENT_LESSON_PLAN, "confidence": 0.1},
                     {"type": self.INTENT_VISUALIZATION, "confidence": 0.1},
+                    {"type": self.INTENT_CONVERSATION, "confidence": 0.1},
                 ],
                 self.INTENT_LESSON_PLAN: [
                     {"type": self.INTENT_LESSON_PLAN, "confidence": 0.9},
                     {"type": self.INTENT_SEARCH, "confidence": 0.1},
                     {"type": self.INTENT_VISUALIZATION, "confidence": 0.1},
+                    {"type": self.INTENT_CONVERSATION, "confidence": 0.1},
                 ],
                 self.INTENT_VISUALIZATION: [
                     {"type": self.INTENT_VISUALIZATION, "confidence": 0.9},
                     {"type": self.INTENT_SEARCH, "confidence": 0.1},
                     {"type": self.INTENT_LESSON_PLAN, "confidence": 0.1},
+                    {"type": self.INTENT_CONVERSATION, "confidence": 0.1},
+                ],
+                self.INTENT_CONVERSATION: [
+                    {"type": self.INTENT_CONVERSATION, "confidence": 0.9},
+                    {"type": self.INTENT_SEARCH, "confidence": 0.2},
+                    {"type": self.INTENT_LESSON_PLAN, "confidence": 0.1},
+                    {"type": self.INTENT_VISUALIZATION, "confidence": 0.1},
                 ],
             }
             return fallbacks.get(primary_intent, fallbacks[self.INTENT_SEARCH])
@@ -63,7 +79,7 @@ class _ParseLlmResponseMixin:
             normalized.insert(0, {"type": primary_intent, "confidence": 0.9})
 
         normalized.sort(key=lambda item: item["confidence"], reverse=True)
-        return normalized[:3]
+        return normalized[:4]
 
     def _build_result_from_payload(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         primary_intent = self._normalize_primary_intent(payload.get("primary_intent"))

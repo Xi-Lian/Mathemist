@@ -1,4 +1,24 @@
 /* Base markdown styles */
+.markdown-content {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdown-content p,
+.markdown-content li,
+.markdown-content td,
+.markdown-content th,
+.markdown-content a,
+.markdown-content code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .markdown-content code:not(pre code) {
   background-color: color-mix(in oklab, var(--text-main) 8%, transparent);
   padding: 0.2em 0.4em;
@@ -23,11 +43,14 @@
 
 .markdown-content pre {
   overflow-x: auto;
+  max-width: 100%;
 }
 
 .markdown-content table {
   border-collapse: collapse;
   width: 100%;
+  display: block;
+  overflow-x: auto;
 }
 
 .markdown-content th,

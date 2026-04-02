@@ -30,9 +30,10 @@ class IntentAnalyzer(_InitMixin, _AnalyzeMixin, _AnalyzeContextMixin, _UpdateCon
     INTENT_SEARCH = "search"
     INTENT_LESSON_PLAN = "generate_lesson_plan"
     INTENT_VISUALIZATION = "visualization"
+    INTENT_CONVERSATION = "conversation"
     
     INSTRUCTION_KEYWORDS = {
-        "resource_retrieval": ["推送", "给", "找", "推荐", "有没有", "我要", "帮我找", "想要", "需要"],
+        "resource_retrieval": ["推送", "给", "找", "搜", "搜索", "查", "查找", "检索", "推荐", "有没有", "我要", "帮我找", "帮我搜", "想要", "需要"],
         "content_generation": ["生成", "设计", "写", "创作", "帮我做", "制作", "创建", "编写"]
     }
     

@@ -210,6 +210,10 @@ async def get_thread_history(thread_id: str):
     # 返回线程的历史消息（如果有）
     thread = threads[thread_id]
     messages = thread.get("messages", [])
+    if not messages:
+        state = thread.get("state") or {}
+        if isinstance(state, dict):
+            messages = state.get("messages", []) or []
     
     # 直接返回消息数组，符合 LangGraph SDK 的期望
     return messages

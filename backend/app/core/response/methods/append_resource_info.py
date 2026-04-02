@@ -2,6 +2,19 @@ from .._shared import *
 
 
 class _AppendResourceInfoMixin:
+    def _build_source_markdown(self, source: str) -> str:
+        source = (source or "").strip()
+        if not source:
+            return "未提供文件路径"
+
+        if source.startswith(("http://", "https://")):
+            return f"[打开文件]({source})"
+
+        from urllib.parse import quote
+
+        encoded = quote(source.replace("\\", "/"), safe="/")
+        return f"[{source}](resource://{encoded})"
+
     def _append_resource_info(
         self,
         response_parts: List[str],
@@ -61,7 +74,7 @@ class _AppendResourceInfoMixin:
             title,
             content,
             scenario
-        )
+        ).replace("\n", " ").strip()
 
         # 获取用户原始查询，用于提取所有查询主题
         user_input = ""
@@ -125,12 +138,12 @@ class _AppendResourceInfoMixin:
             theme_tags = f" [主题: {matched_themes[0]}]"
 
         # V9.0：核心主题匹配添加特殊标记
+        title_prefix = f"{icon} "
         if is_core_match:
-            response_parts.append(f"{icon} ⭐ {title}")
+            title_prefix += "⭐ "
         elif is_comprehensive:
-            response_parts.append(f"{icon} 🔥 {title}")
-        else:
-            response_parts.append(f"{icon} {title}")
+            title_prefix += "🔥 "
+        response_parts.append(f"**{title_prefix}{title}**")
 
         match_label_map = {
             "exact": "高度匹配",
@@ -147,8 +160,8 @@ class _AppendResourceInfoMixin:
         if match_explanation:
             reason_parts.append(match_explanation)
 
-        response_parts.append(f"   适配说明: {'；'.join(reason_parts)}")
-        response_parts.append(f"   内容预览: {processed_content}")
+        response_parts.append(f"- 适配说明：{'；'.join(reason_parts)}")
+        response_parts.append(f"- 内容预览：{processed_content}")
 
         if self.show_debug_scores:
             debug_parts = []
@@ -161,7 +174,7 @@ class _AppendResourceInfoMixin:
             debug_parts.append(f"内容完整性 {content_completeness*100:.1f}%")
             debug_parts.append(f"教学价值 {teaching_value*100:.1f}%")
             debug_parts.append(f"综合性 {comprehensiveness*100:.1f}%")
-            response_parts.append(f"   调试分数: {' | '.join(debug_parts)}")
+            response_parts.append(f"- 调试分数：{' | '.join(debug_parts)}")
 
-        response_parts.append(f"   文件路径: {source}")
+        response_parts.append(f"- 文件路径：{self._build_source_markdown(source)}")
         response_parts.append("")

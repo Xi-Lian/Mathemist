@@ -20,10 +20,18 @@ def _flatten_resources(classified: Dict[str, Any]) -> List[Tuple[str, Dict[str, 
         for resource in resources:
             if isinstance(resource, dict):
                 flat.append((category, resource))
+    flat.sort(
+        key=lambda item: (
+            not item[1].get("should_show", True),
+            -int(bool(item[1].get("is_core_match", False))),
+            -float(item[1].get("overall_score", item[1].get("relevance", 0.0)) or 0.0),
+            -float(item[1].get("relevance", 0.0) or 0.0),
+        )
+    )
     return flat
 
 
-def _build_candidates_payload(flat: List[Tuple[str, Dict[str, Any]]], max_candidates: int = 36) -> List[Dict[str, Any]]:
+def _build_candidates_payload(flat: List[Tuple[str, Dict[str, Any]]], max_candidates: int = 24) -> List[Dict[str, Any]]:
     payload: List[Dict[str, Any]] = []
     for index, (category, resource) in enumerate(flat[:max_candidates], start=1):
         payload.append(
@@ -36,6 +44,11 @@ def _build_candidates_payload(flat: List[Tuple[str, Dict[str, Any]]], max_candid
                 "summary": resource.get("summary", "") or (resource.get("content", "") or "")[:220],
                 "source": resource.get("source", "") or resource.get("source_file", ""),
                 "relevance": float(resource.get("relevance", 0.0) or 0.0),
+                "overall_score": float(resource.get("overall_score", resource.get("relevance", 0.0)) or 0.0),
+                "match_level": resource.get("match_level", "none"),
+                "is_core_match": bool(resource.get("is_core_match", False)),
+                "should_show": bool(resource.get("should_show", True)),
+                "matched_themes": resource.get("matched_themes", []),
             }
         )
     return payload
@@ -79,7 +92,8 @@ def _build_prompt() -> ChatPromptTemplate:
   "reason": "一句话说明筛选依据"
 }}
 3) selected_ids 顺序代表最终排序。
-4) 若无合适候选，返回空数组。
+4) 若候选与用户主题不直接相关，宁可返回空数组，也不要保留弱相关候选。
+5) 对明确主题查询，只有直接围绕该主题的候选才能保留；泛数学、旁支章节、无关板块必须剔除。
 """
     )
 
@@ -140,10 +154,6 @@ def apply_ai_screen_and_rerank(
             mapping = {item["candidate_id"]: (cat, res) for item, (cat, res) in zip(candidates, flat)}
             selected_pairs = [mapping[item_id] for item_id in selected_ids if item_id in mapping]
 
-            if not selected_pairs:
-                last_reason = "no_selected_candidates"
-                continue
-
             rebuilt: Dict[str, Any] = {}
             for key, value in classified.items():
                 rebuilt[key] = [] if isinstance(value, list) else value
@@ -160,7 +170,7 @@ def apply_ai_screen_and_rerank(
 
             return {
                 "ok": True,
-                "reason": parsed.get("reason", ""),
+                "reason": parsed.get("reason", "ai_selected_candidates"),
                 "call_count": call_index + 1,
                 "selected_count": len(selected_pairs),
                 "result": rebuilt,

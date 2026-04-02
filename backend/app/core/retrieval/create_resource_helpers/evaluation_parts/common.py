@@ -1,5 +1,17 @@
 from ..._shared import *
 
+BROAD_THEME_HINTS = {
+    "函数",
+    "数学",
+    "代数",
+    "几何",
+    "统计",
+    "概率",
+    "函数的概念",
+    "函数的性质",
+    "函数应用",
+}
+
 
 def build_match_result(matched_themes, core_theme_match, related_themes, is_core_match, match_level, domain, explanation, should_show, relevance_score):
     return {
@@ -45,3 +57,22 @@ def build_no_core_theme_result(base_relevance, resource_type):
         "comprehensiveness": 0.2 if should_show else 0.0,
         "concept_hierarchy_factor": 0.5,
     }
+
+
+def is_specific_theme_query(core_theme):
+    themes = [theme.strip() for theme in (core_theme or "").split(",") if theme.strip()]
+    if not themes:
+        return False
+    return any(theme not in BROAD_THEME_HINTS for theme in themes)
+
+
+def has_theme_text_hit(core_theme, metadata, text):
+    themes = [theme.strip() for theme in (core_theme or "").split(",") if theme.strip()]
+    if not themes:
+        return False
+
+    title = metadata.get("title", "") or ""
+    source_file = metadata.get("source_file", "") or ""
+    knowledge_tags = metadata.get("知识点", "") or metadata.get("知识点标签", "") or ""
+    haystack = f"{title} {source_file} {knowledge_tags} {text or ''}"
+    return any(theme in haystack for theme in themes)

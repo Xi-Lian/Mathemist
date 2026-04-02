@@ -20,7 +20,7 @@ def create_math_agent_graph():
     # 动态导入节点函数，确保使用最新的代码
     from .nodes import (
         intent_understanding_node,
-        resource_retrieval_node,
+        search_agent_node,
         unified_lesson_plan_node,
         lesson_plan_generation_node,
         visualization_suggestions_node,
@@ -33,7 +33,7 @@ def create_math_agent_graph():
     
     # 添加节点
     graph.add_node("intent_understanding", intent_understanding_node)
-    graph.add_node("resource_retrieval", resource_retrieval_node)
+    graph.add_node("search_agent", search_agent_node)
     graph.add_node("unified_lesson_plan", unified_lesson_plan_node)
     graph.add_node("lesson_plan_generation", lesson_plan_generation_node)
     graph.add_node("visualization_suggestions", visualization_suggestions_node)
@@ -45,11 +45,7 @@ def create_math_agent_graph():
     # 起始节点 -> 意图理解节点
     graph.add_edge(START, "intent_understanding")
     
-    # 意图理解节点 -> 资源检索节点
-    graph.add_edge("intent_understanding", "resource_retrieval")
-    
-    # 资源检索节点 -> 根据意图路由到不同处理节点
-    def route_after_retrieval(state):
+    def route_after_intent(state):
         """
         根据意图路由到不同的处理节点
         """
@@ -69,10 +65,6 @@ def create_math_agent_graph():
             lesson_plan_session_id = getattr(state, "lesson_plan_session_id", None)
             user_input = getattr(state, "user_input", "")
 
-        # 兜底：防止检索阶段返回 None 导致后续 .get 崩溃
-        if not isinstance(retrieved_resources, dict):
-            retrieved_resources = {}
-        
         _debug(f"🔀 路由函数: state 类型 = {type(state)}")
         _debug(f"🔀 路由函数: intent = {intent}")
         _debug(f"🔀 路由函数: intents = {intents}")
@@ -80,7 +72,7 @@ def create_math_agent_graph():
         _debug(f"🔀 路由函数: lesson_plan_session_id = {lesson_plan_session_id}")
         
         # 检查指令词，避免生成教案和推送资源的场景混淆
-        resource_retrieval_keywords = ["推送", "给", "找", "推荐", "有没有", "我要", "帮我找", "想要", "需要"]
+        resource_retrieval_keywords = ["推送", "给", "找", "搜", "搜索", "查", "查找", "检索", "推荐", "有没有", "我要", "帮我找", "帮我搜", "想要", "需要"]
         has_resource_retrieval = any(keyword in user_input for keyword in resource_retrieval_keywords)
         
         _debug(f"🔀 包含资源获取指令词: {has_resource_retrieval}")
@@ -100,7 +92,7 @@ def create_math_agent_graph():
             # 检查是否为修改意见
             revision_keywords = [
                 # 表达不满意或需要修改
-                "觉得", "感觉", "认为", "希望", "想要", "需要", "应该", "建议", "提议",
+                "觉得", "感觉", "认为", "希望", "应该", "建议", "提议",
                 # 具体修改动作
                 "修改", "调整", "改进", "完善", "优化", "补充", "增加", "添加", "减少", "删除", "删除掉",
                 # 疑问式修改请求
@@ -111,6 +103,8 @@ def create_math_agent_graph():
                 "改一下", "改改", "调整一下", "完善一下", "优化一下", "补充一下"
             ]
             has_revision_request = any(keyword in user_input for keyword in revision_keywords)
+            if not has_revision_request and lesson_plan_session_id:
+                has_revision_request = any(keyword in user_input for keyword in ["想要", "需要"])
             if has_revision_request:
                 _debug(f"🔀 检测到修改意见，路由到统一教案节点（无论是否有session_id）")
                 return "unified_lesson_plan"
@@ -125,52 +119,32 @@ def create_math_agent_graph():
             # 有多个意图，直接路由到响应格式化节点
             return "response_formatting"
         
-        # 如果包含资源获取指令词，强制使用响应格式化，不生成教案
-        if has_resource_retrieval:
-            _debug(f"🔀 检测到资源获取指令词，强制使用响应格式化，不生成教案")
-            return "response_formatting"
-        
-        # 如果用户明确指定了资源类型，检查是否是教案生成意图
-        if resource_types:
-            _debug(f"🔀 检测到资源类型: {resource_types}")
-            # 只有当主要意图是generate_lesson_plan时，才走统一教案流程
-            # 如果主要意图是search，即使intents中包含generate_lesson_plan（低置信度），也应该走资源检索流程
-            if intent == "generate_lesson_plan":
-                _debug(f"🔀 检测到教案生成意图，继续走统一教案流程")
-                return "unified_lesson_plan"
-            else:
-                _debug(f"🔀 非教案生成资源类型，直接跳到响应格式化")
-                return "response_formatting"
-        
-        # 检查是否有GGB资源，如果有，优先生成GGB设计建议
-        ggb_resources = retrieved_resources.get("ggb_resources", [])
-        if ggb_resources:
-            _debug(f"🔀 检测到GGB资源: {len(ggb_resources)}个，路由到GGB设计建议节点")
-            return "ggb_design_advisor"
-        
-        # 根据主要意图路由
         if intent == "generate_lesson_plan":
             return "unified_lesson_plan"
         elif intent == "visualization":
             return "visualization_suggestions"
         elif intent == "search":
-            return "response_formatting"
+            return "search_agent"
+        elif intent == "conversation":
+            return "search_agent"
         else:
             _debug(f"⚠️ 未知意图 {intent}，使用默认路由")
             return "response_formatting"
     
     graph.add_conditional_edges(
-        "resource_retrieval",
-        route_after_retrieval,
+        "intent_understanding",
+        route_after_intent,
         {
+            "search_agent": "search_agent",
             "unified_lesson_plan": "unified_lesson_plan",
             "lesson_plan_generation": "lesson_plan_generation",
             "visualization_suggestions": "visualization_suggestions",
             "ggb_design_advisor": "ggb_design_advisor",
-
             "response_formatting": "response_formatting"
         }
     )
+
+    graph.add_edge("search_agent", "response_formatting")
     
     # 统一教案节点 -> 检查是否需要响应格式化
     def route_after_unified_lesson_plan(state):

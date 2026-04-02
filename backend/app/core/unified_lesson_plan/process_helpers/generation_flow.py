@@ -1,19 +1,6 @@
 from .._shared import *
 
 
-WELCOME_RESPONSE = """👋 欢迎使用智能教案生成系统！
-
-我可以帮您生成高质量的教案，支持数学、物理、化学等多个学科。
-
-**您可以：**
-1. ✏️ 直接告诉我您需要的教案主题，例如："生成一份关于指数函数的教案"
-2. 📋 提供详细信息，例如："为高中二年级学生生成一份2课时的指数函数教案"
-3. 🔍 查看示例，例如："查看教案示例"
-4. 📚 了解系统功能，例如："你能做什么"
-
-请告诉我您的需求，我将为您生成最适合的教案！"""
-
-
 def prepare_generation_turn(system, user_input, session_id, session):
     is_first_interaction = len(session.get("conversation_history", [])) == 0
     if is_first_interaction:
@@ -24,13 +11,26 @@ def prepare_generation_turn(system, user_input, session_id, session):
             session["last_activity"] = str(time.time())
             return None
 
-        session["conversation_history"].append({"role": "assistant", "content": WELCOME_RESPONSE})
+        try:
+            welcome_response = system._generate_lesson_plan_dialogue(
+                mode="welcome",
+                topic=user_input or "教案需求",
+                progress=0,
+                collected_info=session.get("collected_info", {}),
+                missing_items=["课题", "教学目标", "授课对象", "课时安排"],
+                extra_context="用户刚进入教案协作流程，但还没有给出足够信息。",
+            )
+        except Exception as exc:
+            print(f"⚠️ 欢迎回复生成失败，使用降级文案: {exc}")
+            welcome_response = "你直接告诉我教案主题、年级、课时或教学目标中的任意几项就行，我会边补全边往下做。"
+
+        session["conversation_history"].append({"role": "assistant", "content": welcome_response})
         session["last_activity"] = str(time.time())
         return {
             "success": True,
             "session_id": session_id,
             "status": "welcome",
-            "response": WELCOME_RESPONSE,
+            "response": welcome_response,
             "progress": 0,
         }
 

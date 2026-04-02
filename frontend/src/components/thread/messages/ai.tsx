@@ -120,8 +120,9 @@ export function AssistantMessage({
   );
 
   const thread = useStreamContext();
+  const lastThreadMessage = thread.messages.at(-1);
   const isLastMessage =
-    thread.messages[thread.messages.length - 1].id === message?.id;
+    !!message?.id && lastThreadMessage?.id === message.id;
   const hasNoAIOrToolMessages = !thread.messages.find(
     (m) => m.type === "ai" || m.type === "tool",
   );
@@ -152,8 +153,8 @@ export function AssistantMessage({
   }
 
   return (
-    <div className="group mr-auto flex w-full items-start gap-2">
-      <div className="flex w-full flex-col gap-2">
+    <div className="group mr-auto flex min-w-0 w-full max-w-full items-start gap-2">
+      <div className="flex min-w-0 w-full max-w-full flex-col gap-2">
         {isToolResult ? (
           <>
             <ToolResult message={message} />
@@ -166,7 +167,7 @@ export function AssistantMessage({
         ) : (
           <>
             {contentString.length > 0 && (
-              <div className="py-1">
+              <div className="min-w-0 w-full max-w-full overflow-hidden py-1 text-left">
                 <MarkdownText>{contentString}</MarkdownText>
               </div>
             )}

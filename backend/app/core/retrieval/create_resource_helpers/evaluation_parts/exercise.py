@@ -1,4 +1,5 @@
 from ..._shared import *
+from .common import is_specific_theme_query
 
 
 def evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme, query, question_type, multi_theme_info):
@@ -7,6 +8,7 @@ def evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme
     core_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
     is_consistent = retriever._check_knowledge_point_consistency(metadata, core_theme, question_content, query, base_relevance)
     strict_match = check_exercise_strict_match(retriever, metadata, question_content, core_theme, core_themes)
+    specific_theme_query = is_specific_theme_query(core_theme)
 
     relevance_score = 0.0
     matched_themes = []
@@ -38,6 +40,8 @@ def evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme
     elif any(st in core_theme for st in ["函数概念", "函数的概念"]):
         print(f"   ⚠️ V30.4严格过滤: '{core_theme}'主题需要严格匹配，知识点不一致，直接过滤")
         explanation = f"严格过滤主题'{core_theme}'知识点不匹配"
+    elif specific_theme_query:
+        explanation = f"明确主题查询未命中知识点: {core_theme}"
     else:
         relevance_score = base_relevance * 0.3
         overall_score = relevance_score

@@ -66,22 +66,18 @@ class _GenerateCompleteLessonPlanMixin:
         
         # 4. 构建响应
         summary = self._generate_summary(lesson_plan_content)
-        response = f"""🎉 太棒了！教案已经生成完成！
-
-**课题：** {topic}
-
-**教案摘要：**
-{summary}
-
----
-
-**您可以：**
-1. 📖 查看完整教案
-2. ✏️ 提出修改意见，我可以帮您调整
-3. 📥 导出教案（支持 Markdown、HTML、Word、PDF 格式）
-4. 🔄 基于这个教案继续优化
-
-请告诉我您的想法！"""
+        try:
+            response = self._generate_lesson_plan_dialogue(
+                mode="completed",
+                topic=topic,
+                progress=100,
+                collected_info=collected_info,
+                missing_items=[],
+                extra_context=f"教案摘要：{summary}",
+            )
+        except Exception as exc:
+            print(f"⚠️ 教案完成回复生成失败，使用降级文案: {exc}")
+            response = f"“{topic}”的教案已经生成好了。先给你一个摘要：{summary}\n\n如果你要，我可以继续帮你查看完整教案、按意见修改，或者直接导出。"
         
         session["conversation_history"].append({"role": "assistant", "content": response})
         

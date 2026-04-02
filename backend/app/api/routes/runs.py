@@ -83,7 +83,10 @@ def _summarize_input_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def _summarize_node_output(node_output: Any) -> Dict[str, Any]:
     if not isinstance(node_output, dict):
-        return {"type": type(node_output).__name__, "preview": _shorten_text(node_output)}
+        return {
+            "type": type(node_output).__name__,
+            "preview": _shorten_text(node_output),
+        }
 
     summary: Dict[str, Any] = {"keys": sorted(list(node_output.keys()))}
 
@@ -158,6 +161,40 @@ def _elapsed_ms(start_time: float) -> int:
     return int((time.perf_counter() - start_time) * 1000)
 
 
+def _message_id(message: Any) -> Optional[str]:
+    if isinstance(message, dict):
+        return message.get("id")
+    return getattr(message, "id", None)
+
+
+def _merge_message_lists(existing: Any, incoming: Any) -> list[Any]:
+    existing_list = list(existing) if isinstance(existing, list) else []
+    incoming_list = list(incoming) if isinstance(incoming, list) else []
+
+    if not existing_list:
+        return incoming_list
+    if not incoming_list:
+        return existing_list
+
+    merged = list(existing_list)
+    index_by_id: Dict[str, int] = {}
+    for idx, message in enumerate(merged):
+        message_id = _message_id(message)
+        if message_id:
+            index_by_id[message_id] = idx
+
+    for message in incoming_list:
+        message_id = _message_id(message)
+        if message_id and message_id in index_by_id:
+            merged[index_by_id[message_id]] = message
+            continue
+        merged.append(message)
+        if message_id:
+            index_by_id[message_id] = len(merged) - 1
+
+    return merged
+
+
 def _format_stage_timings(node_finish_times: Dict[str, int]) -> Dict[str, int]:
     stage_durations: Dict[str, int] = {}
     previous_ms = 0
@@ -180,9 +217,7 @@ def _log_stream_timing_summary(
     stage_durations = _format_stage_timings(node_finish_times)
     final_output_ms = final_message_ms if final_message_ms is not None else total_ms
     generation_window_ms = (
-        final_output_ms - first_message_ms
-        if first_message_ms is not None
-        else None
+        final_output_ms - first_message_ms if first_message_ms is not None else None
     )
 
     logger.info("⏱️ 流式耗时汇总")
@@ -208,6 +243,7 @@ def _log_stream_timing_summary(
         generation_window_ms,
     )
 
+
 # 创建math_agent_graph实例的函数
 def get_math_agent_graph():
     """
@@ -224,18 +260,15 @@ async def create_run(thread_id: str, request: RunCreateRequest):
     LangGraph API 标准端点
     """
     if thread_id not in threads:
-        raise HTTPException(
-            status_code=404, 
-            detail=f"Thread {thread_id} not found"
-        )
-    
+        raise HTTPException(status_code=404, detail=f"Thread {thread_id} not found")
+
     # 获取线程关联的用户ID（如果有）
     thread = threads[thread_id]
     user_id = thread.get("user_id")
-    
+
     run_id = generate_id()
     now = get_current_timestamp()
-    
+
     run = {
         "run_id": run_id,
         "thread_id": thread_id,
@@ -247,35 +280,35 @@ async def create_run(thread_id: str, request: RunCreateRequest):
         "input": request.input,
         "output": None,
         "error": None,
-        "metadata": request.metadata or {}
+        "metadata": request.metadata or {},
     }
-    
+
     runs[run_id] = run
-    
+
     try:
         # 转换输入格式
         graph_input = _convert_input_format(request.input)
-        
+
         # 调用 LangGraph
         math_agent_graph = get_math_agent_graph()
         result = await math_agent_graph.ainvoke(graph_input)
-        
+
         run["status"] = "success"
         run["output"] = result
         run["updated_at"] = get_current_timestamp()
-        
+
         # 更新线程状态
         threads[thread_id]["state"] = result
         threads[thread_id]["updated_at"] = get_current_timestamp()
-        
+
         logger.info(f"Completed run {run_id} for thread {thread_id}")
-        
+
     except Exception as e:
         run["status"] = "error"
         run["error"] = str(e)
         run["updated_at"] = get_current_timestamp()
         logger.error(f"Error in run {run_id}: {str(e)}")
-    
+
     return Run(**run)
 
 
@@ -284,7 +317,7 @@ async def get_user_runs(
     user_id: str,
     limit: int = Query(50, ge=1, le=100, description="返回数量限制"),
     offset: int = Query(0, ge=0, description="偏移量"),
-    status: Optional[str] = Query(None, description="状态过滤")
+    status: Optional[str] = Query(None, description="状态过滤"),
 ):
     """
     获取用户的所有运行记录
@@ -293,29 +326,20 @@ async def get_user_runs(
     user = user_system.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="用户不存在")
-    
+
     # 过滤用户的运行记录
-    user_runs = [
-        r for r in runs.values()
-        if r.get("user_id") == user_id
-    ]
-    
+    user_runs = [r for r in runs.values() if r.get("user_id") == user_id]
+
     # 状态过滤
     if status:
-        user_runs = [
-            r for r in user_runs
-            if r.get("status") == status
-        ]
-    
+        user_runs = [r for r in user_runs if r.get("status") == status]
+
     # 按更新时间倒序排列
-    user_runs.sort(
-        key=lambda x: x["updated_at"],
-        reverse=True
-    )
-    
+    user_runs.sort(key=lambda x: x["updated_at"], reverse=True)
+
     # 分页
-    user_runs = user_runs[offset:offset + limit]
-    
+    user_runs = user_runs[offset : offset + limit]
+
     return [RunWithUser(**r) for r in user_runs]
 
 
@@ -325,9 +349,11 @@ async def create_run_stream(thread_id: str, request: RunCreateRequest):
     创建运行（流式）
     LangGraph API 标准端点
     """
-    logger.info(f"收到流式请求: thread_id={thread_id}, assistant_id={request.assistant_id}")
+    logger.info(
+        f"收到流式请求: thread_id={thread_id}, assistant_id={request.assistant_id}"
+    )
     logger.info(f"请求输入摘要: {_summarize_input_payload(request.input)}")
-    
+
     # 如果线程不存在，自动创建
     if thread_id not in threads:
         now = get_current_timestamp()
@@ -336,18 +362,18 @@ async def create_run_stream(thread_id: str, request: RunCreateRequest):
             "created_at": now,
             "updated_at": now,
             "metadata": request.metadata or {},
-            "state": {},
-            "messages": []
+            "state": {"messages": []},  # 确保state.messages被正确初始化
+            "messages": [],
         }
         logger.info(f"自动创建线程: {thread_id}")
-    
+
     # 获取线程关联的用户ID（如果有）
     thread = threads[thread_id]
     user_id = thread.get("user_id")
-    
+
     run_id = generate_id()
     now = get_current_timestamp()
-    
+
     run = {
         "run_id": run_id,
         "thread_id": thread_id,
@@ -359,11 +385,11 @@ async def create_run_stream(thread_id: str, request: RunCreateRequest):
         "input": request.input,
         "output": None,
         "error": None,
-        "metadata": request.metadata or {}
+        "metadata": request.metadata or {},
     }
-    
+
     runs[run_id] = run
-    
+
     async def event_generator():
         """生成 SSE 事件流"""
         try:
@@ -379,197 +405,113 @@ async def create_run_stream(thread_id: str, request: RunCreateRequest):
             logger.info(f"运行 ID: {run_id}")
             logger.info(f"助手 ID: {request.assistant_id}")
             logger.info(f"输入摘要: {_summarize_input_payload(request.input)}")
-            
+
             # 发送开始事件
             yield f"event: metadata\ndata: {json.dumps({'run_id': run_id, 'status': 'started'})}\n\n"
-            
+
             # 转换输入格式
             graph_input = _convert_input_format(request.input)
-            
-            # 初始化 messages 数组
+
             current_state = threads[thread_id].get("state") or {}
-            current_messages = current_state.get("messages", [])
-            
-            # 添加用户消息
-            user_message = None
-            if "messages" in request.input:
-                user_message = request.input["messages"][-1] if request.input["messages"] else None
-                if user_message:
-                    current_messages.append(user_message)
-                    graph_input["messages"] = current_messages
-            
+            current_messages = current_state.get("messages", []) or threads[thread_id].get("messages", [])
+
+            # 继承线程中的持久状态，避免多轮对话时丢失上下文。
+            for carry_key in ("chat_history", "lesson_plan_session_id", "context"):
+                if carry_key not in graph_input and carry_key in current_state:
+                    graph_input[carry_key] = current_state.get(carry_key)
+
+            # 优先使用请求中的消息，但会和线程已有历史合并，避免前端只发最后一条时把旧历史冲掉
+            if "messages" in request.input and request.input["messages"]:
+                graph_input["messages"] = _merge_message_lists(
+                    current_messages,
+                    request.input["messages"],
+                )
+                logger.info(
+                    "合并请求消息与线程历史，请求=%s 条，线程已有=%s 条，合并后=%s 条",
+                    len(request.input["messages"]),
+                    len(current_messages),
+                    len(graph_input["messages"]),
+                )
+            else:
+                graph_input["messages"] = current_messages
+                logger.info(
+                    f"使用线程state中的消息历史，共 {len(current_messages)} 条消息"
+                )
+
             # 流式调用 LangGraph
             chunk_count = 0
             ai_message_id = None
             ai_message_content = ""
-            latest_state = graph_input
-            
+            latest_state = dict(current_state) if isinstance(current_state, dict) else {}
+            for key, value in graph_input.items():
+                if key == "messages":
+                    latest_state["messages"] = _merge_message_lists(
+                        latest_state.get("messages", []),
+                        value,
+                    )
+                else:
+                    latest_state[key] = value
+
             math_agent_graph = get_math_agent_graph()
-            
+
+            # 使用 updates 模式，手动累积完整状态后以 values 事件发给前端
+            # 前端 useStream hook 期望 values 事件包含完整状态
             async for chunk in math_agent_graph.astream(
-                graph_input,
-                stream_mode=["updates", "messages"]
+                graph_input, stream_mode="updates"
             ):
                 chunk_count += 1
-                
-                # 处理不同类型的 chunk
-                # 当使用多个流模式时，chunk 的格式是 (event, data)
-                if isinstance(chunk, tuple) and len(chunk) == 2:
-                    event, data = chunk
-                    if RUN_STREAM_LOG_MODE == "verbose":
-                        logger.info(f"📦 chunk#{chunk_count} event={event}")
-                    
-                    # 发送事件
-                    if event == "updates":
-                        # 发送 updates 事件
-                        for node_name, node_output in data.items():
-                            if node_output is None:
-                                node_output = {}
-                            if isinstance(node_output, dict):
-                                latest_state = {**latest_state, **node_output}
-                            elapsed_ms = _elapsed_ms(start_time)
-                            node_finish_times[node_name] = elapsed_ms
-                            node_update_counts[node_name] = node_update_counts.get(node_name, 0) + 1
-                            if first_update_ms is None:
-                                first_update_ms = elapsed_ms
 
-                            if RUN_STREAM_LOG_MODE == "verbose":
-                                logger.info(f"  📌 节点: {node_name}")
-                                logger.info(
-                                    f"  📄 输出摘要: {_summarize_node_output(node_output)}, since_start_ms={elapsed_ms}"
+                for node_name, node_output in chunk.items():
+                    if node_output is None:
+                        node_output = {}
+
+                    # 累积状态：messages 字段需要合并而非替换
+                    if isinstance(node_output, dict):
+                        for key, value in node_output.items():
+                            if key == "messages" and isinstance(value, list):
+                                latest_state["messages"] = _merge_message_lists(
+                                    latest_state.get("messages", []),
+                                    value,
                                 )
-                            elif RUN_STREAM_LOG_MODE == "summary":
-                                logger.info(
-                                    f"  📌 节点: {node_name}, since_start_ms={elapsed_ms}, 摘要: {_summarize_node_output(node_output)}"
-                                )
-                            
-                            # 发送 values 事件
-                            try:
-                                yield f"event: values\ndata: {json.dumps(node_output, ensure_ascii=False, cls=CustomJSONEncoder)}\n\n"
-                            except Exception as e:
-                                logger.error(f"JSON序列化失败: {e}")
-                                yield f"event: values\ndata: {json.dumps({}, ensure_ascii=False)}\n\n"
-                            
-                            # 不再从 updates 事件中发送 messages 事件，避免重复
-                            # 只通过 messages 事件发送消息
-                    
-                    elif event == "messages":
-                        # 发送 messages 事件
-                        if first_message_ms is None:
-                            first_message_ms = _elapsed_ms(start_time)
-                        if RUN_STREAM_LOG_MODE == "verbose":
-                            logger.info(f"  📌 messages摘要: {_summarize_messages_event(data)}")
-                        elif RUN_STREAM_LOG_MODE == "summary":
-                            message_summary = _summarize_messages_event(data)
-                            if message_summary.get("is_final"):
-                                final_message_ms = _elapsed_ms(start_time)
-                                logger.info(f"  📌 messages完成: {message_summary}")
-                        
-                        # 直接转发 messages 事件
-                        messages_to_forward = []
-                        if isinstance(data, tuple) and len(data) == 2:
-                            messages_to_forward = [data]
-                        elif isinstance(data, list) and len(data) == 2 and not isinstance(data[0], dict):
-                            messages_to_forward = [tuple(data)]
-                        elif isinstance(data, list):
-                            messages_to_forward = [(message, {}) for message in data]
+                            else:
+                                latest_state[key] = value
 
-                        for message, metadata in messages_to_forward:
-                            # 确保 message 包含必要的字段
-                            if isinstance(message, dict):
-                                if "type" not in message:
-                                    message["type"] = "ai"
-                                if "content" not in message:
-                                    message["content"] = ""
-                                if "id" not in message:
-                                    message["id"] = f"msg_{uuid.uuid4().hex}"
-                                # 将 AI 消息添加到线程的 messages 字段中
-                                if message["type"] == "ai":
-                                    existing_messages = threads[thread_id].get("messages", [])
-                                    message_exists = any(
-                                        msg.get("id") == message.get("id")
-                                        for msg in existing_messages
-                                    )
-                                    if not message_exists:
-                                        existing_messages.append(message)
-                                        threads[thread_id]["messages"] = existing_messages
-                            yield f"event: messages\ndata: {json.dumps([message, metadata], ensure_ascii=False, cls=CustomJSONEncoder)}\n\n"
-                    elif event == "messages-tuple":
-                        # 发送 messages-tuple 事件
-                        if first_message_ms is None:
-                            first_message_ms = _elapsed_ms(start_time)
-                        if RUN_STREAM_LOG_MODE == "verbose":
-                            logger.info(f"  📌 messages-tuple摘要: {_summarize_messages_event(data)}")
-                        elif RUN_STREAM_LOG_MODE == "summary":
-                            message_summary = _summarize_messages_event(data)
-                            if message_summary.get("is_final"):
-                                final_message_ms = _elapsed_ms(start_time)
-                                logger.info(f"  📌 messages-tuple完成: {message_summary}")
-                        
-                        # 直接转发 messages-tuple 事件
-                        if isinstance(data, list) and len(data) == 2:
-                            message, metadata = data
-                            # 确保 message 包含必要的字段
-                            if isinstance(message, dict):
-                                if "type" not in message:
-                                    message["type"] = "ai"
-                                if "content" not in message:
-                                    message["content"] = ""
-                                if "id" not in message:
-                                    message["id"] = f"msg_{uuid.uuid4().hex}"
-                                # 将 AI 消息添加到线程的 messages 字段中
-                                if message["type"] == "ai":
-                                    existing_messages = threads[thread_id].get("messages", [])
-                                    # 检查是否已经存在相同 ID 的消息，避免重复
-                                    message_exists = any(
-                                        msg.get("id") == message.get("id") 
-                                        for msg in existing_messages
-                                    )
-                                    if not message_exists:
-                                        existing_messages.append(message)
-                                        threads[thread_id]["messages"] = existing_messages
-                            yield f"event: messages\ndata: {json.dumps([message, metadata], ensure_ascii=False)}\n\n"
-                    else:
-                        if RUN_STREAM_LOG_MODE in {"verbose", "summary"}:
-                            logger.info(f"  📌 其他事件: {event}")
-                        # 直接转发其他事件
-                        try:
-                            yield f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
-                        except Exception as e:
-                            logger.error(f"JSON序列化失败: {e}")
-                else:
-                    # 兼容旧格式（单个流模式）
-                    if RUN_STREAM_LOG_MODE == "verbose":
-                        logger.info(f"📦 chunk#{chunk_count} keys={list(chunk.keys())}")
-                    
-                    for node_name, node_output in chunk.items():
-                        if node_output is None:
-                            node_output = {}
-                        if isinstance(node_output, dict):
-                            latest_state = {**latest_state, **node_output}
+                    elapsed_ms = _elapsed_ms(start_time)
+                    node_finish_times[node_name] = elapsed_ms
+                    node_update_counts[node_name] = (
+                        node_update_counts.get(node_name, 0) + 1
+                    )
+                    if first_update_ms is None:
+                        first_update_ms = elapsed_ms
 
-                        if RUN_STREAM_LOG_MODE == "verbose":
-                            logger.info(f"  📌 节点: {node_name}")
-                            logger.info(f"  📄 输出摘要: {_summarize_node_output(node_output)}")
-                        elif RUN_STREAM_LOG_MODE == "summary":
-                            logger.info(f"  📌 节点: {node_name}, 摘要: {_summarize_node_output(node_output)}")
-                        
-                        # 发送 values 事件
+                    threads[thread_id]["state"] = latest_state
+                    threads[thread_id]["updated_at"] = get_current_timestamp()
+                    threads[thread_id]["messages"] = latest_state.get("messages", [])
+
+                    if RUN_STREAM_LOG_MODE in {"verbose", "summary"}:
+                        msg_count = len(latest_state.get("messages", []))
+                        logger.info(
+                            f"  📌 节点: {node_name}, messages={msg_count}, since_start_ms={elapsed_ms}"
+                        )
+
+                    # 发送完整累积状态作为 values 事件
+                    try:
+                        yield f"event: values\ndata: {json.dumps(latest_state, ensure_ascii=False, cls=CustomJSONEncoder)}\n\n"
+                    except Exception as e:
+                        logger.error(f"JSON序列化 values 失败: {e}")
+                        # 回退：至少发送 messages 不丢
                         try:
-                            yield f"event: values\ndata: {json.dumps(node_output, ensure_ascii=False, cls=CustomJSONEncoder)}\n\n"
-                        except Exception as e:
-                            logger.error(f"JSON序列化失败: {e}")
-                            yield f"event: values\ndata: {json.dumps({}, ensure_ascii=False)}\n\n"
-            
-            # LangGraph 会自动处理 messages-tuple 事件，我们不需要手动发送
-            
-            # 更新线程状态和消息
+                            fallback = {"messages": latest_state.get("messages", [])}
+                            yield f"event: values\ndata: {json.dumps(fallback, ensure_ascii=False, cls=CustomJSONEncoder)}\n\n"
+                        except Exception:
+                            pass
+
+            # 更新线程状态
             threads[thread_id]["state"] = latest_state
             threads[thread_id]["updated_at"] = get_current_timestamp()
-            
-            # AI 消息已经在发送 messages 事件时添加到线程的 messages 字段中了
-            # 这里不需要再添加
-            
+            if isinstance(latest_state, dict) and "messages" in latest_state:
+                threads[thread_id]["messages"] = latest_state["messages"]
+
             # 更新运行状态
             runs[run_id]["status"] = "success"
             runs[run_id]["updated_at"] = get_current_timestamp()
@@ -585,39 +527,39 @@ async def create_run_stream(thread_id: str, request: RunCreateRequest):
                 node_update_counts=node_update_counts,
             )
             logger.info(f"✅ 流式处理完成")
-            
+
         except Exception as e:
             logger.error(f"❌ 流式处理失败: {str(e)}")
             runs[run_id]["status"] = "error"
             runs[run_id]["error"] = str(e)
             runs[run_id]["updated_at"] = get_current_timestamp()
-            
+
             # 发送错误事件
             yield f"event: error\ndata: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
-    
+
     return StreamingResponse(
         event_generator(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"
-        }
+            "X-Accel-Buffering": "no",
+        },
     )
 
 
 def _convert_input_format(input_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     转换输入格式：将 messages 转换为 user_input
-    
+
     Args:
         input_data: 输入数据
-    
+
     Returns:
         转换后的输入数据
     """
     graph_input = input_data.copy()
-    
+
     if "messages" in graph_input:
         messages = graph_input["messages"]
         if messages and len(messages) > 0:
@@ -626,23 +568,28 @@ def _convert_input_format(input_data: Dict[str, Any]) -> Dict[str, Any]:
                 if "content" in last_message:
                     if isinstance(last_message["content"], str):
                         graph_input["user_input"] = last_message["content"]
-                    elif isinstance(last_message["content"], list) and len(last_message["content"]) > 0:
+                    elif (
+                        isinstance(last_message["content"], list)
+                        and len(last_message["content"]) > 0
+                    ):
                         content_item = last_message["content"][0]
                         if isinstance(content_item, dict) and "text" in content_item:
                             graph_input["user_input"] = content_item["text"]
-    
+
     # 从context中提取lesson_plan_session_id
     if "context" in graph_input and graph_input["context"]:
         context = graph_input["context"]
         if isinstance(context, dict) and "lesson_plan_session_id" in context:
             graph_input["lesson_plan_session_id"] = context["lesson_plan_session_id"]
-            logger.info(f"💾 从context中提取教案会话ID: {context['lesson_plan_session_id']}")
-    
+            logger.info(
+                f"💾 从context中提取教案会话ID: {context['lesson_plan_session_id']}"
+            )
+
     # 确保user_input存在
     if "user_input" not in graph_input:
         graph_input["user_input"] = ""
-    
+
     if RUN_STREAM_LOG_MODE in {"verbose", "summary"}:
         logger.info(f"🔄 转换输入格式摘要: {_summarize_input_payload(graph_input)}")
-    
+
     return graph_input

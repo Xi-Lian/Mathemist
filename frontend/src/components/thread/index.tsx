@@ -124,6 +124,33 @@ function OpenGitHubRepo() {
   );
 }
 
+function mergeMessagesById(prev: Message[], incoming: Message[]): Message[] {
+  if (!prev.length) return incoming;
+  if (!incoming.length) return prev;
+
+  const merged = [...prev];
+  const indexById = new Map<string, number>();
+
+  merged.forEach((message, index) => {
+    if (message.id) {
+      indexById.set(message.id, index);
+    }
+  });
+
+  incoming.forEach((message) => {
+    if (message.id && indexById.has(message.id)) {
+      merged[indexById.get(message.id)!] = message;
+      return;
+    }
+    merged.push(message);
+    if (message.id) {
+      indexById.set(message.id, merged.length - 1);
+    }
+  });
+
+  return merged;
+}
+
 export function Thread() {
   const { t } = useI18n();
   const [artifactContext, setArtifactContext] = useArtifactContext();
@@ -157,8 +184,9 @@ export function Thread() {
   const isLargeScreen = useMediaQuery("(min-width: 1024px)");
 
   const stream = useStreamContext();
-  const messages = stream.messages;
   const isLoading = stream.isLoading;
+  const [stableMessages, setStableMessages] = useState<Message[]>([]);
+  const previousThreadIdRef = useRef<string | null>(threadId ?? null);
   const sessionIdFromState =
     stream.values?.lesson_plan_session_id ?? stream.values?.session_id;
   const activeLessonPlanSessionId =
@@ -172,11 +200,47 @@ export function Thread() {
   const setThreadId = (id: string | null) => {
     _setThreadId(id);
     setLessonPlanSessionId(null);
+    if (id === null) {
+      setStableMessages([]);
+    }
 
     // close artifact and reset artifact context
     closeArtifact();
     setArtifactContext({});
   };
+
+  useEffect(() => {
+    const currentThreadId = threadId ?? null;
+    const previousThreadId = previousThreadIdRef.current;
+    const incomingMessages = stream.messages ?? [];
+    const threadChanged = currentThreadId !== previousThreadId;
+
+    setStableMessages((prev) => {
+      if (threadChanged) {
+        // 新线程刚创建时，SDK 会先切 threadId 再去拉 history，这时 history 可能暂时为空。
+        // 这里保留当前会话消息，等真正的 values/history 到达后再合并。
+        if (
+          previousThreadId === null &&
+          currentThreadId &&
+          prev.length > 0 &&
+          incomingMessages.length === 0
+        ) {
+          return prev;
+        }
+        return incomingMessages;
+      }
+
+      if (incomingMessages.length === 0) {
+        return prev;
+      }
+
+      return mergeMessagesById(prev, incomingMessages);
+    });
+
+    previousThreadIdRef.current = currentThreadId;
+  }, [threadId, stream.messages]);
+
+  const messages = stableMessages;
 
   useEffect(() => {
     if (typeof sessionIdFromState !== "string" || !sessionIdFromState.trim()) {
@@ -233,6 +297,7 @@ export function Thread() {
     e.preventDefault();
     if ((input.trim().length === 0 && contentBlocks.length === 0) || isLoading)
       return;
+
     setFirstTokenReceived(false);
 
     const newHumanMessage: Message = {
@@ -244,7 +309,8 @@ export function Thread() {
       ] as Message["content"],
     };
 
-    const toolMessages = ensureToolCallsHaveResponses(stream.messages);
+    const toolMessages = ensureToolCallsHaveResponses(messages);
+    const submissionMessages = [...messages, ...toolMessages, newHumanMessage];
 
     const context = {
       ...(Object.keys(artifactContext).length > 0 ? artifactContext : {}),
@@ -258,7 +324,7 @@ export function Thread() {
       context?: Record<string, unknown>;
       lesson_plan_session_id?: string;
     } = {
-      messages: [...toolMessages, newHumanMessage],
+      messages: submissionMessages,
       context,
     };
     if (activeLessonPlanSessionId) {
@@ -277,11 +343,7 @@ export function Thread() {
           ...(activeLessonPlanSessionId
             ? { lesson_plan_session_id: activeLessonPlanSessionId }
             : {}),
-          messages: [
-            ...(prev.messages ?? []),
-            ...toolMessages,
-            newHumanMessage,
-          ],
+          messages: submissionMessages,
         }),
       },
     );
@@ -311,6 +373,7 @@ export function Thread() {
   const feedbackApiBaseUrl =
     apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
   const geometryToolUrl = `/combined-geometry?apiUrl=${encodeURIComponent(feedbackApiBaseUrl)}`;
+
   const visibleMessageEntries = messages
     .map((message, rawIndex) => ({ message, rawIndex }))
     .filter(
@@ -472,7 +535,11 @@ export function Thread() {
             </div>
           )}
 
-          <StickToBottom className="relative flex-1 overflow-hidden">
+          <StickToBottom
+            className="relative flex-1 overflow-hidden"
+            resize="instant"
+            initial="instant"
+          >
             <StickyToBottomContent
               className={cn(
                 "absolute inset-0 overflow-y-scroll px-[clamp(16px,4vw,48px)] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent",

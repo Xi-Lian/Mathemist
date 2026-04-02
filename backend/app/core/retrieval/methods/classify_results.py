@@ -1,7 +1,6 @@
 from .._shared import *
 from ..classify_results_helpers.filters import calculate_relevance_boost, matches_exercise_question_type
 from ..classify_results_helpers.resource_type import (
-    add_high_relevance_resource,
     init_classified,
     matches_requested_resource_type,
     normalize_resource_type,
@@ -62,11 +61,6 @@ class _ClassifyResultsMixin:
                 )
                 relevance = relevance_info["relevance"]
                 contains_core_theme = relevance_info["contains_core_theme"]
-
-                if relevance > 0.3 or contains_core_theme:
-                    print(f"   ✅ V96.0高相关性资源：相关性分数{relevance:.2f}，优先保留")
-                    add_high_relevance_resource(classified, metadata, doc, relevance, resource_type)
-                    continue
 
                 if resource_type == "exercise" and question_type:
                     if not matches_exercise_question_type(classified, metadata, doc, query, question_type):

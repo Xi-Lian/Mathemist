@@ -29,6 +29,19 @@ class _BuildMixin:
                 intent = state.intent
             else:
                 intent = state.get("intent", "search")
+
+            response_mode = self._get_state_value(state, "response_mode", "")
+            prebuilt_response = self._get_state_value(state, "response", "")
+
+            if response_mode in {"conversation", "agent_prebuilt"} and prebuilt_response:
+                print("💬 闲聊模式，直接返回预构建响应")
+                return prebuilt_response
+
+            if intent == "conversation":
+                if prebuilt_response:
+                    print("💬 conversation 意图，直接返回预构建响应")
+                    return prebuilt_response
+                return "你可以先告诉我是要搜资源、生成教案，还是做可视化。我再按你的目标继续。"
             
             # 对于搜索意图，不使用已有的 response，而是重新构建响应
             # 这样可以确保使用最新的分层展示逻辑

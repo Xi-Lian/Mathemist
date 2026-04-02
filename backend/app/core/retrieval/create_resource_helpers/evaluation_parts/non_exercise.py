@@ -1,9 +1,11 @@
 from ..._shared import *
-from .common import build_match_result
+from .common import build_match_result, has_theme_text_hit, is_specific_theme_query
 
 
 def evaluate_non_exercise_match(retriever, doc, metadata, base_relevance, resource_type, core_theme):
     theme_matcher_v90 = get_theme_matcher_v90()
+    specific_theme_query = is_specific_theme_query(core_theme)
+
     if resource_type == "lesson_plan":
         precise_match_result = theme_matcher_v90.calculate_precise_match(
             query=core_theme,
@@ -11,6 +13,12 @@ def evaluate_non_exercise_match(retriever, doc, metadata, base_relevance, resour
             lesson_content=doc,
             metadata=metadata,
         )
+        if specific_theme_query and not precise_match_result["is_core_match"] and precise_match_result["match_level"] not in {"related", "extended"}:
+            precise_match_result["should_show"] = False
+            precise_match_result["relevance_score"] = 0.0
+            precise_match_result["overall_score"] = 0.0
+            precise_match_result["match_level"] = "none"
+            precise_match_result["explanation"] = f"明确主题查询未命中主题：{core_theme}"
         return {
             "matched_themes": precise_match_result["matched_themes"],
             "core_theme_match": precise_match_result["core_theme"],
@@ -41,10 +49,13 @@ def evaluate_non_exercise_match(retriever, doc, metadata, base_relevance, resour
         return evaluate_keyword_based_match(base_relevance, resource_type, query_themes, matched_keywords, theme_keywords)
     if matched_themes:
         return build_match_result(matched_themes, matched_themes[0], matched_themes[1:] if len(matched_themes) > 1 else [], True, "core", resource_type, f"匹配到主题: {', '.join(matched_themes)}", True, base_relevance)
+    if specific_theme_query and not has_theme_text_hit(core_theme, metadata, doc):
+        return build_match_result([], None, [], False, "none", resource_type, f"明确主题查询未命中主题：{core_theme}", False, 0.0)
     return build_match_result([], None, [], False, "related", resource_type, "基于向量相似度匹配", base_relevance > 0.30, base_relevance * 0.5)
 
 
 def evaluate_keyword_based_match(base_relevance, resource_type, query_themes, matched_keywords, theme_keywords):
+    specific_theme_query = is_specific_theme_query(",".join(query_themes))
     if resource_type == "courseware":
         print(f"   🔍 V90.2课件资源调试 - base_relevance: {base_relevance:.4f}, matched_keywords: {matched_keywords}, theme_keywords: {theme_keywords}")
     if matched_keywords:
@@ -63,6 +74,8 @@ def evaluate_keyword_based_match(base_relevance, resource_type, query_themes, ma
             should_show,
             base_relevance * (0.7 + 0.3 * keyword_match_score),
         )
+    if specific_theme_query:
+        return build_match_result([], None, [], False, "none", resource_type, "明确主题查询未命中主题关键词", False, 0.0)
     should_show = base_relevance > (0.10 if resource_type == "courseware" else 0.30)
     if resource_type == "courseware":
         print(f"   🔍 V90.2课件资源 - 基础相关性: {base_relevance:.4f} > 0.10, should_show: {should_show}")

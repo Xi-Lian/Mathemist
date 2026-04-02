@@ -20,7 +20,7 @@ export function FeedbackFloatingPanel({
   query,
   className,
 }: FeedbackFloatingPanelProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const resources = useMemo(
     () => parseResourcesFromResponse(messageText),
     [messageText],
@@ -37,7 +37,7 @@ export function FeedbackFloatingPanel({
     >
       <div className="pointer-events-auto flex items-start gap-2">
         {!collapsed && (
-          <section className="w-[min(90vw,360px)] overflow-hidden rounded-xl border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
+          <section className="w-[min(90vw,300px)] overflow-hidden rounded-xl border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
             <header className="flex items-center justify-between border-b px-3 py-2">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <MessageSquareHeart className="size-4 text-blue-600" />
@@ -54,7 +54,7 @@ export function FeedbackFloatingPanel({
                 <ChevronLeft className="size-4" />
               </Button>
             </header>
-            <div className="max-h-[68vh] overflow-y-auto px-2 pb-2">
+            <div className="max-h-[50vh] overflow-y-auto px-2 pb-2">
               <ResourceFeedbackList
                 messageText={messageText}
                 apiBaseUrl={apiBaseUrl}

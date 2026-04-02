@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import { FC, memo, useState } from "react";
+import { useQueryState } from "nuqs";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { SyntaxHighlighter } from "@/components/thread/syntax-highlighter";
 
@@ -14,6 +15,17 @@ import { TooltipIconButton } from "@/components/thread/tooltip-icon-button";
 import { cn } from "@/lib/utils";
 
 import "katex/dist/katex.min.css";
+
+function resolveApiBase(apiUrl?: string | null): string {
+  const value = apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001/langgraph/math-agent";
+  if (value.includes("/langgraph")) {
+    return value.split("/langgraph")[0];
+  }
+  if (value.includes("/langserve")) {
+    return value.split("/langserve")[0];
+  }
+  return value.replace(/\/$/, "");
+}
 
 interface CodeHeaderProps {
   language?: string;
@@ -60,7 +72,7 @@ const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {
   );
 };
 
-const defaultComponents: any = {
+const createComponents = (apiUrl?: string | null): any => ({
   h1: ({ className, ...props }: { className?: string }) => (
     <h1
       className={cn(
@@ -118,15 +130,27 @@ const defaultComponents: any = {
       {...props}
     />
   ),
-  a: ({ className, ...props }: { className?: string }) => (
-    <a
-      className={cn(
-        "text-primary font-medium underline underline-offset-4",
-        className,
-      )}
-      {...props}
-    />
-  ),
+  a: ({ className, href, ...props }: { className?: string; href?: string }) => {
+    let resolvedHref = href;
+    if (href?.startsWith("resource://")) {
+      const relativePath = href.slice("resource://".length);
+      const apiBase = resolveApiBase(apiUrl);
+      resolvedHref = `${apiBase}/langgraph/math-agent/files/open?path=${encodeURIComponent(relativePath)}`;
+    }
+
+    return (
+        <a
+        className={cn(
+          "text-primary font-medium underline underline-offset-4 break-all",
+          className,
+        )}
+        href={resolvedHref}
+        target="_blank"
+        rel="noreferrer"
+        {...props}
+      />
+    );
+  },
   blockquote: ({ className, ...props }: { className?: string }) => (
     <blockquote
       className={cn("border-l-2 pl-6 italic", className)}
@@ -241,15 +265,17 @@ const defaultComponents: any = {
       </code>
     );
   },
-};
+});
 
 const MarkdownTextImpl: FC<{ children: string }> = ({ children }) => {
+  const [apiUrl] = useQueryState("apiUrl");
+
   return (
-    <div className="markdown-content">
+    <div className="markdown-content min-w-0 w-full max-w-full overflow-hidden text-left">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
-        components={defaultComponents}
+        components={createComponents(apiUrl)}
       >
         {children}
       </ReactMarkdown>

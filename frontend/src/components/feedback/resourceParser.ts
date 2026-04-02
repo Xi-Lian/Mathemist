@@ -84,8 +84,13 @@ export function parseResourcesFromResponse(content: string): ParsedResource[] {
       continue;
     }
 
-    if (line.startsWith("文件路径:")) {
-      const source = line.slice("文件路径:".length).trim();
+    if (/^-?\s*文件路径[:：]/.test(line)) {
+      const sourceText = line
+        .replace(/^- /, "")
+        .replace(/^文件路径[:：]/, "")
+        .trim();
+      const markdownLinkMatch = sourceText.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      const source = markdownLinkMatch?.[1]?.trim() || sourceText;
       const normalizedTitle = normalizeTitle(pendingTitle || source || "未知资源");
       const resourceType = inferResourceType(currentCategory);
       const resourceId = createResourceId(source, resourceType, normalizedTitle);

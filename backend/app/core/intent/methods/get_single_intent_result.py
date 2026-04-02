@@ -31,7 +31,8 @@ class _GetSingleIntentResultMixin:
             "intents": [
                 {"type": primary_intent, "confidence": 0.9},
                 {"type": self.INTENT_SEARCH, "confidence": 0.1},
-                {"type": self.INTENT_VISUALIZATION, "confidence": 0.1}
+                {"type": self.INTENT_VISUALIZATION, "confidence": 0.1},
+                {"type": self.INTENT_CONVERSATION, "confidence": 0.1},
             ],
             "current_step": "intent_understanding",
             "error": error_msg

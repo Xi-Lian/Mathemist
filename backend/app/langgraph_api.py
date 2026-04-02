@@ -14,7 +14,7 @@ LangGraph API模块
 
 import logging
 from fastapi import APIRouter
-from app.api.routes import assistants, threads, runs, users
+from app.api.routes import assistants, threads, runs, users, files
 from app.utils.constants import (
     ASSISTANT_ID,
     ASSISTANT_NAME,
@@ -33,6 +33,7 @@ router.include_router(assistants.router, prefix="/assistants")
 router.include_router(threads.router, prefix="/threads")
 router.include_router(runs.router, prefix="/threads")
 router.include_router(users.router)
+router.include_router(files.router, prefix="/files")
 
 
 @router.get("/info")

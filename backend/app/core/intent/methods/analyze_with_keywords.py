@@ -70,8 +70,11 @@ class _AnalyzeWithKeywordsMixin:
         user_needs = self._generate_user_needs(user_input, resource_types)
         print(f"📋 生成的用户需求: {user_needs}")
         
+        prefer_search_for_resource_request = self._should_prefer_search_for_resource_request(user_input, resource_types)
+        print(f"📋 资源型短语优先搜索: {prefer_search_for_resource_request}")
+
         # 确定意图
-        # 优先级：修改意见 > 内容生成+教案 > 内容生成 > 资源获取+教案 > 资源获取 > 关键词
+        # 优先级：修改意见 > 明确生成 > 资源获取 > 资源型短语默认搜索 > 关键词
         if has_revision_request:
             # 修改意见请求，使用generate_lesson_plan意图
             print("🎯 识别到修改意见，使用generate_lesson_plan意图")
@@ -102,6 +105,14 @@ class _AnalyzeWithKeywordsMixin:
             return self._get_single_intent_result(
                 self.INTENT_SEARCH,
                 "识别到资源获取指令词",
+                user_needs,
+                resource_types
+            )
+        elif prefer_search_for_resource_request:
+            print("🎯 识别到资源型短语，默认使用search意图")
+            return self._get_single_intent_result(
+                self.INTENT_SEARCH,
+                "识别到资源型短语",
                 user_needs,
                 resource_types
             )

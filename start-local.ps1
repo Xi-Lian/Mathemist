@@ -47,12 +47,51 @@ function Import-DotEnv {
     }
 }
 
+function Test-PortAvailable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$Port
+    )
+
+    try {
+        $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)
+        $listener.Start()
+        $listener.Stop()
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Get-AvailablePort {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$PreferredPort,
+        [int]$MaxAttempts = 20
+    )
+
+    $port = $PreferredPort
+    for ($i = 0; $i -lt $MaxAttempts; $i++) {
+        if (Test-PortAvailable -Port $port) {
+            return $port
+        }
+        $port++
+    }
+
+    throw "No available port found starting from $PreferredPort"
+}
+
 Import-DotEnv -Path $EnvFile
 
 if (-not $env:HOST) { $env:HOST = "0.0.0.0" }
 if (-not $env:PORT) { $env:PORT = "8000" }
 if (-not $env:FRONTEND_PORT) { $env:FRONTEND_PORT = "3000" }
-if (-not $env:NEXT_PUBLIC_API_URL) { $env:NEXT_PUBLIC_API_URL = "http://localhost:$($env:PORT)" }
+if (-not (Test-PortAvailable -Port ([int]$env:FRONTEND_PORT))) {
+    $originalFrontendPort = [int]$env:FRONTEND_PORT
+    $env:FRONTEND_PORT = [string](Get-AvailablePort -PreferredPort ($originalFrontendPort + 1))
+    Write-Host "Frontend port $originalFrontendPort is in use. Switched to $($env:FRONTEND_PORT)." -ForegroundColor Yellow
+}
+if (-not $env:NEXT_PUBLIC_API_URL) { $env:NEXT_PUBLIC_API_URL = "http://localhost:$($env:PORT)/langgraph/math-agent" }
 if (-not $env:NEXT_PUBLIC_ASSISTANT_ID) { $env:NEXT_PUBLIC_ASSISTANT_ID = "math-agent" }
 if (-not $env:PYTHONIOENCODING) { $env:PYTHONIOENCODING = "utf-8" }
 if (-not $env:PYTHONUTF8) { $env:PYTHONUTF8 = "1" }

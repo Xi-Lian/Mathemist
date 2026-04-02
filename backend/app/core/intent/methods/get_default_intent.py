@@ -18,13 +18,14 @@ class _GetDefaultIntentMixin:
             resource_types = []
         
         return {
-            "intent": self.INTENT_SEARCH,
+            "intent": self.INTENT_CONVERSATION,
             "user_needs": user_needs,
             "resource_types": resource_types,
             "intents": [
-                {"type": self.INTENT_SEARCH, "confidence": 0.9},
+                {"type": self.INTENT_CONVERSATION, "confidence": 0.9},
+                {"type": self.INTENT_SEARCH, "confidence": 0.2},
                 {"type": self.INTENT_LESSON_PLAN, "confidence": 0.1},
-                {"type": self.INTENT_VISUALIZATION, "confidence": 0.1}
+                {"type": self.INTENT_VISUALIZATION, "confidence": 0.1},
             ],
             "current_step": "intent_understanding",
             "error": error_msg

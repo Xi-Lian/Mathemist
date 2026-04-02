@@ -74,23 +74,21 @@ class _ReviseLessonPlanMixin:
             
             session["lesson_plan"] = revised_lesson_plan
             
-            response = f"""✅ 教案修改成功！
-
-**您的修改意见：**
-{revision_request}
-
-**修订后的教案摘要：**
-{self._generate_summary(revised_lesson_plan)}
-
----
-
-**您可以：**
-1. ✏️ 继续提出修改意见，我会帮您进一步调整
-2. 📥 导出教案（支持 Markdown、HTML、Word、PDF 格式）
-3. 👁️ 查看完整教案内容
-4. 🔄 确认教案完成
-
-请告诉我您的想法！"""
+            try:
+                response = self._generate_lesson_plan_dialogue(
+                    mode="revised",
+                    topic=session.get("collected_info", {}).get("topic", "当前教案"),
+                    progress=100,
+                    collected_info=session.get("collected_info", {}),
+                    missing_items=[],
+                    extra_context=(
+                        f"本轮修改意见：{revision_request}\n"
+                        f"修订后摘要：{self._generate_summary(revised_lesson_plan)}"
+                    ),
+                )
+            except Exception as exc:
+                print(f"⚠️ 教案修改回复生成失败，使用降级文案: {exc}")
+                response = "我已经按你的意见把教案改完了。你可以继续提修改意见，也可以让我展示完整内容或直接导出。"
             
             session["conversation_history"].append({"role": "assistant", "content": response})
             

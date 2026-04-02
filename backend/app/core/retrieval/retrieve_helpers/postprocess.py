@@ -27,6 +27,17 @@ SEMANTIC_RESOURCE_HINTS = [
     "课例",
     "GGB",
 ]
+SPECIFIC_THEME_GUARD_BROAD_THEMES = {
+    "函数",
+    "数学",
+    "代数",
+    "几何",
+    "统计",
+    "概率",
+    "函数的概念",
+    "函数的性质",
+    "函数应用",
+}
 
 
 def apply_difficulty_filter(results, difficulty_info, quantity_limit):
@@ -285,6 +296,60 @@ def apply_quantity_limit(results, quantity_limit, core_theme, query="", resource
     print(f"     ✅ V33.0数量限制应用完成，返回 {len(prioritized_results['documents'][0])} 条结果")
     print(f"     ✅ 其中包含核心主题的资源: {min(len(core_theme_resources), quantity_limit)} 条")
     return prioritized_results
+
+
+def enforce_specific_theme_precision(classified_resources, core_theme):
+    themes = [theme.strip() for theme in (core_theme or "").split(",") if theme.strip()]
+    if not themes or not any(theme not in SPECIFIC_THEME_GUARD_BROAD_THEMES for theme in themes):
+        return classified_resources
+
+    rebuilt = {}
+    kept_count = 0
+    removed_count = 0
+
+    for key, value in classified_resources.items():
+        if not isinstance(value, list) or key.startswith("_"):
+            rebuilt[key] = value
+            continue
+
+        kept_resources = []
+        for resource in value:
+            if not isinstance(resource, dict):
+                continue
+            if _resource_matches_specific_theme(resource, themes):
+                kept_resources.append(resource)
+            else:
+                removed_count += 1
+        rebuilt[key] = kept_resources
+        kept_count += len(kept_resources)
+
+    rebuilt["_precision_guard"] = {
+        "applied": True,
+        "core_theme": ",".join(themes),
+        "kept_count": kept_count,
+        "removed_count": removed_count,
+    }
+    return rebuilt
+
+
+def _resource_matches_specific_theme(resource, themes):
+    if resource.get("is_core_match"):
+        return True
+
+    matched_themes = resource.get("matched_themes", []) or []
+    related_themes = resource.get("related_themes", []) or []
+    mentioned_themes = resource.get("mentioned_themes", []) or []
+    if any(theme in matched_themes or theme in related_themes or theme in mentioned_themes for theme in themes):
+        return True
+
+    title = resource.get("title", "") or ""
+    content = resource.get("content", "") or ""
+    source = resource.get("source", "") or ""
+    knowledge = resource.get("知识点", "") or ""
+    metadata = resource.get("metadata", {}) if isinstance(resource.get("metadata"), dict) else {}
+    knowledge_tags = metadata.get("知识点标签", "") or metadata.get("知识点", "") or ""
+    haystack = f"{title} {content} {source} {knowledge} {knowledge_tags}"
+    return any(theme in haystack for theme in themes)
 
 
 def _matches_difficulty(difficulty_level, resource_difficulty, meta):
