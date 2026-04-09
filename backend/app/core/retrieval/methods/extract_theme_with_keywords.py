@@ -127,49 +127,13 @@ class _ExtractThemeWithKeywordsMixin:
                     print(f"   📝 增强应用场景识别：添加'{app_theme}'主题")
                     matched_themes.append(app_theme)
         
-        # 动态语义关联检测：如果仍然没有匹配到主题，尝试使用向量相似度查找相关资源
+        # 动态语义关联检测：如果仍然没有匹配到主题，不再回退到函数相关主题
         if not matched_themes:
-            print(f"   🔍 尝试动态语义关联检测...")
+            print(f"   🔍 未匹配到已配置主题，不执行函数主题兜底")
             # 提取查询的核心概念（去除常见词）
             query_clean = query.replace("帮我找", "").replace("教案", "").replace("的", "").replace("一下", "").strip()
             if query_clean:
-                # 特殊处理：如果查询包含"图像"，尝试匹配函数相关主题
-                if "图像" in query_clean:
-                    print(f"   📝 检测到'图像'关键词，尝试匹配函数相关主题")
-                    # 遍历所有函数相关主题
-                    for theme in self.all_themes:
-                        if "函数" in theme:
-                            matched_themes.append(theme)
-                            print(f"   ✓ 添加函数相关主题: '{theme}'")
-                            break
-                # 特殊处理：如果查询包含"图像"但还没有匹配到主题，尝试匹配三角函数相关主题
-                if not matched_themes and "图像" in query_clean:
-                    print(f"   📝 尝试匹配三角函数相关主题")
-                    for theme in self.all_themes:
-                        if "三角" in theme:
-                            matched_themes.append(theme)
-                            print(f"   ✓ 添加三角函数相关主题: '{theme}'")
-                            break
-                # 特殊处理：如果查询包含"函数"，尝试匹配函数相关主题
-                if not matched_themes and "函数" in query_clean:
-                    print(f"   📝 检测到'函数'关键词，尝试匹配函数相关主题")
-                    for theme in self.all_themes:
-                        if "函数" in theme:
-                            matched_themes.append(theme)
-                            print(f"   ✓ 添加函数相关主题: '{theme}'")
-                            break
-                # 特殊处理：如果查询包含"概念"，尝试匹配函数概念主题
-                if not matched_themes and "概念" in query_clean:
-                    print(f"   📝 检测到'概念'关键词，尝试匹配函数概念主题")
-                    for theme in self.all_themes:
-                        if "函数的概念" in theme:
-                            matched_themes.append(theme)
-                            print(f"   ✓ 添加函数概念主题: '{theme}'")
-                            break
-                # 如果仍然没有匹配到主题，使用查询本身作为主题
-                if not matched_themes:
-                    print(f"   📝 使用查询本身作为主题: '{query_clean}'")
-                    matched_themes.append(query_clean)
+                print(f"   📝 查询核心文本未命中配置主题: '{query_clean}'")
         
         # V53.1改进：通用主题处理，不再硬编码具体主题
         # 如果没有匹配到任何具体主题，但查询包含主题关键词和资源类型词，返回相应的通用主题
@@ -193,11 +157,6 @@ class _ExtractThemeWithKeywordsMixin:
                         matched_themes.append(theme)
                     break
             
-            # V61.0改进：如果仍然没有匹配到主题，添加默认主题"函数"
-            if not matched_themes:
-                print(f"   📝 默认主题处理：添加'函数'主题")
-                matched_themes.append("函数")
-        
-        result = ",".join(matched_themes) if matched_themes else "函数"
+        result = ",".join(matched_themes) if matched_themes else ""
         print(f"   ✅ 关键词匹配结果: '{result}'")
         return result

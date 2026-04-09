@@ -70,8 +70,36 @@ def simplify_themes(core_themes):
         else:
             themes_to_search.append(theme)
 
+    themes_to_search = _deduplicate_broad_themes(themes_to_search)
     print(f"   📝 使用简化主题进行检索: {themes_to_search}")
     return themes_to_search
+
+
+def _deduplicate_broad_themes(themes):
+    deduped = []
+    for theme in themes:
+        if theme not in deduped:
+            deduped.append(theme)
+
+    family_groups = [
+        {"概率", "统计", "概率与统计"},
+    ]
+    for family in family_groups:
+        present = [theme for theme in deduped if theme in family]
+        if len(present) <= 1:
+            continue
+
+        preferred = None
+        for candidate in present:
+            if any(other != candidate and candidate in other for other in present):
+                preferred = candidate
+        if preferred is None:
+            preferred = max(present, key=len)
+
+        deduped = [theme for theme in deduped if theme not in family or theme == preferred]
+        print(f"   🧹 合并同族宽泛主题: {present} -> 保留 '{preferred}'")
+
+    return deduped
 
 
 def _compute_retrieval_budget(base_count, multi_theme_count, resource_types):

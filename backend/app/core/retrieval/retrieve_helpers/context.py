@@ -2,6 +2,7 @@ from .._shared import *
 
 
 NON_FUNCTION_THEMES = [
+    "复数",
     "立体几何",
     "空间点线面",
     "空间几何体",
@@ -41,6 +42,9 @@ FUNCTION_RELATED_THEME_NAMES = [
 ]
 
 NON_FUNCTION_KEYWORDS = [
+    "复数",
+    "虚数",
+    "复平面",
     "立体几何",
     "空间几何",
     "空间向量",
@@ -170,16 +174,12 @@ def extract_query_context(retriever, query, quantity_limit):
 
     scope_notice = None
     if has_non_function_theme(retriever, query, core_theme):
-        scope_notice = {
-            "scope": "function_only",
-            "message": "当前资源库以函数板块为主，已返回最相关的函数板块资源作为降级结果。",
-            "original_query": query,
-            "detected_theme": core_theme,
-        }
-        retriever._current_scope_notice = scope_notice
-        print("⚠️ 检测到非函数主题：改为降级检索，不再直接空返回")
-        core_theme = ""
-        core_themes = []
+        print("⚠️ 检测到非函数主题：当前策略直接返回空结果")
+        return None, retriever._get_empty_result()
+
+    if not core_themes:
+        print("⚠️ 未识别到受支持的核心主题：直接返回空结果")
+        return None, retriever._get_empty_result()
 
     question_type = query_conditions["question_type"]
     difficulty = query_conditions["difficulty"]
@@ -219,14 +219,23 @@ def has_non_function_theme(retriever, query, core_theme):
 
     theme_list = [t.strip() for t in core_theme.split(",") if t.strip()]
     query_lower = query.lower()
+    supported_non_function_themes = {
+        theme
+        for theme, info in retriever.knowledge_hierarchy.items()
+        if info.get("parent_topic") != "函数"
+    }
 
     for theme in theme_list:
+        if theme in supported_non_function_themes:
+            continue
         if theme in NON_FUNCTION_THEMES:
             return True
         if theme in retriever.knowledge_hierarchy and theme not in FUNCTION_RELATED_THEME_NAMES:
             return True
 
-    if any(keyword in query_lower for keyword in NON_FUNCTION_KEYWORDS):
+    if any(keyword in query_lower for keyword in NON_FUNCTION_KEYWORDS) and not any(
+        keyword in query_lower for keyword in supported_non_function_themes
+    ):
         return True
 
     return False

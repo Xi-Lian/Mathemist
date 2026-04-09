@@ -17,7 +17,7 @@ def evaluate_resource_match(
 ):
     multi_theme_info = metadata.get("_matched_themes", [])
     if multi_theme_info:
-        return evaluate_multi_theme_match(doc, metadata, base_relevance, core_theme, multi_theme_info)
+        return evaluate_multi_theme_match(retriever, doc, metadata, base_relevance, core_theme, multi_theme_info)
     if core_theme:
         if resource_type == "exercise":
             return evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme, query, question_type, multi_theme_info)

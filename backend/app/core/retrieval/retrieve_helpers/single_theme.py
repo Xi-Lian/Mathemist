@@ -118,13 +118,14 @@ def execute_single_theme_retrieval(
     resource_types,
     question_type,
 ):
+    if not core_theme and not has_specific_resource_types(resource_types):
+        print("⚠️ 未识别到核心主题，停止检索并返回空结果")
+        return query, core_theme, None
+
     if has_specific_resource_types(resource_types):
         query_to_use = query
         print(f"\n🔍 V83.0执行资源类型查询，使用原始查询作为查询文本: '{query_to_use}'")
     else:
-        if not core_theme:
-            core_theme = "函数"
-            print(f"   📝 V66.0使用默认主题: '{core_theme}'")
         query_to_use = core_theme
         print(f"\n🔍 执行单主题检索，查询: '{query_to_use}'")
 

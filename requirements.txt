@@ -3,3 +3,5 @@ langchain-community                  ==  0.0.38
 langchain-core                       ==  0.1.53
 langchain-text-splitters             ==  0.0.2
 chromadb                             ==  1.4.1
+pandas>=2.0.0
+openpyxl>=3.1.0

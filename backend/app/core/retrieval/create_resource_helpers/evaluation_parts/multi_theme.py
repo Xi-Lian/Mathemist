@@ -1,8 +1,10 @@
 from ..._shared import *
+from .common import BROAD_THEME_HINTS
 
 
-def evaluate_multi_theme_match(doc, metadata, base_relevance, core_theme, multi_theme_info):
+def evaluate_multi_theme_match(retriever, doc, metadata, base_relevance, core_theme, multi_theme_info):
     query_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
+    specific_theme_query = any(theme not in BROAD_THEME_HINTS for theme in query_themes)
     has_query_theme_in_multi = any(qt in multi_theme_info for qt in query_themes)
     print(f"   🔍 V30.1调试: query_themes={query_themes}, multi_theme_info={multi_theme_info}, has_query_theme_in_multi={has_query_theme_in_multi}")
 
@@ -16,9 +18,9 @@ def evaluate_multi_theme_match(doc, metadata, base_relevance, core_theme, multi_
         matched_themes = multi_theme_info
         theme_distances = metadata.get("_theme_distances", {})
         relevance_score = 1 / (1 + (sum(theme_distances.values()) / len(theme_distances))) if theme_distances else 0.8
-        valid_themes = _filter_valid_themes(doc, metadata, core_theme, matched_themes)
+        valid_themes = _filter_valid_themes(retriever, doc, metadata, core_theme, matched_themes)
 
-    if not valid_themes and matched_themes:
+    if not valid_themes and matched_themes and not specific_theme_query:
         valid_themes = matched_themes[:1]
         print(f"    ⚠️ 多主题检索：无有效主题，使用备选主题: {valid_themes}")
 
@@ -68,7 +70,7 @@ def evaluate_multi_theme_match(doc, metadata, base_relevance, core_theme, multi_
     }
 
 
-def _filter_valid_themes(doc, metadata, core_theme, matched_themes):
+def _filter_valid_themes(retriever, doc, metadata, core_theme, matched_themes):
     theme_matcher_v90 = get_theme_matcher_v90()
     valid_themes = []
     query_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
@@ -94,9 +96,34 @@ def _filter_valid_themes(doc, metadata, core_theme, matched_themes):
                 print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（包含排除词 '{word}'）")
                 break
 
-        if not has_exclusion_word:
+        if has_exclusion_word:
+            print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（包含排除词）")
+            continue
+
+        if _has_theme_keyword_hit(retriever, theme, metadata, doc):
             valid_themes.append(theme)
         else:
-            print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（包含排除词）")
+            print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（未命中主题关键词）")
 
     return valid_themes
+
+
+def _has_theme_keyword_hit(retriever, theme, metadata, doc):
+    title = metadata.get("title", "") or ""
+    source_file = metadata.get("source_file", "") or ""
+    knowledge_tags = metadata.get("知识点", "") or metadata.get("知识点标签", "") or ""
+    haystack = f"{title} {source_file} {knowledge_tags} {doc or ''}"
+
+    keywords = [theme]
+    if retriever and getattr(retriever, "config_loader", None):
+        keywords.extend(retriever.config_loader.get_theme_keywords(theme))
+
+    deduped_keywords = []
+    seen = set()
+    for keyword in keywords:
+        normalized = (keyword or "").strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            deduped_keywords.append(normalized)
+
+    return any(keyword in haystack for keyword in deduped_keywords)

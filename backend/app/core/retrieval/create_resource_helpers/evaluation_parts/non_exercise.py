@@ -13,6 +13,17 @@ def evaluate_non_exercise_match(retriever, doc, metadata, base_relevance, resour
             lesson_content=doc,
             metadata=metadata,
         )
+        # 对 V90 主题体系未覆盖的新板块，允许基于标题/路径/标签/正文的直接命中兜底展示。
+        if specific_theme_query and not precise_match_result["is_core_match"] and has_theme_text_hit(core_theme, metadata, doc):
+            precise_match_result["matched_themes"] = [theme for theme in core_theme.split(",") if theme.strip()]
+            precise_match_result["core_theme"] = precise_match_result["matched_themes"][0] if precise_match_result["matched_themes"] else core_theme
+            precise_match_result["related_themes"] = precise_match_result["matched_themes"][1:] if len(precise_match_result["matched_themes"]) > 1 else []
+            precise_match_result["is_core_match"] = True
+            precise_match_result["match_level"] = "core"
+            precise_match_result["should_show"] = True
+            precise_match_result["relevance_score"] = max(precise_match_result.get("relevance_score", 0.0), 0.85)
+            precise_match_result["overall_score"] = max(precise_match_result.get("overall_score", 0.0), precise_match_result["relevance_score"])
+            precise_match_result["explanation"] = f"文本直接命中主题：{core_theme}"
         if specific_theme_query and not precise_match_result["is_core_match"] and precise_match_result["match_level"] not in {"related", "extended"}:
             precise_match_result["should_show"] = False
             precise_match_result["relevance_score"] = 0.0
