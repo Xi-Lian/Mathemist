@@ -332,7 +332,7 @@ async def stream_math_agent(request: MathAgentRequest):
 # 添加 LangGraph API 路由（必须在 LangServe 之前）
 app.include_router(langgraph_api_router)
 
-# 添加反馈 API 路由
+# 添加 API 路由
 app.include_router(feedback_router)
 
 # 添加 LangServe 路由
