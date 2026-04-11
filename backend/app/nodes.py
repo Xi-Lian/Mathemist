@@ -24,6 +24,16 @@ from .core import (
     GGBDesignAdvisor,
 )
 from .core.unified_lesson_plan_system import unified_lesson_plan_system
+from .search_agent_runtime import (
+    build_search_response_payload,
+    count_retrieved_resources,
+    execute_search_tool_calls,
+    get_empty_retrieved_resources,
+    has_any_retrieved_resources,
+    merge_retrieved_resources,
+    normalize_query_inputs,
+    retry_search_until_results,
+)
 from .state import MathAgentState
 
 # 缓存核心实例，避免重复创建
@@ -41,21 +51,6 @@ def get_resource_retriever() -> ResourceRetriever:
     if _cached_retriever is None:
         _cached_retriever = ResourceRetriever()
     return _cached_retriever
-
-
-def _get_empty_retrieved_resources() -> Dict[str, Any]:
-    """统一的空检索结果结构，避免 None 传播到下游节点。"""
-    return {
-        "theory_resources": [],
-        "lesson_plan_patterns": [],
-        "exercise_resources": [],
-        "visualization_examples": [],
-        "general_resources": [],
-        "courseware_resources": [],
-        "lesson_case_resources": [],
-        "ggb_resources": [],
-        "syllabus_resources": [],
-    }
 
 
 def _dict_to_langchain_message(message: Dict[str, Any]):
@@ -128,59 +123,61 @@ def _messages_to_chat_history(messages: List[Dict[str, Any]]) -> List[Dict[str, 
     return history
 
 
-def _has_any_retrieved_resources(retrieved_resources: Dict[str, Any]) -> bool:
-    if not isinstance(retrieved_resources, dict):
-        return False
-    for value in retrieved_resources.values():
-        if isinstance(value, list) and value:
-            return True
-    return False
-
-
 def _generate_ai_reply(model: Any, system_prompt: str, conversation_messages: List, fallback: str) -> str:
     response = model.invoke([SystemMessage(content=system_prompt), *conversation_messages])
     content = (getattr(response, "content", "") or "").strip()
     return content or fallback
 
 
-def _build_search_response_payload(
-    query: str,
-    resource_types: List[str] | None,
-    retrieved_resources: Dict[str, Any],
-) -> str:
-    builder = ResponseBuilder()
-    return builder._build_search_response(
-        {
-            "intent": "search",
-            "user_input": query,
-            "resource_types": resource_types or [],
-            "retrieved_resources": retrieved_resources,
-        }
-    )
-
-
 @tool
 def search_resources_tool(
     query: str,
     resource_types: List[str] | None = None,
+    queries: List[str] | None = None,
 ) -> str:
     """
     搜索本地数学资源库中的教案、习题、课件、课例、GGB 与教学大纲。
     当用户明确要查找、推荐、搜索现有资源时调用。
+    可以同时提供 2-4 条语义等价或互补的查询表达，工具会逐条检索并合并结果。
     """
     retriever = get_resource_retriever()
-    retrieved_resources = retriever.retrieve(
-        query=query,
-        intent="search",
-        resource_types=resource_types or None,
-    )
-    formatted_response = _build_search_response_payload(
+    query_candidates = normalize_query_inputs(query, queries)
+    print(f"🧠 search_resources_tool 收到多 query: {query_candidates}, resource_types={resource_types or []}")
+
+    all_results: List[Dict[str, Any]] = []
+    best_query = query
+    best_count = -1
+
+    for idx, candidate_query in enumerate(query_candidates, start=1):
+        print(
+            f"🔎 search_resources_tool 执行查询[{idx}/{len(query_candidates)}]: "
+            f"{candidate_query!r}, resource_types={resource_types or []}"
+        )
+        candidate_resources = retriever.retrieve(
+            query=candidate_query,
+            intent="search",
+            resource_types=resource_types or None,
+        )
+        if not isinstance(candidate_resources, dict):
+            candidate_resources = get_empty_retrieved_resources()
+        candidate_count = count_retrieved_resources(candidate_resources)
+        print(f"   ↳ 查询[{idx}] 返回资源总数: {candidate_count}")
+        all_results.append(candidate_resources)
+        if candidate_count > best_count:
+            best_query = candidate_query
+            best_count = candidate_count
+            print(f"   ✅ 查询[{idx}] 成为当前最佳结果")
+
+    retrieved_resources = merge_retrieved_resources(all_results)
+    formatted_response = build_search_response_payload(
         query=query,
         resource_types=resource_types,
-        retrieved_resources=retrieved_resources if isinstance(retrieved_resources, dict) else _get_empty_retrieved_resources(),
+        retrieved_resources=retrieved_resources if isinstance(retrieved_resources, dict) else get_empty_retrieved_resources(),
     )
     payload = {
-        "query": query,
+        "query": best_query,
+        "original_query": query,
+        "queries": query_candidates,
         "resource_types": resource_types or [],
         "retrieved_resources": retrieved_resources,
         "formatted_response": formatted_response,
@@ -276,7 +273,7 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
     if skip_retrieval:
         print("⏭️ 当前输入为闲聊/非检索请求，跳过资源检索")
         return {
-            "retrieved_resources": _get_empty_retrieved_resources(),
+            "retrieved_resources": get_empty_retrieved_resources(),
             "current_step": "resource_retrieval",
             "error": None
         }
@@ -316,7 +313,7 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
         clarified_topic=clarified_topic,
     )
     if not isinstance(retrieved_resources, dict):
-        retrieved_resources = _get_empty_retrieved_resources()
+        retrieved_resources = get_empty_retrieved_resources()
 
     return {
         "retrieved_resources": retrieved_resources,
@@ -348,9 +345,11 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
             "2. 如果用户只是在打招呼、闲聊、确认、或者主题还很模糊，就直接对话，不要调用工具。\n"
             "3. 你必须结合当前对话历史理解省略信息。如果用户这轮没重复主题，但上文已经明确主题或资源类型，要先在脑中补全后再判断。\n"
             "4. 如果主题仍然不够明确，先反问确认需求，不要瞎搜。\n"
-            "5. 如果调用了工具，传给 search_resources_tool 的 query 必须是补全上下文后的明确查询，而不是残缺短句。\n"
-            "6. 如果调用了工具，优先使用工具返回的 formatted_response 直接回复，不要重复编造资源。\n"
-            "7. 回复说人话，简洁。"
+            "5. 如果调用了工具，必须提供一条主查询 query；当主查询可能不稳定时，再额外提供 1-3 条 queries 作为语义等价或互补表达。\n"
+            "6. 这些 queries 必须由你根据语义理解自行生成，不要机械复制，也不要依赖固定模板。\n"
+            "7. 多 query 的目标是覆盖不同自然表达，例如是否保留“的”、是否保留并列标点、是否用更完整的主题短语，但都必须忠实于用户原意。\n"
+            "8. 如果调用了工具，优先使用工具返回的 formatted_response 直接回复，不要重复编造资源。\n"
+            "9. 回复说人话，简洁。"
         )
     )
 
@@ -358,8 +357,10 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
     model_response = llm_with_tools.invoke([system_message, *conversation_messages])
 
     tool_calls = getattr(model_response, "tool_calls", None) or []
+    print(f"🧰 SEARCH_AGENT_NODE tool_calls 数量: {len(tool_calls)}")
     if not tool_calls:
         response_text = (getattr(model_response, "content", "") or "").strip()
+        print(f"⚠️ SEARCH_AGENT_NODE 未调用工具，模型直接回复: {response_text[:300]}")
         if not response_text:
             response_text = "你先告诉我是想搜资源、生成教案，还是做可视化，我再继续。"
         return {
@@ -371,27 +372,20 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
             "intent": "conversation",
         }
 
-    tool_outputs: List[str] = []
-    retrieved_resources = _get_empty_retrieved_resources()
-    response_text = ""
+    retrieved_resources, response_text, best_result_count, _ = retry_search_until_results(
+        llm_with_tools=llm_with_tools,
+        system_message=system_message,
+        conversation_messages=conversation_messages,
+        initial_tool_calls=tool_calls,
+        search_tool=search_resources_tool,
+        original_user_query=state.user_input,
+        max_search_rounds=3,
+    )
 
-    for tool_call in tool_calls:
-        if tool_call.get("name") != search_resources_tool.name:
-            continue
-        tool_result = search_resources_tool.invoke(tool_call.get("args", {}))
-        tool_outputs.append(tool_result)
-        try:
-            parsed = json.loads(tool_result)
-        except Exception:
-            parsed = {}
-        if isinstance(parsed, dict):
-            if isinstance(parsed.get("retrieved_resources"), dict):
-                retrieved_resources = parsed["retrieved_resources"]
-            formatted_response = parsed.get("formatted_response")
-            if isinstance(formatted_response, str) and formatted_response.strip():
-                response_text = formatted_response.strip()
+    print(f"📦 SEARCH_AGENT_NODE 最终选中资源总数: {count_retrieved_resources(retrieved_resources)}")
 
-    if not _has_any_retrieved_resources(retrieved_resources):
+    if not has_any_retrieved_resources(retrieved_resources):
+        print("⚠️ SEARCH_AGENT_NODE 最终判定为无检索结果，进入没找到兜底回复")
         response_text = _generate_ai_reply(
             model,
             (
@@ -403,6 +397,7 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
             "这次在本地资源库里没找到合适结果。你可以补充资源类型、年级或更具体的主题，我再帮你缩小范围。",
         )
     elif not response_text:
+        print("ℹ️ SEARCH_AGENT_NODE 检索到结果，但 formatted_response 为空，进入简短说明回复")
         response_text = _generate_ai_reply(
             model,
             (

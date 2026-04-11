@@ -1,7 +1,26 @@
 from .._shared import *
+import re
 
 
 class _ExtractCoreThemeMixin:
+    @staticmethod
+    def _fallback_theme_from_cleaned_query(cleaned_query: str) -> str:
+        candidate = re.sub(r"\s+", "", cleaned_query or "")
+        candidate = re.sub(r"^(给我|帮我找|帮我|找|推荐|来|要)", "", candidate)
+        candidate = re.sub(r"^\d+", "", candidate)
+        candidate = re.sub(r"^[几多少两一二三四五六七八九十百千道个份套题]+", "", candidate)
+        candidate = candidate.strip("，。；：:,.!?！？")
+        if len(candidate) < 2:
+            return ""
+
+        math_markers = (
+            "函数", "三角", "正弦", "余弦", "正切", "对数", "指数", "幂函数",
+            "导数", "数列", "概率", "统计", "圆锥曲线", "立体几何", "向量", "解析几何"
+        )
+        if any(marker in candidate for marker in math_markers):
+            return candidate
+        return ""
+
     def _extract_core_theme(self, query: str) -> str:
         """
         提取核心主题（使用LLM动态提取，支持完整主题识别，支持多个主题）
@@ -120,7 +139,12 @@ class _ExtractCoreThemeMixin:
             if keyword_theme:
                 print("✅ 使用从原始查询提取的主题作为核心主题")
                 return keyword_theme
-        
+
+        heuristic_theme = self._fallback_theme_from_cleaned_query(cleaned_query)
+        if has_resource_type and heuristic_theme:
+            print(f"   ✅ 启发式提取主题: '{heuristic_theme}'")
+            return heuristic_theme
+
         # 8. 备用方案：使用LLM动态提取主题
         try:
             print("🤖 尝试使用LLM提取主题...")

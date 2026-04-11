@@ -1,19 +1,34 @@
 from .._shared import *
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 
 class _AppendResourceInfoMixin:
+    def _encode_http_url(self, source: str) -> str:
+        normalized_source = (source or "").replace("\\", "/")
+        parsed = urlsplit(normalized_source)
+        normalized_path = unquote(parsed.path).replace("\\", "/").replace("%5C", "/").replace("%5c", "/")
+        encoded_path = quote(normalized_path, safe="/:%-._~!$&'()*+,;=@")
+        encoded_query = quote(parsed.query, safe="=&%-._~!$'()*+,;:@/?")
+        encoded_fragment = quote(parsed.fragment, safe="%-._~!$&'()*+,;=:@/?")
+        return urlunsplit((parsed.scheme, parsed.netloc, encoded_path, encoded_query, encoded_fragment))
+
     def _build_source_markdown(self, source: str) -> str:
         source = (source or "").strip()
         if not source:
             return "未提供文件路径"
 
         if source.startswith(("http://", "https://")):
-            return f"[打开文件]({source})"
+            return f"[打开文件]({self._encode_http_url(source)})"
 
-        from urllib.parse import quote
+        normalized_source = source.replace("\\", "/")
+        return f"[{source}](resource://{normalized_source})"
 
-        encoded = quote(source.replace("\\", "/"), safe="/")
-        return f"[{source}](resource://{encoded})"
+    @staticmethod
+    def _pick_display_source(resource: Dict[str, Any]) -> str:
+        original_file_url = (resource.get("original_file_url") or "").strip()
+        cloud_url = (resource.get("cloud_url") or "").strip()
+        source = (resource.get("source") or "").strip()
+        return cloud_url or original_file_url or source
 
     def _append_resource_info(
         self,
@@ -41,6 +56,7 @@ class _AppendResourceInfoMixin:
         content = resource.get("content", "")
         relevance = resource.get("relevance", 0)
         source = resource.get("source", "")
+        display_source = self._pick_display_source(resource)
         matched_themes = resource.get("matched_themes", [])
         matched_theme_count = resource.get("matched_theme_count", 0)
         
@@ -73,8 +89,9 @@ class _AppendResourceInfoMixin:
             category_name,
             title,
             content,
-            scenario
-        ).replace("\n", " ").strip()
+            scenario,
+            resource
+        ).strip()
 
         # 获取用户原始查询，用于提取所有查询主题
         user_input = ""
@@ -161,7 +178,12 @@ class _AppendResourceInfoMixin:
             reason_parts.append(match_explanation)
 
         response_parts.append(f"- 适配说明：{'；'.join(reason_parts)}")
-        response_parts.append(f"- 内容预览：{processed_content}")
+        if "\n" in processed_content:
+            response_parts.append("- 内容预览：")
+            for line in processed_content.splitlines():
+                response_parts.append(line if line else "")
+        else:
+            response_parts.append(f"- 内容预览：{processed_content}")
 
         if self.show_debug_scores:
             debug_parts = []
@@ -176,5 +198,21 @@ class _AppendResourceInfoMixin:
             debug_parts.append(f"综合性 {comprehensiveness*100:.1f}%")
             response_parts.append(f"- 调试分数：{' | '.join(debug_parts)}")
 
-        response_parts.append(f"- 文件路径：{self._build_source_markdown(source)}")
+        response_parts.append(f"- 文件路径：{self._build_source_markdown(display_source)}")
+
+        if category_name == "教案资源":
+            cloud_url = (resource.get("cloud_url") or "").strip()
+            original_file_url = (resource.get("original_file_url") or "").strip()
+            original_filename = (resource.get("original_filename") or "").strip()
+            related_file = (resource.get("related_file") or "").strip()
+
+            if cloud_url and cloud_url != display_source:
+                response_parts.append(f"- Markdown链接：{self._build_source_markdown(cloud_url)}")
+
+            if original_file_url and original_file_url != display_source:
+                original_label = original_filename or "原文件"
+                response_parts.append(f"- 原文件链接：[{original_label}]({self._encode_http_url(original_file_url)})")
+
+            if related_file:
+                response_parts.append(f"- 关联文件：`{related_file}`")
         response_parts.append("")

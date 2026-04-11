@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import { FC, memo, useState } from "react";
+import type { ImgHTMLAttributes } from "react";
 import { useQueryState } from "nuqs";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { SyntaxHighlighter } from "@/components/thread/syntax-highlighter";
@@ -72,6 +73,50 @@ const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {
   );
 };
 
+const MarkdownImage: FC<ImgHTMLAttributes<HTMLImageElement>> = ({ alt, src, className, ...props }) => {
+  const [hasError, setHasError] = useState(false);
+  const resolvedSrc = typeof src === "string" ? src : undefined;
+
+  if (!resolvedSrc) {
+    return null;
+  }
+
+  if (hasError) {
+    return (
+      <span className="my-3 block rounded-lg border border-dashed border-zinc-300 p-3 text-sm text-zinc-600">
+        图片加载失败：{alt || "exercise image"}。
+        {" "}
+        <a
+          className="font-medium underline underline-offset-4"
+          href={resolvedSrc}
+          target="_blank"
+          rel="noreferrer"
+        >
+          打开原图
+        </a>
+      </span>
+    );
+  }
+
+  return (
+    <>
+      {/* Remote markdown images are data-driven and cannot use next/image safely here. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={resolvedSrc}
+        alt={alt || "exercise image"}
+        className={cn(
+          "my-3 block max-h-[28rem] w-auto max-w-full rounded-lg border border-zinc-200 bg-white object-contain",
+          className,
+        )}
+        loading="lazy"
+        onError={() => setHasError(true)}
+        {...props}
+      />
+    </>
+  );
+};
+
 const createComponents = (apiUrl?: string | null): any => ({
   h1: ({ className, ...props }: { className?: string }) => (
     <h1
@@ -133,7 +178,13 @@ const createComponents = (apiUrl?: string | null): any => ({
   a: ({ className, href, ...props }: { className?: string; href?: string }) => {
     let resolvedHref = href;
     if (href?.startsWith("resource://")) {
-      const relativePath = href.slice("resource://".length);
+      const rawRelativePath = href.slice("resource://".length);
+      let relativePath = rawRelativePath;
+      try {
+        relativePath = decodeURIComponent(rawRelativePath);
+      } catch {
+        relativePath = rawRelativePath;
+      }
       const apiBase = resolveApiBase(apiUrl);
       resolvedHref = `${apiBase}/langgraph/math-agent/files/open?path=${encodeURIComponent(relativePath)}`;
     }
@@ -151,6 +202,7 @@ const createComponents = (apiUrl?: string | null): any => ({
       />
     );
   },
+  img: (props: ImgHTMLAttributes<HTMLImageElement>) => <MarkdownImage {...props} />,
   blockquote: ({ className, ...props }: { className?: string }) => (
     <blockquote
       className={cn("border-l-2 pl-6 italic", className)}

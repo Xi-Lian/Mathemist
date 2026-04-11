@@ -2,6 +2,50 @@ from .._shared import *
 
 
 class _ParseExerciseTablesMixin:
+    @staticmethod
+    def _normalize_exercise_stem(value: str) -> str:
+        normalized = str(value or '').strip().lower()
+        normalized = normalized.replace('的', '').replace(' ', '')
+        normalized = normalized.replace('（', '(').replace('）', ')')
+        return normalized
+
+    def _load_cloud_exercise_index_map(self) -> Dict[str, Dict[str, str]]:
+        try:
+            import pandas as pd
+        except ImportError:
+            logger.warning("未安装 pandas，跳过云端习题索引映射加载")
+            return {}
+
+        index_map: Dict[str, Dict[str, str]] = {}
+        index_paths = [p for p in sorted(self.project_root.glob('*习题_云端资源汇总表.xlsx')) if not p.name.startswith('~$')]
+        for index_path in index_paths:
+            board_name = index_path.stem.replace('_云端资源汇总表', '')
+            try:
+                dataframe = pd.read_excel(index_path).fillna('')
+            except Exception as e:
+                logger.error(f"读取云端习题索引失败: {index_path}, 错误: {e}")
+                continue
+
+            markdown_rows = dataframe[dataframe['文件名'].astype(str).str.lower().str.endswith('.md')]
+            for _, row in markdown_rows.iterrows():
+                filename = str(row.get('文件名', '')).strip()
+                if not filename:
+                    continue
+                stem = Path(filename).stem
+                normalized_stem = self._normalize_exercise_stem(stem)
+                markdown_url = str(row.get('云端链接', '')).strip()
+                linked_xlsx_url = f"{markdown_url[:-3]}.xlsx" if markdown_url.lower().endswith('.md') else ''
+                index_map[normalized_stem] = {
+                    '云端链接': markdown_url,
+                    '原文件云端链接': linked_xlsx_url,
+                    '本地完整路径': str(row.get('本地完整路径', '')).strip(),
+                    '上传状态': str(row.get('上传状态', '')).strip(),
+                    '链接状态': str(row.get('链接状态', '')).strip(),
+                    '板块': board_name,
+                    '索引文件': index_path.name,
+                }
+        return index_map
+
     def _clean_exercise_text(self, text: str) -> str:
         cleaned = str(text or '')
         cleaned = cleaned.replace('<br>', ' ').replace('<br/>', ' ').replace('<br />', ' ')
@@ -64,13 +108,14 @@ class _ParseExerciseTablesMixin:
 
         return data
 
-    def _parse_local_exercise_tables(self) -> List[Dict[str, str]]:
+    def _parse_local_exercise_tables(self, cloud_index_map: Optional[Dict[str, Dict[str, str]]] = None) -> List[Dict[str, str]]:
         exercise_folder = self.learning_resource_path / '习题'
         if not exercise_folder.exists():
             logger.warning(f"习题文件夹不存在: {exercise_folder}")
             return []
 
         all_exercises = []
+        cloud_index_map = cloud_index_map or {}
         for md_file in exercise_folder.rglob('*.md'):
             if md_file.name in ['题目目录.md', '答案目录.md']:
                 continue
@@ -89,7 +134,9 @@ class _ParseExerciseTablesMixin:
                             break
 
                 source_file = str(md_file.relative_to(self.learning_resource_path))
-                data = self._finalize_exercise_items(data, source_file, title)
+                normalized_stem = self._normalize_exercise_stem(md_file.stem)
+                extra_metadata = cloud_index_map.get(normalized_stem, {})
+                data = self._finalize_exercise_items(data, source_file, title, extra_metadata)
                 all_exercises.extend(data)
                 logger.info(f"解析本地习题: {md_file.name}, 共{len(data)}条记录")
 
@@ -105,7 +152,7 @@ class _ParseExerciseTablesMixin:
             logger.warning("未安装 pandas，跳过根目录云端习题索引导入")
             return []
 
-        index_paths = sorted(self.project_root.glob('*习题_云端资源汇总表.xlsx'))
+        index_paths = [p for p in sorted(self.project_root.glob('*习题_云端资源汇总表.xlsx')) if not p.name.startswith('~$')]
         if not index_paths:
             return []
 
@@ -146,7 +193,7 @@ class _ParseExerciseTablesMixin:
                     continue
 
                 source_file = f"云端习题/{board_name}/{filename}"
-                linked_xlsx_url = markdown_url[:-3] + 'xlsx' if markdown_url.lower().endswith('.md') else ''
+                linked_xlsx_url = f"{markdown_url[:-3]}.xlsx" if markdown_url.lower().endswith('.md') else ''
                 extra_metadata = {
                     '云端链接': markdown_url,
                     '原文件云端链接': linked_xlsx_url,
@@ -169,7 +216,8 @@ class _ParseExerciseTablesMixin:
         Returns:
             习题资源列表
         """
-        local_exercises = self._parse_local_exercise_tables()
+        cloud_index_map = self._load_cloud_exercise_index_map()
+        local_exercises = self._parse_local_exercise_tables(cloud_index_map)
         local_stems = {
             Path(item.get('title', '')).stem.lower()
             for item in local_exercises

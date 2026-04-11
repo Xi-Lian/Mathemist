@@ -1,4 +1,5 @@
 from .._shared import *
+import re
 
 
 FUNCTION_CONCEPT_KEYWORDS = [
@@ -38,6 +39,18 @@ SPECIFIC_THEME_GUARD_BROAD_THEMES = {
     "函数的性质",
     "函数应用",
 }
+QUERY_NOISE_TERMS = {
+    "推荐", "几道", "给我", "找", "一些", "几个", "来几道", "来一些", "要几道",
+    "习题", "题目", "练习题", "练习", "测试题", "选择题", "填空题", "解答题", "证明题",
+    "推荐几道", "帮我", "一下", "相关", "关于",
+}
+
+
+def _normalize_match_text(text):
+    normalized = str(text or "").strip().lower()
+    normalized = normalized.replace("的", "")
+    normalized = re.sub(r"[\s,，。；;、:：()\[\]（）\-_/]+", "", normalized)
+    return normalized
 
 
 def apply_difficulty_filter(results, difficulty_info, quantity_limit):
@@ -195,17 +208,77 @@ def _raw_theme_score(core_theme, meta, doc):
     title = meta.get("title", "") or ""
     source_file = meta.get("source_file", "") or ""
     knowledge_tags = meta.get("知识点", "") or meta.get("知识点标签", "") or ""
-    text = f"{title} {source_file} {knowledge_tags} {doc or ''}"
+    normalized_theme = _normalize_match_text(core_theme)
+    title_norm = _normalize_match_text(title)
+    source_norm = _normalize_match_text(source_file)
+    knowledge_norm = _normalize_match_text(knowledge_tags)
+    text = _normalize_match_text(f"{title} {source_file} {knowledge_tags} {doc or ''}")
 
-    if core_theme in title:
+    if normalized_theme in title_norm:
         return 1.0
-    if core_theme in source_file:
+    if normalized_theme in source_norm:
         return 0.9
-    if core_theme in knowledge_tags:
+    if normalized_theme in knowledge_norm:
         return 0.85
-    if core_theme in text:
+    if normalized_theme in text:
         return 0.7
     return 0.0
+
+
+def _extract_query_terms(query, core_theme):
+    text = query or ""
+    for hint in EXPLICIT_EXERCISE_HINTS + GENERAL_MATERIAL_HINTS + list(QUERY_NOISE_TERMS):
+        text = text.replace(hint, " ")
+    parts = [part.strip() for part in re.split(r"[\s,，。；、]+", text) if len(part.strip()) >= 2]
+
+    expanded_terms = []
+    for part in parts:
+        expanded_terms.append(part)
+        if "正弦函数" in part and "正弦函数" not in expanded_terms:
+            expanded_terms.append("正弦函数")
+        if "余弦函数" in part and "余弦函数" not in expanded_terms:
+            expanded_terms.append("余弦函数")
+        if "图象" in part and "图象" not in expanded_terms:
+            expanded_terms.append("图象")
+        if "图像" in part and "图像" not in expanded_terms:
+            expanded_terms.append("图像")
+
+    unique_terms = []
+    seen = set()
+    for term in expanded_terms:
+        if term and term != core_theme and term not in seen:
+            seen.add(term)
+            unique_terms.append(term)
+    return unique_terms
+
+
+def _specific_query_score(query, core_theme, meta, doc):
+    terms = _extract_query_terms(query, core_theme)
+    if not terms:
+        return 0.0
+
+    title = meta.get("title", "") or ""
+    source_file = meta.get("source_file", "") or ""
+    knowledge_tags = meta.get("知识点", "") or meta.get("知识点标签", "") or ""
+    title_norm = _normalize_match_text(title)
+    source_norm = _normalize_match_text(source_file)
+    knowledge_norm = _normalize_match_text(knowledge_tags)
+    haystack = _normalize_match_text(f"{title} {source_file} {knowledge_tags} {doc or ''}")
+
+    score = 0.0
+    for term in terms:
+        normalized_term = _normalize_match_text(term)
+        if not normalized_term:
+            continue
+        if normalized_term in title_norm:
+            score += 1.0
+        elif normalized_term in source_norm:
+            score += 0.9
+        elif normalized_term in knowledge_norm:
+            score += 0.75
+        elif normalized_term in haystack:
+            score += 0.4
+    return score
 
 
 def _build_diverse_indices(results, quantity_limit, core_theme):
@@ -270,21 +343,25 @@ def apply_quantity_limit(results, quantity_limit, core_theme, query="", resource
         print(f"     ✅ 预留类型数: {len({_normalize_result_category(results['metadatas'][0][idx]) for idx in prioritized_indices})}")
         return prioritized_results
 
-    core_theme_resources = []
-    other_resources = []
+    scored_indices = []
     for i, meta in enumerate(results["metadatas"][0]):
         contains_core_theme = False
         if core_theme:
-            content = results["documents"][0][i] or ""
-            title = meta.get("title", "") or ""
-            metadata_str = str(meta) or ""
-            contains_core_theme = core_theme in content or core_theme in title or core_theme in metadata_str
-        if contains_core_theme:
-            core_theme_resources.append(i)
-        else:
-            other_resources.append(i)
+            content = _normalize_match_text(results["documents"][0][i] or "")
+            title = _normalize_match_text(meta.get("title", "") or "")
+            metadata_str = _normalize_match_text(str(meta) or "")
+            normalized_theme = _normalize_match_text(core_theme)
+            contains_core_theme = normalized_theme in content or normalized_theme in title or normalized_theme in metadata_str
+        scored_indices.append((
+            i,
+            1 if contains_core_theme else 0,
+            _specific_query_score(query, core_theme, meta, results["documents"][0][i]),
+            -(results["distances"][0][i] if results["distances"][0][i] is not None else 99.0),
+        ))
 
-    prioritized_indices = (core_theme_resources + other_resources)[:quantity_limit]
+    scored_indices.sort(key=lambda item: (-item[2], -item[1], -item[3], item[0]))
+    prioritized_indices = [item[0] for item in scored_indices[:quantity_limit]]
+    core_theme_count = sum(item[1] for item in scored_indices[:quantity_limit])
     prioritized_results = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
     for idx in prioritized_indices:
         prioritized_results["documents"][0].append(results["documents"][0][idx])
@@ -294,7 +371,7 @@ def apply_quantity_limit(results, quantity_limit, core_theme, query="", resource
 
     print(f"🔍 V33.0应用数量限制: {quantity_limit}")
     print(f"     ✅ V33.0数量限制应用完成，返回 {len(prioritized_results['documents'][0])} 条结果")
-    print(f"     ✅ 其中包含核心主题的资源: {min(len(core_theme_resources), quantity_limit)} 条")
+    print(f"     ✅ 其中包含核心主题的资源: {core_theme_count} 条")
     return prioritized_results
 
 
@@ -348,8 +425,8 @@ def _resource_matches_specific_theme(resource, themes):
     knowledge = resource.get("知识点", "") or ""
     metadata = resource.get("metadata", {}) if isinstance(resource.get("metadata"), dict) else {}
     knowledge_tags = metadata.get("知识点标签", "") or metadata.get("知识点", "") or ""
-    haystack = f"{title} {content} {source} {knowledge} {knowledge_tags}"
-    return any(theme in haystack for theme in themes)
+    haystack = _normalize_match_text(f"{title} {content} {source} {knowledge} {knowledge_tags}")
+    return any(_normalize_match_text(theme) in haystack for theme in themes)
 
 
 def _matches_difficulty(difficulty_level, resource_difficulty, meta):

@@ -1,4 +1,5 @@
 from .._shared import *
+import re
 from .filters import (
     adjust_single_theme_result_count,
     build_resource_type_filters,
@@ -25,6 +26,7 @@ SEMANTIC_RESOURCE_TYPES = {
     "大纲",
     "课程标准",
 }
+EXERCISE_RESOURCE_TYPES = {"习题", "题目", "练习题", "选择题", "填空题", "解答题", "证明题"}
 
 
 def _should_preserve_query_text(resource_types):
@@ -39,24 +41,39 @@ def _is_general_material_query(query, resource_types):
 
 
 def _should_apply_semantic_supplement(query, resource_types, core_theme):
-    return bool(core_theme) and (_should_preserve_query_text(resource_types) or _is_general_material_query(query, resource_types))
+    return bool(core_theme) and (
+        _should_preserve_query_text(resource_types)
+        or _is_general_material_query(query, resource_types)
+        or bool(resource_types) and any(rt in EXERCISE_RESOURCE_TYPES for rt in resource_types)
+    )
 
 
 def _text_match_score(core_theme, metadata, document):
+    normalized_theme = _normalize_match_text(core_theme)
     title = metadata.get("title", "") or ""
     source_file = metadata.get("source_file", "") or ""
     knowledge_tags = metadata.get("知识点标签", "") or metadata.get("知识点", "") or ""
-    text = f"{title} {source_file} {knowledge_tags} {document or ''}"
+    text = _normalize_match_text(f"{title} {source_file} {knowledge_tags} {document or ''}")
 
-    if core_theme in title:
+    if not normalized_theme:
+        return 0.0
+
+    if normalized_theme in _normalize_match_text(title):
         return 1.0
-    if core_theme in source_file:
+    if normalized_theme in _normalize_match_text(source_file):
         return 0.9
-    if core_theme in knowledge_tags:
+    if normalized_theme in _normalize_match_text(knowledge_tags):
         return 0.85
-    if core_theme in text:
+    if normalized_theme in text:
         return 0.7
     return 0.0
+
+
+def _normalize_match_text(text):
+    normalized = str(text or "").strip().lower()
+    normalized = normalized.replace("的", "")
+    normalized = re.sub(r"[\s,，。；;、:：()\[\]（）\-_/]+", "", normalized)
+    return normalized
 
 
 def _build_semantic_supplement(collection, where_filter, core_theme, limit):
@@ -253,7 +270,9 @@ def _passes_unified_semantic_gate(query, core_theme, doc, meta, distance):
     if not core_theme:
         return distance <= 1.10
 
-    text = f"{doc} {meta.get('title', '')} {meta.get('知识点', '')} {meta.get('知识点标签', '')} {meta.get('source_file', '')}"
-    if core_theme in text:
+    text = _normalize_match_text(
+        f"{doc} {meta.get('title', '')} {meta.get('知识点', '')} {meta.get('知识点标签', '')} {meta.get('source_file', '')}"
+    )
+    if _normalize_match_text(core_theme) in text:
         return True
     return distance <= 1.05

@@ -86,6 +86,12 @@ def _policy_penalty(resource: Dict[str, Any]) -> float:
     return min(0.8, penalty)
 
 
+def _looks_like_lesson_plan_attachment(resource: Dict[str, Any]) -> bool:
+    title = f"{resource.get('title', '')} {resource.get('original_filename', '')} {resource.get('related_file', '')}".lower()
+    source = str(resource.get("source", "") or "").lower()
+    return any(marker in title for marker in ("课时作业", "作业", "导学案")) or source.endswith(".pdf")
+
+
 def _semantic_score(resource: Dict[str, Any]) -> float:
     relevance = float(resource.get("relevance", 0.0) or 0.0)
     overall = float(resource.get("overall_score", relevance) or relevance)
@@ -119,6 +125,25 @@ def _quality_score(resource: Dict[str, Any]) -> float:
     return sum(metrics) / len(metrics)
 
 
+def _exercise_content_richness_boost(category: str, resource: Dict[str, Any], profile: Dict[str, Any]) -> float:
+    if category != "exercise_resources":
+        return 0.0
+
+    boost = 0.0
+    if resource.get("has_question_image"):
+        boost += 0.12
+    if resource.get("has_answer_image"):
+        boost += 0.06
+    if resource.get("is_image_exercise"):
+        boost += 0.04
+
+    # 显式习题请求下，优先把内容更完整、可直接渲染的题目排到前面。
+    if boost > 0 and profile.get("explicit_exercise"):
+        boost += 0.04
+
+    return min(0.20, boost)
+
+
 def _request_alignment_boost(category: str, profile: Dict[str, Any]) -> float:
     requested = profile["requested_categories"]
     if requested:
@@ -146,7 +171,14 @@ def _score_resource(category: str, resource: Dict[str, Any], profile: Dict[str, 
     penalty = _policy_penalty(resource)
     prior = CATEGORY_PRIORS.get(category, 0.0)
     request_boost = _request_alignment_boost(category, profile)
-    score = 0.22 * recall + 0.43 * semantic + 0.20 * quality + prior + request_boost - penalty
+    richness_boost = _exercise_content_richness_boost(category, resource, profile)
+    explicit_exercise_penalty = 0.0
+    if profile["explicit_exercise"] and category != "exercise_resources":
+        explicit_exercise_penalty += 0.18
+        if category == "lesson_plan_patterns" and _looks_like_lesson_plan_attachment(resource):
+            explicit_exercise_penalty += 0.22
+    score = 0.22 * recall + 0.43 * semantic + 0.20 * quality + prior + request_boost + richness_boost - penalty
+    score -= explicit_exercise_penalty
     resource["final_rank_score"] = max(0.0, min(1.0, score))
     resource["ranking_debug"] = {
         "recall_score": recall,
@@ -155,6 +187,8 @@ def _score_resource(category: str, resource: Dict[str, Any], profile: Dict[str, 
         "policy_penalty": penalty,
         "category_prior": prior,
         "request_alignment_boost": request_boost,
+        "exercise_content_richness_boost": richness_boost,
+        "explicit_exercise_penalty": explicit_exercise_penalty,
     }
     return resource["final_rank_score"]
 
@@ -177,7 +211,7 @@ def _build_category_caps(profile: Dict[str, Any], quantity_limit: Optional[int],
         caps["exercise_resources"] = quantity_limit
         for category in CATEGORY_PRIORS:
             if category != "exercise_resources":
-                caps[category] = max(1, quantity_limit // 4)
+                caps[category] = 0
         return caps
 
     if profile["general_material"]:
@@ -207,6 +241,8 @@ def _apply_diversity_selection(
     for item in scored:
         category = item[0]
         cap = caps.get(category, quantity_limit)
+        if cap <= 0:
+            continue
         if counts.get(category, 0) < cap:
             selected.append(item)
             counts[category] = counts.get(category, 0) + 1

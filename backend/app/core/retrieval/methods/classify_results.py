@@ -1,4 +1,5 @@
 from .._shared import *
+import re
 from ..classify_results_helpers.filters import calculate_relevance_boost, matches_exercise_question_type
 from ..classify_results_helpers.resource_type import (
     init_classified,
@@ -69,8 +70,13 @@ class _ClassifyResultsMixin:
                 if resource_type == "exercise":
                     is_consistent = self._check_knowledge_point_consistency(metadata, core_theme, doc, query, relevance)
                     if not is_consistent:
-                        print(f"   ⚠️ V15.0跳过不一致的习题: '{metadata.get('title', '未知')}' (来源: {metadata.get('source_file', '')})")
-                        continue
+                        if self._should_soft_keep_exercise(metadata, query, resource_types, question_type, relevance):
+                            print(f"   ✅ V96.0保留语义相关但知识点未精确对齐的习题: '{metadata.get('title', '未知')}'")
+                            metadata = dict(metadata)
+                            metadata["_soft_kept_exercise"] = True
+                        else:
+                            print(f"   ⚠️ V15.0跳过不一致的习题: '{metadata.get('title', '未知')}' (来源: {metadata.get('source_file', '')})")
+                            continue
                     if not self._passes_exercise_filters(metadata, doc, query, classified, grade, difficulty, exam_form):
                         continue
 
@@ -78,6 +84,10 @@ class _ClassifyResultsMixin:
                     print(f"   ✅ V87.0调试 - 资源类型确认: {resource_type}")
 
                 resource = self._create_resource(doc, metadata, distance, resource_type, core_theme, resource_types, query, question_type)
+                if resource_type == "exercise" and metadata.get("_soft_kept_exercise"):
+                    original_relevance = resource.get("relevance", 0)
+                    resource["relevance"] = max(0.0, original_relevance - 0.08)
+                    resource["soft_kept_exercise"] = True
                 self._apply_exercise_content_requirements(resource, resource_type, metadata, doc, query_features, query)
 
                 if resource.get("should_show", True):
@@ -86,6 +96,31 @@ class _ClassifyResultsMixin:
                     print(f"   ⚠️ V30.5跳过should_show=False的资源: '{resource.get('title', '未知')}'")
 
         return self._finalize_classified_results(classified, query)
+
+    def _should_soft_keep_exercise(self, metadata, query, resource_types, question_type, relevance):
+        explicit_exercise_keywords = ["习题", "题目", "练习", "选择题", "填空题", "解答题", "证明题", "测试题"]
+        explicit_exercise_query = any(keyword in (query or "") for keyword in explicit_exercise_keywords)
+        requested_exercise = any(rt in ["习题", "exercise"] for rt in (resource_types or []))
+        if not (explicit_exercise_query or requested_exercise):
+            return False
+
+        if relevance >= 0.18:
+            return True
+
+        title = metadata.get("title", "") or ""
+        source_file = metadata.get("source_file", "") or ""
+        knowledge_tags = metadata.get("知识点", "") or metadata.get("知识点标签", "") or ""
+        searchable_text = f"{title} {source_file} {knowledge_tags}"
+
+        query_terms = [term for term in re.split(r"[\s,，。；、]+", query or "") if len(term) >= 2]
+        query_terms = [
+            term for term in query_terms
+            if term not in explicit_exercise_keywords and term not in ["推荐几道", "推荐", "给我", "找几道", "几道"]
+        ]
+        if question_type:
+            query_terms = [term for term in query_terms if term != question_type]
+
+        return any(term in searchable_text for term in query_terms)
 
     def _passes_exercise_filters(self, metadata, doc, query, classified, grade, difficulty, exam_form):
         if not self._passes_grade_policy(metadata, doc, grade):

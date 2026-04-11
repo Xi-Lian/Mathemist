@@ -19,7 +19,7 @@ class _ProcessLessonPlanResourceMixin:
         
         resource['title'] = f"教案: {title}"
         resource['content'] = content
-        resource['source'] = metadata.get('原文件云端链接', '') or metadata.get('云端链接', '') or metadata.get('source_file', '')
+        resource['source'] = metadata.get('云端链接', '') or metadata.get('原文件云端链接', '') or metadata.get('source_file', '')
         # 传递元数据给主题匹配器
         resource['章节'] = chapter
         resource['知识点标签'] = knowledge_tags

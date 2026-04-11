@@ -1,4 +1,5 @@
 from .._shared import *
+from ...config_manager import config_manager
 
 
 class _InitMixin:
@@ -12,8 +13,12 @@ class _InitMixin:
         self.model_config = model_config
 
         if learning_resource_path is None:
-            current_dir = Path(__file__).parent.parent.parent
-            learning_resource_path = current_dir / 'learning_resource'
+            configured_path = Path(config_manager.get_learning_resource_path()).resolve()
+            if configured_path.exists():
+                learning_resource_path = configured_path
+            else:
+                current_dir = Path(__file__).parent.parent.parent
+                learning_resource_path = current_dir / 'learning_resource'
 
         self.learning_resource_path = Path(learning_resource_path).resolve()
 

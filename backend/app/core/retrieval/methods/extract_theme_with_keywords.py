@@ -2,6 +2,14 @@ from .._shared import *
 
 
 class _ExtractThemeWithKeywordsMixin:
+    @staticmethod
+    def _normalize_theme_match_text(text: str) -> str:
+        normalized = str(text or "").strip().lower()
+        normalized = normalized.replace("的", "")
+        for token in [" ", "\t", "\n", ",", "，", "。", "；", ";", "、", ":", "：", "(", ")", "（", "）", "-", "_", "/"]:
+            normalized = normalized.replace(token, "")
+        return normalized
+
     def _extract_theme_with_keywords(self, query: str) -> str:
         """
         使用关键词匹配提取主题（备用方案）- 改进版
@@ -24,6 +32,27 @@ class _ExtractThemeWithKeywordsMixin:
         print(f"   📋 完整主题列表: {complete_themes}")
         
         print(f"🔑 关键词匹配 - 查询: '{query}'")
+
+        # 先在整句层面匹配完整主题，避免完整主题先被“和/与/、”拆坏。
+        normalized_query = self._normalize_theme_match_text(query)
+        for theme in complete_themes:
+            theme_without_de = theme.replace("的", "")
+            normalized_theme = self._normalize_theme_match_text(theme_without_de)
+            theme_keywords = self.knowledge_hierarchy.get(theme, {}).get("keywords", [])
+            if (
+                theme in query
+                or theme_without_de in query.replace("的", "")
+                or (normalized_theme and normalized_theme in normalized_query)
+                or any(keyword in query for keyword in theme_keywords)
+            ):
+                if theme not in matched_themes:
+                    print(f"   ✓ 整句匹配到完整主题: '{theme}'")
+                    matched_themes.append(theme)
+
+        if matched_themes:
+            result = ",".join(matched_themes)
+            print(f"   ✅ 整句完整主题匹配结果: '{result}'")
+            return result
         
         # 改进1：使用连接词分割查询，分别提取每个部分的主题
         # 定义连接词列表
