@@ -49,6 +49,7 @@ def _build_candidates_payload(flat: List[Tuple[str, Dict[str, Any]]], max_candid
                 "is_core_match": bool(resource.get("is_core_match", False)),
                 "should_show": bool(resource.get("should_show", True)),
                 "matched_themes": resource.get("matched_themes", []),
+                "teaching_use": resource.get("教学用途", "") or resource.get("teaching_use", ""),  # V41.8新增：加入教学用途字段
             }
         )
     return payload
@@ -151,8 +152,16 @@ def apply_ai_screen_and_rerank(
                 continue
             selected_ids = [item for item in selected_ids if isinstance(item, str)]
 
+            # 如果selected_ids为空，返回原始分类结果
+            if not selected_ids:
+                return {"ok": False, "reason": "empty_selected_ids", "call_count": call_index + 1, "result": classified}
+
             mapping = {item["candidate_id"]: (cat, res) for item, (cat, res) in zip(candidates, flat)}
             selected_pairs = [mapping[item_id] for item_id in selected_ids if item_id in mapping]
+
+            # 如果没有匹配的资源，返回原始分类结果
+            if not selected_pairs:
+                return {"ok": False, "reason": "no_matching_resources", "call_count": call_index + 1, "result": classified}
 
             rebuilt: Dict[str, Any] = {}
             for key, value in classified.items():

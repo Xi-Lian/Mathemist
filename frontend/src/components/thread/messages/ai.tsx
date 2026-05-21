@@ -15,6 +15,7 @@ import { useQueryState, parseAsBoolean } from "nuqs";
 import { GenericInterruptView } from "./generic-interrupt";
 import { useArtifact } from "../artifact";
 import { LessonPlanDownloadButton } from "../LessonPlanDownloadButton";
+import { ExerciseCardList } from "./exercise-card";
 
 type MessageWithExportData = Message & {
   export_data?: LessonPlanExportData;
@@ -129,6 +130,12 @@ export function AssistantMessage({
   const meta = message ? thread.getMessagesMetadata(message) : undefined;
   const threadInterrupt = thread.interrupt;
 
+  // 从 state 中获取习题结构化详情（仅最新 AI 消息展示）
+  const exerciseDetails = thread.values?.exercise_details ?? [];
+  const [apiUrl] = useQueryState("apiUrl");
+  const showExerciseCards =
+    isLastMessage && exerciseDetails.length > 0;
+
   const parentCheckpoint = meta?.firstSeenState?.parent_checkpoint;
   const anthropicStreamedToolCalls = Array.isArray(content)
     ? parseAnthropicStreamedToolCalls(content)
@@ -166,10 +173,18 @@ export function AssistantMessage({
           </>
         ) : (
           <>
-            {contentString.length > 0 && (
-              <div className="min-w-0 w-full max-w-full overflow-hidden py-1 text-left">
-                <MarkdownText>{contentString}</MarkdownText>
-              </div>
+            {/* 有习题卡片时，用卡片替代原文；无卡片时走原有 Markdown 渲染 */}
+            {showExerciseCards ? (
+              <ExerciseCardList
+                details={exerciseDetails}
+                apiUrl={apiUrl}
+              />
+            ) : (
+              contentString.length > 0 && (
+                <div className="min-w-0 w-full max-w-full overflow-hidden py-1 text-left">
+                  <MarkdownText>{contentString}</MarkdownText>
+                </div>
+              )
             )}
             {exportData && <LessonPlanDownloadButton exportData={exportData} />}
 

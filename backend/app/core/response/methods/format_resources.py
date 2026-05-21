@@ -29,6 +29,29 @@ class _FormatResourcesMixin:
         # 获取用户需求
         user_needs = self._get_state_value(state, "user_needs", "")
         resource_types = self._get_state_value(state, "resource_types", [])
+        user_input = self._get_state_value(state, "user_input", "")
+        
+        # 从用户输入中提取资源类型
+        if not resource_types and user_input:
+            # 常见资源类型关键词
+            resource_keywords = {
+                "教案": ["教案", "教学设计", "教学方案"],
+                "习题": ["习题", "练习题", "试题", "题目"],
+                "课件": ["课件", "PPT", "幻灯片"],
+                "课例": ["课例", "教学视频", "课堂实录", "视频", "微课", "优质课"],
+                "GGB": ["GGB", "几何画板"],
+                "教学大纲": ["教学大纲", "大纲"]
+            }
+            
+            # 检查用户输入中是否包含资源类型关键词
+            for resource_type, keywords in resource_keywords.items():
+                for keyword in keywords:
+                    if keyword in user_input:
+                        resource_types.append(resource_type)
+                        break
+            
+            # 去重
+            resource_types = list(set(resource_types))
         
         print(f"📋 用户需求: {user_needs}")
         print(f"📋 资源类型: {resource_types}")

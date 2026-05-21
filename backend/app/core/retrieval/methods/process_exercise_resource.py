@@ -9,7 +9,7 @@ class _ProcessExerciseResourceMixin:
         learning_resource_path = getattr(self, 'learning_resource_path', None)
         if isinstance(learning_resource_path, Path):
             if learning_resource_path.name == 'learning_resource':
-                candidates.append(learning_resource_path.parent)
+                candidates.append(learning_resource_path)  # 返回 learning_resource 目录本身
             candidates.extend(learning_resource_path.parents)
 
         parser = getattr(self, 'parser', None)

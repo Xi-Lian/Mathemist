@@ -35,7 +35,11 @@ def build_match_result(matched_themes, core_theme_match, related_themes, is_core
 
 
 def build_no_core_theme_result(base_relevance, resource_type):
-    min_relevance_threshold = 0.10 if resource_type == "courseware" else 0.30
+    # 为教案和课件设置较低的阈值
+    if resource_type == "courseware" or resource_type == "lesson_plan":
+        min_relevance_threshold = 0.10
+    else:
+        min_relevance_threshold = 0.30
     print(f"   🔍 V53.13调试 - base_relevance: {base_relevance:.4f}, threshold: {min_relevance_threshold}, resource_type: {resource_type}")
     should_show = base_relevance >= min_relevance_threshold
     relevance_score = base_relevance if should_show else 0.0
@@ -75,4 +79,18 @@ def has_theme_text_hit(core_theme, metadata, text):
     source_file = metadata.get("source_file", "") or ""
     knowledge_tags = metadata.get("知识点", "") or metadata.get("知识点标签", "") or ""
     haystack = f"{title} {source_file} {knowledge_tags} {text or ''}"
-    return any(theme in haystack for theme in themes)
+    
+    for theme in themes:
+        if theme in haystack:
+            return True
+        # 检查主题的关键词是否在haystack中
+        from app.config.dynamic_config_loader import get_config_loader
+        config_loader = get_config_loader()
+        knowledge_hierarchy = config_loader.get_knowledge_hierarchy()
+        theme_info = knowledge_hierarchy.get(theme, {})
+        theme_keywords = theme_info.get("keywords", [])
+        for keyword in theme_keywords:
+            if keyword in haystack:
+                return True
+    
+    return False

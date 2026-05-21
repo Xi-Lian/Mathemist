@@ -1,0 +1,58 @@
+{
+  "exercise_id": "exercise_320_98370",
+  "resource_type": "exercise",
+  "title": "5-3-2诱导公式五、六",
+  "source_file": "云端习题/函数习题/5-3-2诱导公式五、六.md",
+  "analysis": {
+    "知识点": [
+      "诱导公式",
+      "三角恒等变换",
+      "同角三角函数关系",
+      "二倍角公式"
+    ],
+    "题型": "证明题",
+    "核心考点": "利用诱导公式和三角恒等变换证明等式成立",
+    "涉及公式": [
+      "sin(θ-3π/2) = cosθ",
+      "cos(θ+π/2) = -sinθ",
+      "sin(π+θ) = -sinθ",
+      "tan(π+θ) = tanθ",
+      "tan(9π+θ) = tanθ",
+      "1-2sin²θ = cos2θ",
+      "sin²θ+cos²θ=1",
+      "tanθ = sinθ/cosθ"
+    ],
+    "解题思路": "分别化简左边和右边：左边利用诱导公式将分子分母化为关于sinθ和cosθ的表达式，再使用二倍角公式；右边利用诱导公式化简正切，再通分化为同分母形式，最终比较两边得到相同结果。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "证明题",
+    "题干": "求证：$\\dfrac{2\\sin\\left(\\theta-\\dfrac{3\\pi}{2}\\right)\\cos\\left(\\theta+\\dfrac{\\pi}{2}\\right)-1}{1-2\\sin^2(\\pi+\\theta)}=\\dfrac{\\tan(9\\pi+\\theta)+1}{\\tan(\\pi+\\theta)-1}$．",
+    "难度（1-5）": "4",
+    "知识点标签": "诱导公式的恒等证明",
+    "解析": "答案: 证明过程见解析。   解析: 左边＝   \\[ \\frac{-2\\sin\\left(\\frac{3\\pi}{2}-\\theta\\right)(-\\sin \\theta)-1}{1-2\\sin^2\\theta} = \\frac{2\\sin\\left(\\pi+\\frac{\\pi}{2}-\\theta\\right)\\sin \\theta-1}{1-2\\sin^2\\theta} = \\frac{-2\\sin\\left(\\frac{\\pi}{2}-\\theta\\right)\\sin \\theta-1}{1-2\\sin^2\\theta} = \\frac{-2\\cos\\theta \\sin \\theta-1}{\\cos^2\\theta+\\sin^2\\theta-2\\sin^2\\theta} = \\frac{-2\\sin\\theta\\cos\\theta-1}{\\cos^2\\theta-\\sin^2\\theta}. \\]   注意：上式分子 $-2\\sin\\theta\\cos\\theta - 1$ 并不等于 $(\\sin\\theta + \\cos\\theta)^2 = \\sin^2\\theta + 2\\sin\\theta\\cos\\theta + \\cos^2\\theta$，原推导中此处有误。   正确化简如下：    由于分母 $1 - 2\\sin^2\\theta = \\cos 2\\theta$，且   \\[ -2\\sin\\left(\\frac{3\\pi}{2}-\\theta\\right)(-\\sin\\theta) = -2(-\\cos\\theta)(-\\sin\\theta) = -2\\sin\\theta\\cos\\theta, \\]   故分子为 $-2\\sin\\theta\\cos\\theta - 1$，即   \\[ \\text{左边} = \\frac{-2\\sin\\theta\\cos\\theta - 1}{\\cos 2\\theta}. \\]   但更直接的恒等变形是：    利用 $\\sin\\left(\\frac{3\\pi}{2}-\\theta\\right) = -\\cos\\theta$，所以   \\[ \\text{左边} = \\frac{-2(-\\cos\\theta)(-\\sin\\theta)-1}{1-2\\sin^2\\theta} = \\frac{-2\\sin\\theta\\cos\\theta - 1}{\\cos 2\\theta}. \\]   而右边：   \\[ \\frac{\\tan\\theta + 1}{\\tan\\theta - 1}  = \\frac{\\frac{\\sin\\theta}{\\cos\\theta} + 1}{\\frac{\\sin\\theta}{\\cos\\theta} - 1} = \\frac{\\sin\\theta + \\cos\\theta}{\\sin\\theta - \\cos\\theta}. \\]    为验证恒等性，将右边通分化为同分母形式：   \\[ \\frac{\\sin\\theta + \\cos\\theta}{\\sin\\theta - \\cos\\theta} = \\frac{(\\sin\\theta + \\cos\\theta)^2}{\\sin^2\\theta - \\cos^2\\theta} = \\frac{1 + 2\\sin\\theta\\cos\\theta}{-(\\cos^2\\theta - \\sin^2\\theta)} = -\\frac{1 + 2\\sin\\theta\\cos\\theta}{\\cos 2\\theta}. \\]    对比左边 $\\displaystyle \\frac{-2\\sin\\theta\\cos\\theta - 1}{\\cos 2\\theta} = -\\frac{1 + 2\\sin\\theta\\cos\\theta}{\\cos 2\\theta}$，与上式一致。    因此左边＝右边，原式得证。",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-3-2诱导公式五、六.md",
+    "title": "5-3-2诱导公式五、六",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-2诱导公式五、六.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-2诱导公式五、六.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-3-2诱导公式五、六.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:30"
+}

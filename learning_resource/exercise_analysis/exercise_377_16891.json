@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_377_16891",
+  "resource_type": "exercise",
+  "title": "5-5-1二倍角的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "二倍角公式",
+      "辅助角公式",
+      "正弦函数的图像与性质",
+      "三角函数在闭区间上的最值"
+    ],
+    "题型": "解答题",
+    "核心考点": "利用二倍角公式和辅助角公式化简三角函数式，并求其在给定区间上的最值，进而求解参数及整体最值",
+    "涉及公式": [
+      "cos²x = (1+cos2x)/2",
+      "asinx + bcosx = √(a²+b²) sin(x+φ)",
+      "sin(2x+π/6) 在区间上的取值范围"
+    ],
+    "解题思路": "（1）先用二倍角公式将2cos²x化为1+cos2x，再用辅助角公式合并为2sin(2x+π/6)+m+1；根据x范围求出正弦函数的值域，得到最大值表达式，令其等于6解出m。（2）由（1）得f(x)=2sin(2x+π/6)+4，利用正弦函数最小值为-1求出整体最小值，并解出对应的x集合。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "(2024年大通期末)已知函数 $f(x) = \\sqrt{3}\\sin 2x + 2\\cos^2 x + m$ 在区间 $\\left[0, \\dfrac{\\pi}{2}\\right]$ 上的最大值为 $6$．   (1) 求常数 $m$ 的值；   (2) 当 $x \\in \\mathbb{R}$ 时，求函数 $f(x)$ 的最小值以及相应 $x$ 的集合．",
+    "难度（1-5）": "4",
+    "知识点标签": "三角函数的二倍角的最值问题",
+    "解析": "答案：(1) $m = 3$；(2) 最小值为 $2$，$x$ 的集合为 $\\left\\{x \\mid x = -\\dfrac{\\pi}{3} + k\\pi,\\ k \\in \\mathbb{Z} \\right\\}$。    解析：   (1)   $$ f(x) = \\sqrt{3}\\sin 2x + 2\\cos^2 x + m  = \\sqrt{3}\\sin 2x + (1 + \\cos 2x) + m  = 2\\sin\\left(2x + \\frac{\\pi}{6}\\right) + m + 1. $$   ∵ $x \\in \\left[0, \\dfrac{\\pi}{2}\\right]$，∴ $2x + \\dfrac{\\pi}{6} \\in \\left[\\dfrac{\\pi}{6}, \\dfrac{7\\pi}{6}\\right]$，   故 $-\\dfrac{1}{2} \\leq \\sin\\left(2x + \\dfrac{\\pi}{6}\\right) \\leq 1$。   ∴ 函数 $f(x)$ 的最大值为 $2 \\cdot 1 + m + 1 = m + 3$。   由题设最大值为 $6$，得 $m + 3 = 6$，解得 $m = 3$。    (2) 由 (1) 知 $f(x) = 2\\sin\\left(2x + \\dfrac{\\pi}{6}\\right) + 4$。   当 $x \\in \\mathbb{R}$ 时，$\\sin\\left(2x + \\dfrac{\\pi}{6}\\right)$ 的最小值为 $-1$，   故 $f(x)$ 的最小值为 $2 \\cdot (-1) + 4 = 2$。   此时需满足   $$ 2x + \\frac{\\pi}{6} = -\\frac{\\pi}{2} + 2k\\pi \\quad (k \\in \\mathbb{Z}), $$   解得   $$ x = -\\frac{\\pi}{3} + k\\pi \\quad (k \\in \\mathbb{Z}). $$   因此，$f(x)$ 取最小值时 $x$ 的集合为 $\\left\\{x \\mid x = -\\dfrac{\\pi}{3} + k\\pi,\\ k \\in \\mathbb{Z} \\right\\}$。",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+    "title": "5-5-1二倍角的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-1二倍角的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-1二倍角的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.8999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:28:10"
+}

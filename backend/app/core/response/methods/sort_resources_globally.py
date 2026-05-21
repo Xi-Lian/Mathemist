@@ -11,16 +11,28 @@ class _SortResourcesGloballyMixin:
         2. 同一优先级内按最终得分排序
         3. 得分相同则按相关性排序
         
+        优化：跳过已计算过统一得分的资源
+        
         Args:
             resources: 资源列表
             
         Returns:
             排序后的资源列表
         """
-        # 为每个资源计算统一决策得分
+        # 为每个资源计算统一决策得分（跳过已计算的）
         print(f"\n🔢 统一决策中心：处理 {len(resources)} 个资源")
         priority_counts = {}
+        calculated_count = 0
+        skipped_count = 0
+        
         for resource in resources:
+            # 优化：跳过已计算过统一得分的资源
+            if "final_score" in resource and "priority_level" in resource:
+                skipped_count += 1
+                priority_name = resource.get("priority_name", "未知")
+                priority_counts[priority_name] = priority_counts.get(priority_name, 0) + 1
+                continue
+            
             decision_result = self._calculate_unified_score(resource)
             resource["final_score"] = decision_result["final_score"]
             resource["priority_level"] = decision_result["priority_level"]
@@ -31,6 +43,9 @@ class _SortResourcesGloballyMixin:
             resource["overall_score"] = decision_result["final_score"]
             priority_name = decision_result["priority_name"]
             priority_counts[priority_name] = priority_counts.get(priority_name, 0) + 1
+            calculated_count += 1
+        
+        print(f"   计算统计：新计算 {calculated_count} 个，跳过已计算 {skipped_count} 个")
         
         # 基于统一决策结果排序
         # 排序键：(-优先级层级, -最终得分, -相关性, -核心匹配, -匹配主题数)

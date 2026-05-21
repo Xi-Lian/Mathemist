@@ -12,7 +12,8 @@ class _GetTheoryResourcesMixin:
         try:
             # 获取客户端
             client = self.vector_db_builder.get_chroma_client()
-            collection = client.get_collection(name=self.COLLECTION_NAME)
+            # 理论资源属于通用板块，从math_resources_general集合中获取
+            collection = client.get_collection(name="math_resources_general")
             
             # 查询所有理论资源
             results = collection.get(

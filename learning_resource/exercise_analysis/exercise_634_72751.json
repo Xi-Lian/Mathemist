@@ -1,0 +1,49 @@
+{
+  "exercise_id": "exercise_634_72751",
+  "resource_type": "exercise",
+  "title": "6-2排列与组合",
+  "source_file": "云端习题/概率与统计习题/6-2排列与组合.md",
+  "analysis": {
+    "知识点": [
+      "组合数公式",
+      "组合数的性质"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用组合数性质将C(n, n-2)转化为C(n, 2)并解一元二次方程",
+    "涉及公式": [
+      "C_n^m = C_n^{n-m}",
+      "C_n^2 = n(n-1)/2"
+    ],
+    "解题思路": "由组合数性质C(n, n-2)=C(n, 2)，代入公式得n(n-1)/2=21，解方程得n=7（舍去负根）",
+    "考察能力": [
+      "运算能力"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "若$\\binom{n}{n-2} = 21$，则$n = (\\quad)$  \nA. 4　　B. 5　　C. 6　　D. 7",
+    "难度（1-5）": "2",
+    "知识点标签": "组合数公式",
+    "解析": "答案: D  \n解析: 因为 $\\displaystyle C_n^{n-2} = 21$，所以 $\\displaystyle C_n^2 = 21$，即 $\\displaystyle \\frac{n(n-1)}{2} = 21$，解得 $n = -6$（舍去）或 $n = 7$。\n\n---",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/6-2排列与组合.md",
+    "title": "6-2排列与组合",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/6-2排列与组合.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/6-2排列与组合.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\6-2排列与组合.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:31:19"
+}

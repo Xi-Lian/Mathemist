@@ -119,5 +119,5 @@ class _ParseTheoryCardsMixin:
                 "teaching_inspiration_elements": teaching_inspiration_elements
             }
         
-        print(f"✅ 成功解析 {len(index)} 个理论卡片")
+        print(f"成功解析 {len(index)} 个理论卡片")
         return index

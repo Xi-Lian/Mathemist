@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_306_53789",
+  "resource_type": "exercise",
+  "title": "5-3-1诱导公式二、三、四",
+  "source_file": "云端习题/函数习题/5-3-1诱导公式二、三、四.md",
+  "analysis": {
+    "知识点": [
+      "诱导公式",
+      "特殊角的三角函数值",
+      "三角函数的周期性"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用诱导公式将任意角三角函数转化为锐角三角函数并求值",
+    "涉及公式": [
+      "sin(360° - α) = -sin α",
+      "cos(180° - α) = -cos α",
+      "sin(180° + α) = -sin α",
+      "sin(360° + α) = sin α"
+    ],
+    "解题思路": "先用诱导公式将各角化为锐角或特殊角，再代入特殊角的三角函数值计算",
+    "考察能力": [
+      "运算能力"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "$\\sin 315^\\circ - \\cos 135^\\circ + 2\\sin 570^\\circ$ 的值是 __________．",
+    "难度（1-5）": "3",
+    "知识点标签": "诱导公式的三角函数值",
+    "解析": "答案: $-1$   解析: $\\sin 315^\\circ - \\cos 135^\\circ + 2\\sin 570^\\circ = \\sin(360^\\circ - 45^\\circ) - \\cos(180^\\circ - 45^\\circ) + 2\\sin(360^\\circ + 210^\\circ) = -\\sin 45^\\circ + \\cos 45^\\circ + 2\\sin(180^\\circ + 30^\\circ) = -\\dfrac{\\sqrt{2}}{2} + \\dfrac{\\sqrt{2}}{2} - 2 \\times \\dfrac{1}{2} = -1$．",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-3-1诱导公式二、三、四.md",
+    "title": "5-3-1诱导公式二、三、四",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-1诱导公式二、三、四.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-1诱导公式二、三、四.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-3-1诱导公式二、三、四.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:27:18"
+}

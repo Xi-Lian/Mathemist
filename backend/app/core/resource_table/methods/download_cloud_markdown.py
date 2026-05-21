@@ -23,16 +23,16 @@ class _DownloadCloudMarkdownMixin:
 
         try:
             logger.info(f"开始下载云端Markdown: {url}")
-            with urlopen(url, timeout=8) as response:
-                raw = response.read()
-            for encoding in ("utf-8", "utf-8-sig", "gb18030", "gbk"):
-                try:
-                    content = raw.decode(encoding)
-                    break
-                except UnicodeDecodeError:
-                    content = ""
+            import requests
+            response = requests.get(url, timeout=8)
+            response.raise_for_status()
+            
+            # 直接使用response.text，让requests处理编码
+            content = response.text
+            
             if not content:
-                content = raw.decode("utf-8", errors="ignore")
+                # 如果内容为空，尝试使用content属性
+                content = response.content.decode("utf-8", errors="ignore")
 
             cache_file.write_text(
                 json.dumps({"url": url, "content": content}, ensure_ascii=False),

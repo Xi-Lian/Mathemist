@@ -36,21 +36,31 @@ class _GenerateCompleteLessonPlanMixin:
         
         theory_resources = retrieved_resources.get("theory_resources", [])
         lesson_plan_patterns = retrieved_resources.get("lesson_plan_patterns", [])
+        excellent_case_resources = retrieved_resources.get("excellent_case_resources", [])
         
         # 限制资源数量，确保生成的教案更加聚焦
         max_resources = 5  # 最多使用5个理论资源
         max_patterns = 3   # 最多使用3个教案示例
+        max_excellent_cases = 3  # 最多使用3个优秀案例分析
         theory_resources = theory_resources[:max_resources]
         lesson_plan_patterns = lesson_plan_patterns[:max_patterns]
+        excellent_case_resources = excellent_case_resources[:max_excellent_cases]
         
         print(f"📚 理论资源: {len(theory_resources)}条 (限制为{max_resources}条)")
         print(f"📄 教案示例: {len(lesson_plan_patterns)}条 (限制为{max_patterns}条)")
+        print(f"🏆 优秀案例分析: {len(excellent_case_resources)}条 (限制为{max_excellent_cases}条)")
         
         # 3. 生成教案
+        # V48.0新增：从会话中获取使用场景，默认为日常教学
+        usage_scenario = session.get("collected_info", {}).get("usage_scenario", "daily_teaching")
+        print(f"🎯 V48.0使用场景: {usage_scenario}")
+        
         lesson_plan_content = self.lesson_plan_generator.generate(
             enhanced_input,
             theory_resources,
-            lesson_plan_patterns
+            lesson_plan_patterns,
+            excellent_case_resources,
+            usage_scenario  # V48.0新增：传递使用场景
         )
         
         session["lesson_plan"] = lesson_plan_content

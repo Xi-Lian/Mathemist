@@ -26,34 +26,11 @@ class _FormatResourcesByThemeMixin:
         """
         response_parts = []
         
-        # 获取用户原始查询，用于提取所有查询主题
-        user_input = self._get_state_value(state, "user_input", "")
-        
-        # 提取查询中的所有主题
-        query_themes = []
-        if user_input:
-            # 简单的主题提取逻辑
-            theme_keywords = ["二次函数", "指数函数", "对数函数", "幂函数", "三角函数"]
-            for keyword in theme_keywords:
-                if keyword in user_input:
-                    query_themes.append(keyword)
-        
         # 第一步：分离综合性资源和单一主题资源
         comprehensive_resources = []
         single_theme_resources = []
         
         for resource in resources:
-            # 检查资源是否与所有查询主题相关
-            matched_themes = resource.get("matched_themes", [])
-            
-            # 如果有查询主题，确保资源至少匹配一个查询主题
-            if query_themes:
-                # 检查资源是否至少匹配一个查询主题
-                has_matching_theme = any(theme in query_themes for theme in matched_themes)
-                if not has_matching_theme:
-                    # 不匹配任何查询主题，跳过
-                    continue
-            
             if resource.get("is_comprehensive", False):
                 comprehensive_resources.append(resource)
             else:
@@ -66,11 +43,8 @@ class _FormatResourcesByThemeMixin:
             if not matched_themes:
                 continue
             
-            # 只使用查询主题进行分组
+            # 使用资源的所有匹配主题进行分组
             for theme in matched_themes:
-                if query_themes and theme not in query_themes:
-                    continue  # 跳过非查询主题
-                
                 if theme not in theme_resources:
                     theme_resources[theme] = []
                 if resource not in theme_resources[theme]:
@@ -80,13 +54,13 @@ class _FormatResourcesByThemeMixin:
         # 按主题显示资源，让用户看到每类都有多个选择
         for theme in sorted(theme_resources.keys()):
             theme_group = theme_resources[theme]
-            response_parts.append(f"\n📌 【{theme}】相关资源（{len(theme_group)}个）：\n")
+            response_parts.append(f"\n【{theme}】相关资源（{len(theme_group)}个）：\n")
             for resource in theme_group:
                 self._append_resource_info(response_parts, resource, icon, category_name, scenario, is_comprehensive=False, state=state)
         
         # 第四步：再展示综合性资源（增值需求）
         if comprehensive_resources:
-            response_parts.append(f"\n\n⭐ 【综合性资源】同时包含多个查询主题（{len(comprehensive_resources)}个）：\n")
+            response_parts.append(f"\n\n【综合性资源】同时包含多个查询主题（{len(comprehensive_resources)}个）：\n")
             for resource in comprehensive_resources:
                 self._append_resource_info(response_parts, resource, icon, category_name, scenario, is_comprehensive=True, state=state)
         

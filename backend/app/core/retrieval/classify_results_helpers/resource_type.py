@@ -15,31 +15,51 @@ def init_classified():
         "lesson_case_resources": [],
         "ggb_resources": [],
         "syllabus_resources": [],
+        "excellent_case_resources": [],
     }
 
 
 def normalize_resource_type(metadata, resource_type):
     source_file = metadata.get("source_file", "")
-    if "习题" in source_file and resource_type != "exercise":
-        resource_type = "exercise"
-        print(f"   🔍 V19.5调试 - 根据source_file判断为习题资源: '{source_file}'")
-    elif "教案" in source_file and resource_type != "lesson_plan":
+    title = metadata.get("title", "")
+    teaching_use = metadata.get("教学用途", "")  # V87.0新增：获取教学用途字段
+    
+    # 检查多种GGB资源类型标识
+    ggb_indicators = ["ggb", "geogebra", "GeoGebra", "动态图", "可视化", "动画"]
+    
+    if "教案" in source_file and resource_type != "lesson_plan":
         resource_type = "lesson_plan"
         print(f"   🔍 V53.6调试 - 根据source_file判断为教案资源: '{source_file}'")
+    elif "教案" in title and resource_type != "lesson_plan":
+        resource_type = "lesson_plan"
+        print(f"   🔍 V53.6调试 - 根据title判断为教案资源: '{title}'")
     elif "教学大纲" in source_file and resource_type != "syllabus":
         resource_type = "syllabus"
         print(f"   🔍 V53.6调试 - 根据source_file判断为教学大纲资源: '{source_file}'")
-    elif "ggb" in source_file.lower() and resource_type != "ggb":
+    elif "习题" in source_file and resource_type != "exercise":
+        resource_type = "exercise"
+        print(f"   🔍 V19.5调试 - 根据source_file判断为习题资源: '{source_file}'")
+    elif any(indicator in source_file.lower() for indicator in ggb_indicators) and resource_type != "ggb":
         resource_type = "ggb"
-        print(f"   🔍 V53.6调试 - 根据source_file判断为GGB资源: '{source_file}'")
+        print(f"   🔍 V53.6调试 - 根据source_file判断为GGB资源: '{source_file}', 原始类型: '{resource_type}'")
+    elif any(indicator in title.lower() for indicator in ggb_indicators) and resource_type != "ggb":
+        resource_type = "ggb"
+        print(f"   🔍 V53.6调试 - 根据title判断为GGB资源: '{title}', 原始类型: '{resource_type}'")
     elif any(keyword in source_file for keyword in ["课件", "PPT", "幻灯片", "演示文稿"]) and resource_type != "courseware":
         resource_type = "courseware"
         print(f"   🔍 V85.0调试 - 根据source_file判断为课件资源: '{source_file}'")
+    elif any(keyword in title for keyword in ["课件", "PPT", "幻灯片", "演示文稿"]) and resource_type != "courseware":
+        resource_type = "courseware"
+        print(f"   🔍 V86.0调试 - 根据title判断为课件资源: '{title}'")
+    elif any(keyword in teaching_use for keyword in ["课件", "练习课课件", "复习课课件", "习题课课件"]) and resource_type != "courseware":
+        resource_type = "courseware"
+        print(f"   🔍 V87.0调试 - 根据教学用途判断为课件资源: '{teaching_use}'")
     return resource_type
 
 
 def matches_requested_resource_type(resource_type, resource_types):
-    print(f"   🔍 V53.7调试 - resource_types: {resource_types}, standard_types: {[get_standard_name(rt) for rt in resource_types] if resource_types else []}")
+    print(f"   🔍 V53.7调试 - 检查资源类型匹配: resource_type='{resource_type}', resource_types={resource_types}")
+    print(f"   🔍 V53.7调试 - standard_types: {[get_standard_name(rt) for rt in resource_types] if resource_types else []}")
     if not resource_types:
         print("   ✅ V53.7调试 - 跳过资源类型过滤: resource_types为空或包含通用类型")
         return True
@@ -81,10 +101,8 @@ def matches_requested_resource_type(resource_type, resource_types):
     print(f"   🔍 V73.0调试 - 映射后的数据库类型: {mapped_db_types}")
     if not resource_type_matched:
         print(f"   ⚠️ V80.0调试 - 资源类型不匹配: {resource_type} 不在映射后的数据库类型列表 {mapped_db_types} 中，也不等于用户输入的资源类型 {resource_types}")
-        if resource_types:
-            print("   📋 V71.0改进：没有匹配的资源类型，尝试不进行资源类型过滤")
-            return True
-    return True if resource_type_matched else False
+        return False
+    return True
 
 
 def _matches_special_alias(user_type, resource_type):
@@ -97,9 +115,12 @@ def _matches_special_alias(user_type, resource_type):
     if any(keyword in user_type for keyword in ["课例", "教学视频", "课堂实录", "视频课"]) and resource_type == "lesson_case":
         print(f"   ✅ V91.0调试 - 课例资源类型匹配: {resource_type} 等于lesson_case")
         return True
-    if any(keyword in user_type for keyword in ["GGB", "GeoGebra", "动态图", "可视化", "几何画板"]) and resource_type == "ggb":
-        print(f"   ✅ V91.0调试 - GGB资源类型匹配: {resource_type} 等于ggb")
-        return True
+    if any(keyword in user_type for keyword in ["GGB", "GeoGebra", "动态图", "可视化", "几何画板"]):
+        # GGB资源类型匹配：支持多种可能的resource_type值
+        ggb_types = {"ggb", "geogebra", "GGB", "GeoGebra", "动态图", "可视化"}
+        if resource_type.lower() in ggb_types or any(ggb_type in resource_type for ggb_type in ggb_types):
+            print(f"   ✅ V91.0调试 - GGB资源类型匹配: resource_type='{resource_type}' 属于GGB类型")
+            return True
     if any(keyword in user_type for keyword in ["教学大纲", "大纲", "课程标准", "课程大纲"]) and resource_type == "syllabus":
         print(f"   ✅ V91.0调试 - 教学大纲资源类型匹配: {resource_type} 等于syllabus")
         return True
@@ -140,5 +161,6 @@ def add_high_relevance_resource(classified, metadata, doc, relevance, resource_t
         "ggb": "ggb_resources",
         "syllabus": "syllabus_resources",
         "theory": "theory_resources",
+        "excellent_case": "excellent_case_resources",
     }
     classified[category_map.get(resource_type, "theory_resources")].append(resource)

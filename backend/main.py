@@ -1,5 +1,15 @@
 import os
+import sys
 import logging
+
+# 解决 Windows 控制台编码问题 - 设置默认输出为 UTF-8
+if sys.platform == "win32":
+    import io
+    # 重设标准输出和错误流的编码为 UTF-8
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+    # 设置环境变量，确保子进程也使用 UTF-8
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 # 首先设置 HuggingFace 镜像源，避免连接超时
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
@@ -21,6 +31,7 @@ from app.langgraph_api import router as langgraph_api_router
 from app.core import generate_ggb_innovation_suggestions
 from app.core.model_config import model_config
 from app.api.routes import feedback_router
+from app.api.routes.ggb import router as ggb_router
 
 # 延迟导入 create_math_agent_graph，避免启动时卡住
 def get_math_agent_graph():
@@ -240,6 +251,7 @@ async def invoke_math_agent(request: MathAgentRequest) -> Dict[str, Any]:
                 "lesson_plan": result.get("lesson_plan"),
                 "visualization_suggestions": result.get("visualization_suggestions"),
                 "retrieved_resources": result.get("retrieved_resources"),
+                "exercise_details": result.get("exercise_details", []),
                 "current_step": result.get("current_step"),
                 "chat_history": result.get("chat_history"),
                 "error": result.get("error")
@@ -284,6 +296,7 @@ async def generate_lesson_plan(request: MathAgentRequest) -> Dict[str, Any]:
             "data": {
                 "lesson_plan": result.get("lesson_plan"),
                 "retrieved_resources": result.get("retrieved_resources"),
+                "exercise_details": result.get("exercise_details", []),
                 "current_step": result.get("current_step"),
                 "error": result.get("error")
             }
@@ -334,6 +347,9 @@ app.include_router(langgraph_api_router)
 
 # 添加 API 路由
 app.include_router(feedback_router)
+
+# 添加 GeoGebra 设计建议 API 路由
+app.include_router(ggb_router)
 
 # 添加 LangServe 路由
 # 延迟导入，避免启动时卡住

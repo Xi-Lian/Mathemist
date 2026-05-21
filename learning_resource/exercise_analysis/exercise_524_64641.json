@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_524_64641",
+  "resource_type": "exercise",
+  "title": "10-2事件的相互独立性",
+  "source_file": "云端习题/概率与统计习题/10-2事件的相互独立性.md",
+  "analysis": {
+    "知识点": [
+      "独立事件的概率",
+      "互斥事件的概率加法公式",
+      "一元二次方程的求解"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用独立事件概率乘法公式和互斥事件概率加法公式建立方程求解参数，并计算指定事件的概率",
+    "涉及公式": [
+      "P(AB)=P(A)P(B) (独立事件)",
+      "P(A∪B)=P(A)+P(B) (互斥事件)",
+      "一元二次方程求根公式"
+    ],
+    "解题思路": "设答对A、B的概率为a，根据独立事件和互斥事件概率公式，用a表示恰好答对两道题的概率，令其等于1/4解出a，再代入三道题全错的概率公式计算",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "小刚参与一种答题游戏，需要解答$A$、$B$、$C$三道题．已知他答对这三道题的概率分别为$a$、$a$、$\\frac{1}{2}$，且各题答对与否互不影响．若他恰好能答对两道题的概率为$\\frac{1}{4}$，则他三道题都答错的概率为（    ）  \nA. $\\frac{1}{2}$　B. $\\frac{1}{3}$　C. $\\frac{1}{4}$　D. $\\frac{1}{5}$",
+    "难度（1-5）": "4",
+    "知识点标签": "独立事件的概率",
+    "解析": "答案: C  \n解析: 记小刚解答 $A$、$B$、$C$ 三道题正确分别为事件 $D$、$E$、$F$，且 $D$、$E$、$F$ 相互独立，且 $P(D) = P(E) = a$，$P(F) = \\dfrac{1}{2}$。  \n恰好答对两道题的事件为  \n$$\nDE\\overline{F} \\cup D\\overline{E}F \\cup \\overline{D}EF,\n$$  \n且三者两两互斥，故其概率为  \n$$\n\\begin{aligned}\nP &= P(D)P(E)P(\\overline{F}) + P(D)P(\\overline{E})P(F) + P(\\overline{D})P(E)P(F) \\\\\n&= a \\cdot a \\cdot \\left(1 - \\frac{1}{2}\\right) + a \\cdot (1 - a) \\cdot \\frac{1}{2} + (1 - a) \\cdot a \\cdot \\frac{1}{2} \\\\\n&= \\frac{a^2}{2} + \\frac{a(1 - a)}{2} + \\frac{a(1 - a)}{2} \\\\\n&= \\frac{a^2}{2} + a(1 - a) \\\\\n&= \\frac{a^2}{2} + a - a^2 \\\\\n&= a - \\frac{a^2}{2}.\n\\end{aligned}\n$$  \n由题设该概率为 $\\dfrac{1}{4}$，即  \n$$\na - \\frac{a^2}{2} = \\frac{1}{4}.\n$$  \n两边同乘 4 得  \n$$\n4a - 2a^2 = 1 \\quad \\Rightarrow \\quad 2a^2 - 4a + 1 = 0.\n$$  \n解得  \n$$\na = \\frac{4 \\pm \\sqrt{16 - 8}}{4} = \\frac{4 \\pm \\sqrt{8}}{4} = \\frac{4 \\pm 2\\sqrt{2}}{4} = \\frac{2 \\pm \\sqrt{2}}{2}.\n$$  \n由于 $0 \\le a \\le 1$，取  \n$$\na = \\frac{2 - \\sqrt{2}}{2} \\approx 0.293.\n$$  \n（注：此前误将方程化为 $2a - a^2 = \\frac{1}{2}$，系计算错误；正确推导如上。）  \n\n三道题全错的概率为  \n$$\nP(\\overline{D}\\,\\overline{E}\\,\\overline{F}) = (1 - a)^2 \\cdot \\left(1 - \\frac{1}{2}\\right) = \\frac{(1 - a)^2}{2}.\n$$  \n代入 $a = \\dfrac{2 - \\sqrt{2}}{2}$，则  \n$$\n1 - a = 1 - \\frac{2 - \\sqrt{2}}{2} = \\frac{\\sqrt{2}}{2},\n$$  \n所以  \n$$\n(1 - a)^2 = \\left(\\frac{\\sqrt{2}}{2}\\right)^2 = \\frac{2}{4} = \\frac{1}{2},\n$$  \n故  \n$$\nP = \\frac{1}{2} \\cdot \\frac{1}{2} = \\frac{1}{4}.\n$$  \n因此答案为 $\\boxed{\\dfrac{1}{4}}$，对应选项 C。\n\n---",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/10-2事件的相互独立性.md",
+    "title": "10-2事件的相互独立性",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/10-2事件的相互独立性.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/10-2事件的相互独立性.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\10-2事件的相互独立性.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "高一下学期",
+    "grade_level": 11,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:29:58"
+}

@@ -1,0 +1,48 @@
+{
+  "exercise_id": "exercise_1127_6165",
+  "resource_type": "exercise",
+  "title": "8-6空间直线、平面的垂直",
+  "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+  "analysis": {
+    "知识点": [
+      "线面平行的判定",
+      "面面平行的性质",
+      "线面垂直的性质"
+    ],
+    "题型": "选择题",
+    "核心考点": "线面平行的判定条件及其与线面垂直、面面平行等位置关系的综合辨析",
+    "涉及公式": [],
+    "解题思路": "逐一分析每个选项，通过构造反例（如直线a在平面α内）判断条件是否充分，最终确定只有选项C满足面面平行则线面平行的性质定理。",
+    "考察能力": [
+      "逻辑推理",
+      "空间想象"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "设 $a$ 是直线，$\\alpha$ 是平面，则能推出 $a \\parallel \\alpha$ 的条件是（ ）   A. 存在一条直线 $b$，$b \\parallel \\alpha$，$a \\perp b$   B. 存在一条直线 $b$，$a \\perp b$，$b \\perp \\alpha$   C. 存在一个平面 $\\beta$，$a \\subset \\beta$，$\\beta \\parallel \\alpha$   D. 存在一个平面 $\\beta$，$a \\perp \\beta$，$\\beta \\perp \\alpha$",
+    "难度（1-5）": "3",
+    "知识点标签": "线面平行判定",
+    "解析": "答案: C   解析: 根据各选项中的条件，结合线面平行的判定：   对于 A，若 $a \\subset \\alpha$，可以满足 $b \\parallel \\alpha$，$a \\perp b$，此时 $a \\parallel \\alpha$ 不成立；   对于 B，若 $a \\subset \\alpha$，满足 $b \\perp \\alpha$，也满足 $a \\perp b$，此时 $a \\parallel \\alpha$ 不成立；   对于 C，由面面平行的性质知：若 $\\beta \\parallel \\alpha$，$a \\subset \\beta$，则 $a \\parallel \\alpha$；   对于 D，若 $a \\subset \\alpha$，满足 $\\beta \\perp \\alpha$，且 $a$ 垂直于 $\\alpha$ 与 $\\beta$ 的交线，则 $a \\perp \\beta$，此时 $a \\parallel \\alpha$ 不成立。",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+    "title": "8-6空间直线、平面的垂直",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-6空间直线、平面的垂直.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:37:25"
+}

@@ -10,6 +10,7 @@ class _InitMixin:
         Args:
             learning_resource_path: learning_resource文件夹路径
         """
+        super().__init__()
         self.model_config = model_config
 
         if learning_resource_path is None:

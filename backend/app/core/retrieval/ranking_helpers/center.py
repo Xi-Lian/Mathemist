@@ -13,7 +13,7 @@ CATEGORY_PRIORS = {
     "syllabus_resources": 0.03,
 }
 GENERAL_MATERIAL_HINTS = {"资料", "学习资料", "教学资源", "教学资料", "资源", "内容"}
-EXPLICIT_EXERCISE_HINTS = {"习题", "题目", "练习题", "练习", "测试题", "选择题", "填空题", "解答题", "证明题"}
+EXPLICIT_EXERCISE_HINTS = {"习题", "题目", "练习题", "测试题", "选择题", "填空题", "解答题", "证明题"}
 RESOURCE_TYPE_TO_CATEGORY = {
     "lesson_plan": "lesson_plan_patterns",
     "教案": "lesson_plan_patterns",
@@ -200,11 +200,13 @@ def _build_category_caps(profile: Dict[str, Any], quantity_limit: Optional[int],
     default_cap = max(2, quantity_limit)
     caps: Dict[str, int] = {}
     if profile["requested_categories"]:
-        requested = next(iter(profile["requested_categories"]))
-        caps[requested] = quantity_limit
+        # 当用户明确指定资源类型时，只返回指定的类型，其他类型的上限设为0
+        requested_categories = profile["requested_categories"]
         for category in CATEGORY_PRIORS:
-            if category != requested:
-                caps[category] = max(1, quantity_limit // 3)
+            if category in requested_categories:
+                caps[category] = quantity_limit
+            else:
+                caps[category] = 0
         return caps
 
     if profile["explicit_exercise"]:

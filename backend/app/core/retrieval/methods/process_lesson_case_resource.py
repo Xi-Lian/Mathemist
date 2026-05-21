@@ -14,8 +14,17 @@ class _ProcessLessonCaseResourceMixin:
         filename = metadata.get('视频文件名/网址', '')
         analysis = metadata.get('分析', '')
         textbook = metadata.get('教材', '')
+        course_name = metadata.get('课程名称', '')  # V45.2修复：获取课程名称
         
-        # 构建描述，优先使用分析内容，如果为空则使用章节和文件名
+        # V45.2修复：构建标题，优先使用课程名称
+        if course_name:
+            resource['title'] = f"课例: {course_name}"
+        elif chapter:
+            resource['title'] = f"课例: {chapter}"
+        else:
+            resource['title'] = "课例资源"
+        
+        # 构建描述内容
         content_parts = []
         
         if textbook:
@@ -37,6 +46,12 @@ class _ProcessLessonCaseResourceMixin:
             # 如果分析为空，从文件名中提取关键信息
             content_parts.append(f"视频：{filename}")
         
-        resource['title'] = f"课例: {chapter}"
         resource['content'] = "\n".join(content_parts)
         resource['filename'] = filename
+        
+        # V45.4修复：保存视频链接字段，供显示时使用
+        resource['视频文件名/网址'] = filename
+        resource['教材'] = textbook
+        resource['课程名称'] = course_name
+        resource['章节'] = chapter
+        resource['分析'] = analysis

@@ -19,6 +19,15 @@ class _ParseTableRowMixin:
         if line.endswith('|'):
             line = line[:-1]
         
+        # 【V53.10修复】处理转义的 | 符号（如 \|x-1\|）
+        # 临时替换 \| 为占位符，分割后再恢复
+        placeholder = '__PIPE_PLACEHOLDER__'
+        line = line.replace('\\|', placeholder)
+        
         # 分割单元格
         cells = [cell.strip() for cell in line.split('|')]
+        
+        # 恢复转义的 | 符号
+        cells = [cell.replace(placeholder, '\\|') for cell in cells]
+        
         return cells

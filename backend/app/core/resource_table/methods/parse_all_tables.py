@@ -16,6 +16,7 @@ class _ParseAllTablesMixin:
             'syllabus': self.parse_syllabus_table(),
             'exercise': self.parse_exercise_tables(),
             'lesson_plan': self.parse_lesson_plan_tables(),
+            'excellent_case': self.parse_excellent_case_table(),
             'theory': self.parse_theory_cards(),
             'courseware': self.parse_courseware_table(),
             'lesson_case': self.parse_lesson_case_table()

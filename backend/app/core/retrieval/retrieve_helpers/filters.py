@@ -1,4 +1,7 @@
 from .._shared import *
+from app.config.resource_type_config import get_db_type
+import logging
+logger = logging.getLogger(__name__)
 
 
 GENERAL_RESOURCE_TYPES = {"资料", "资源", "教学资源", "教学资料"}
@@ -31,31 +34,36 @@ def build_resource_type_filters(query, resource_types, question_type):
     resource_type_filters = []
     where_filter = None
 
-    print(f"   🔍 调试 - 资源类型: {resource_types}")
+    logger.info(f"资源类型: {resource_types}")
     if has_specific_resource_types(resource_types):
         db_types = []
         for user_type in resource_types:
             mapped_db_type = get_db_type(user_type)
-            print(f"   🔍 调试 - 资源类型映射: {user_type} -> {mapped_db_type}")
+            logger.info(f"资源类型映射: {user_type} -> {mapped_db_type}")
             if mapped_db_type:
                 db_types.append(mapped_db_type)
 
-        print(f"   🔍 调试 - 数据库类型: {db_types}")
+        logger.info(f"数据库类型: {db_types}")
         if len(db_types) > 1:
-            print("   📋 组合资源查询: 为每种资源类型单独检索")
+            logger.info("组合资源查询: 为每种资源类型单独检索")
             for db_type in db_types:
                 resource_type_filters.append({"resource_type": db_type})
         elif db_types:
-            where_filter = {"resource_type": db_types[0]}
-            print(f"   📋 资源类型过滤: {db_types[0]}")
+            # V100.1新增：对于课件资源，即使只有一种也返回 resource_type_filters，以便触发精确匹配逻辑
+            if "courseware" in db_types:
+                logger.info("课件资源查询: 为课件单独检索以触发精确匹配")
+                resource_type_filters.append({"resource_type": db_types[0]})
+            else:
+                where_filter = {"resource_type": db_types[0]}
+                logger.info(f"资源类型过滤: {db_types[0]}")
         else:
-            print("   ⚠️ db_types为空，无法创建资源类型过滤条件")
+            logger.warning("db_types为空，无法创建资源类型过滤条件")
     elif question_type in {"证明题", "选择题"}:
         where_filter = {"resource_type": "exercise"}
-        print("   📋 题型导向查询：使用exercise过滤")
+        logger.info("题型导向查询：使用exercise过滤")
     elif any(kw in query for kw in EXERCISE_HINT_KEYWORDS) and not any(kw in query for kw in SPECIAL_RESOURCE_TYPE_KEYWORDS):
         where_filter = {"resource_type": "exercise"}
-        print("   📋 习题查询：使用exercise过滤")
+        logger.info("习题查询：使用exercise过滤")
 
     return resource_type_filters, where_filter
 
@@ -66,12 +74,12 @@ def simplify_themes(core_themes):
         if "的应用" in theme and theme != "函数的应用":
             base_theme = theme.replace("的应用", "")
             themes_to_search.append(base_theme)
-            print(f"   📝 简化主题: '{theme}' -> '{base_theme}'")
+            logger.info(f"简化主题: '{theme}' -> '{base_theme}'")
         else:
             themes_to_search.append(theme)
 
     themes_to_search = _deduplicate_broad_themes(themes_to_search)
-    print(f"   📝 使用简化主题进行检索: {themes_to_search}")
+    logger.info(f"使用简化主题进行检索: {themes_to_search}")
     return themes_to_search
 
 
@@ -109,6 +117,10 @@ def _compute_retrieval_budget(base_count, multi_theme_count, resource_types):
 
     if resource_types and has_specific_resource_types(resource_types):
         base = min(240, base + 20)
+    
+    # V100.1新增：课件资源需要更多的检索结果，因为课件的向量相似度通常较低
+    if resource_types and any(rt in ["课件", "PPT", "幻灯片"] for rt in resource_types):
+        base = min(300, base + 60)
 
     return base
 

@@ -80,7 +80,11 @@ RESOURCE_TYPE_MAPPING = {
     "图形": ("可视化", "visualization", "visualization_examples", "🎨"),
     "例子": ("可视化", "visualization", "visualization_examples", "🎨"),
     "教学资源": ("资料", "all", "all_resources", "📂"),
-    "教学资料": ("资料", "all", "all_resources", "📂")
+    "教学资料": ("资料", "all", "all_resources", "📂"),
+    
+    "优秀案例": ("优秀案例分析", "excellent_case", "excellent_case_resources", "🏆"),
+    "优秀案例分析": ("优秀案例分析", "excellent_case", "excellent_case_resources", "🏆"),
+    "案例分析": ("优秀案例分析", "excellent_case", "excellent_case_resources", "🏆")
 }
 
 # 数据库类型到标准名称的映射（反向映射）
@@ -92,7 +96,8 @@ DB_TYPE_TO_STANDARD = {
     "ggb": "GGB",
     "syllabus": "教学大纲",
     "theory": "理论",
-    "visualization": "可视化"
+    "visualization": "可视化",
+    "excellent_case": "优秀案例分析"
 }
 
 

@@ -106,15 +106,24 @@ class _ReclassifyByRelevanceMixin:
             metadata = resource.get('metadata', {})
             content = resource.get('content', '') or metadata.get('content', '')
             title = metadata.get('title', '')
+            
+            # 检查资源是否包含与概率相关的关键词
+            contains_probability_theme = False
+            probability_keywords = ["概率", "概率的性质", "概率的基本性质"]
+            for keyword in probability_keywords:
+                if keyword in content or keyword in title or keyword in str(metadata):
+                    contains_probability_theme = True
+                    break
+            
             contains_core_theme = core_theme and (core_theme in content or core_theme in title or core_theme in str(metadata))
             
             # 使用各自资源类型的阈值
             threshold = category_thresholds.get(category, 0.10)
             
-            if relevance >= threshold or contains_core_theme:
+            if relevance >= threshold or contains_core_theme or contains_probability_theme:
                 if category in classified:
                     classified[category].append(resource)
-                    if contains_core_theme and relevance < threshold:
+                    if (contains_core_theme or contains_probability_theme) and relevance < threshold:
                         print(f"   ✅ 保留（包含核心主题）：'{title}' (相关性: {relevance:.2f} < {threshold:.2f})")
             else:
                 # 低相关性资源放入隐藏资源

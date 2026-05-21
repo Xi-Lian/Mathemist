@@ -23,8 +23,9 @@ from .methods.get_single_intent_result import _GetSingleIntentResultMixin
 from .methods.get_multi_intent_result import _GetMultiIntentResultMixin
 from .methods.get_default_intent import _GetDefaultIntentMixin
 from .methods.create_prompt_template import _CreatePromptTemplateMixin
+from .methods.extract_courseware_teaching_use import _ExtractCoursewareTeachingUseMixin
 
-class IntentAnalyzer(_InitMixin, _AnalyzeMixin, _AnalyzeContextMixin, _UpdateContextHistoryMixin, _ClearContextMixin, _ExtractQuantityLimitMixin, _ExtractGradeInfoMixin, _ExtractDifficultyInfoMixin, _ClarifyMathTopicMixin, _AnalyzeWithLlmMixin, _ParseLlmResponseMixin, _CleanJsonResponseMixin, _AnalyzeWithKeywordsMixin, _ExtractResourceTypesMixin, _GenerateUserNeedsMixin, _HasKeywordsMixin, _GetSingleIntentResultMixin, _GetMultiIntentResultMixin, _GetDefaultIntentMixin, _CreatePromptTemplateMixin):
+class IntentAnalyzer(_InitMixin, _AnalyzeMixin, _AnalyzeContextMixin, _UpdateContextHistoryMixin, _ClearContextMixin, _ExtractQuantityLimitMixin, _ExtractGradeInfoMixin, _ExtractDifficultyInfoMixin, _ClarifyMathTopicMixin, _AnalyzeWithLlmMixin, _ParseLlmResponseMixin, _CleanJsonResponseMixin, _AnalyzeWithKeywordsMixin, _ExtractResourceTypesMixin, _GenerateUserNeedsMixin, _HasKeywordsMixin, _GetSingleIntentResultMixin, _GetMultiIntentResultMixin, _GetDefaultIntentMixin, _CreatePromptTemplateMixin, _ExtractCoursewareTeachingUseMixin):
     """意图分析器"""
     
     INTENT_SEARCH = "search"

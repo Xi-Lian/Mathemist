@@ -1,0 +1,50 @@
+{
+  "exercise_id": "exercise_255_23545",
+  "resource_type": "exercise",
+  "title": "5-1-1任意角",
+  "source_file": "云端习题/函数习题/5-1-1任意角.md",
+  "analysis": {
+    "知识点": [
+      "终边相同角",
+      "任意角的概念",
+      "方程求解"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用终边相同角的关系建立方程，结合角度范围求解",
+    "涉及公式": [
+      "5α = α + k·360° (k∈Z)"
+    ],
+    "解题思路": "由终边相同得5α与α相差360°的整数倍，列出方程5α=α+k·360°，解得α=k·90°，再根据α在180°到360°之间，确定k=3，得α=270°",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "若角 $\\alpha$ 满足 $180^{\\circ} < \\alpha < 360^{\\circ}$，$5\\alpha$ 与 $\\alpha$ 有相同的始边，且又有相同的终边，则 $\\alpha = \\underline{\\hspace{3cm}}$。",
+    "难度（1-5）": "3",
+    "知识点标签": "终边相同角;方程",
+    "解析": "答案：$270^\\circ$   解析：因为 $5\\alpha = \\alpha + k \\cdot 360^\\circ$，$k \\in \\mathbb{Z}$，所以 $4\\alpha = k \\cdot 360^\\circ$，即 $\\alpha = k \\cdot 90^\\circ$，$k \\in \\mathbb{Z}$；又因为 $180^\\circ < \\alpha < 360^\\circ$，所以 $\\alpha = 270^\\circ$。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-1-1任意角.md",
+    "title": "5-1-1任意角",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-1-1任意角.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-1-1任意角.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-1-1任意角.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:26:43"
+}

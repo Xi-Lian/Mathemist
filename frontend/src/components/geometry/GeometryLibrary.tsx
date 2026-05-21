@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PRESETS_2D, PRESETS_3D, type GeometryMode } from "./geometry-presets";
 
@@ -42,10 +42,8 @@ export function GeometryLibrary({
   const [scriptReady, setScriptReady] = useState(false);
   const [scriptError, setScriptError] = useState<string | null>(null);
   const [api, setApi] = useState<GeoGebraApi | null>(null);
-  const containerId = useMemo(
-    () => `ggb-container-${Math.random().toString(36).slice(2, 9)}`,
-    [],
-  );
+  const uniqueId = useId();
+  const containerId = `ggb-container-${uniqueId}`;
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -208,8 +206,9 @@ export function GeometryLibrary({
         className="mt-4 h-[760px] w-full overflow-hidden rounded-md border bg-white"
       />
 
+      {/* V48.7修复：使用静态文本避免 Hydration 不匹配 */}
       <p className="mt-2 text-center text-xs text-muted-foreground">
-        依赖 GeoGebra 在线脚本：{withNoTrailingSlash("https://www.geogebra.org")}
+        依赖 GeoGebra 在线脚本：https://www.geogebra.org
       </p>
     </div>
   );

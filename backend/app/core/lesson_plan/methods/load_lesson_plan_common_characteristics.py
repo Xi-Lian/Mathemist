@@ -21,16 +21,16 @@ class _LoadLessonPlanCommonCharacteristicsMixin:
             ]
             
             for i, file_path in enumerate(possible_paths, 1):
-                print(f"📂 尝试路径 {i}: {file_path}")
+                print(f"尝试路径 {i}: {file_path}")
                 if file_path.exists():
                     with open(file_path, 'r', encoding='utf-8') as f:
                         content = f.read()
-                        print(f"✅ 成功加载优秀教案共性文件: {len(content)} 字符")
+                        print(f"成功加载优秀教案共性文件: {len(content)} 字符")
                         return content
                 else:
-                    print(f"❌ 文件不存在: {file_path}")
+                    print(f"文件不存在: {file_path}")
         except Exception as e:
-            print(f"⚠️ 加载优秀教案共性文件失败: {e}")
+            print(f"加载优秀教案共性文件失败: {e}")
         
         # 内置默认内容
         default_content = """**优秀教案共性整合**
@@ -65,5 +65,5 @@ class _LoadLessonPlanCommonCharacteristicsMixin:
 - 语言启发性强
 - 关注认知难点与易错点
 """
-        print("📝 使用内置默认优秀教案共性内容")
+        print("使用内置默认优秀教案共性内容")
         return default_content

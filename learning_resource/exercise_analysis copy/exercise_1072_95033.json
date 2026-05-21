@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_1072_95033",
+  "resource_type": "exercise",
+  "title": "8-3简单几何体的表面积和体积",
+  "source_file": "云端习题/立体几何习题/8-3简单几何体的表面积和体积.md",
+  "analysis": {
+    "知识点": [
+      "三棱锥的体积公式",
+      "中点性质",
+      "相似三角形面积比",
+      "体积比例计算"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用中点关系推导底面面积和高度的比例，从而计算三棱锥的体积比",
+    "涉及公式": [
+      "V = (1/3) * 底面积 * 高",
+      "相似三角形面积比等于相似比的平方"
+    ],
+    "解题思路": "将三棱锥D-EFO（即D-OEF）与已知三棱锥O-ABC比较：D是OA中点，故D到平面OBC的距离是O到该平面距离的一半；E、F分别是OB、OC中点，故三角形OEF面积是三角形OBC面积的四分之一。代入体积公式得体积为原体积的1/8，即1/8。",
+    "考察能力": [
+      "空间想象",
+      "逻辑推理",
+      "运算能力"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": true,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "已知三棱锥$O\\text{-}ABC$的体积为1，$D$、$E$、$F$分别为$OA$、$OB$、$OC$的中点，则三棱锥$D\\text{-}EF$的体积为$\\dfrac{1}{8}$．",
+    "难度（1-5）": "3",
+    "知识点标签": "三棱锥;中点;体积比例",
+    "解析": "答案：$\\dfrac{1}{8}$   解析：三棱锥 $O\\text{-}ABC$ 中，$D$ 是棱 $OA$ 的中点，则点 $D$ 到平面 $OBC$ 的距离为 $\\dfrac{h}{2}$；$E$、$F$ 分别为棱 $OB$、$OC$ 的中点，则 $S_{\\triangle OEF} = \\dfrac{1}{4} S_{\\triangle OBC}$，因此   $$ V_{D\\text{-}DEF} = \\dfrac{1}{3} \\cdot S_{\\triangle OEF} \\cdot \\dfrac{h}{2} = \\dfrac{1}{3} \\cdot \\left( \\dfrac{1}{4} S_{\\triangle OBC} \\right) \\cdot \\dfrac{h}{2} = \\dfrac{1}{8} \\cdot \\left( \\dfrac{1}{3} S_{\\triangle OBC} \\cdot h \\right) = \\dfrac{1}{8} V_{O\\text{-}ABC} = \\dfrac{1}{8}. $$",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-3简单几何体的表面积和体积.md",
+    "title": "8-3简单几何体的表面积和体积",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-3简单几何体的表面积和体积.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-3简单几何体的表面积和体积.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-3简单几何体的表面积和体积.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:36:49"
+}

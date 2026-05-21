@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
-import { FC, memo, useState } from "react";
+import { FC, memo, useState, useEffect } from "react";
 import type { ImgHTMLAttributes } from "react";
 import { useQueryState } from "nuqs";
 import { CheckIcon, CopyIcon } from "lucide-react";
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import "katex/dist/katex.min.css";
 
 function resolveApiBase(apiUrl?: string | null): string {
-  const value = apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001/langgraph/math-agent";
+  const value = apiUrl || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/langgraph/math-agent";
   if (value.includes("/langgraph")) {
     return value.split("/langgraph")[0];
   }
@@ -75,7 +75,14 @@ const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {
 
 const MarkdownImage: FC<ImgHTMLAttributes<HTMLImageElement>> = ({ alt, src, className, ...props }) => {
   const [hasError, setHasError] = useState(false);
+  const [isMounted, setIsMounted] = useState(true);
   const resolvedSrc = typeof src === "string" ? src : undefined;
+
+  useEffect(() => {
+    return () => {
+      setIsMounted(false);
+    };
+  }, []);
 
   if (!resolvedSrc) {
     return null;
@@ -83,7 +90,7 @@ const MarkdownImage: FC<ImgHTMLAttributes<HTMLImageElement>> = ({ alt, src, clas
 
   if (hasError) {
     return (
-      <span className="my-3 block rounded-lg border border-dashed border-zinc-300 p-3 text-sm text-zinc-600">
+      <span key={resolvedSrc} className="my-3 block rounded-lg border border-dashed border-zinc-300 p-3 text-sm text-zinc-600">
         图片加载失败：{alt || "exercise image"}。
         {" "}
         <a
@@ -99,9 +106,8 @@ const MarkdownImage: FC<ImgHTMLAttributes<HTMLImageElement>> = ({ alt, src, clas
   }
 
   return (
-    <>
+    <span key={resolvedSrc}>
       {/* Remote markdown images are data-driven and cannot use next/image safely here. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={resolvedSrc}
         alt={alt || "exercise image"}
@@ -110,10 +116,10 @@ const MarkdownImage: FC<ImgHTMLAttributes<HTMLImageElement>> = ({ alt, src, clas
           className,
         )}
         loading="lazy"
-        onError={() => setHasError(true)}
+        onError={() => isMounted && setHasError(true)}
         {...props}
       />
-    </>
+    </span>
   );
 };
 

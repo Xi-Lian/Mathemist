@@ -1,0 +1,55 @@
+{
+  "exercise_id": "exercise_739_7727",
+  "resource_type": "exercise",
+  "title": "7-3离散型随机变量的数字特征",
+  "source_file": "云端习题/概率与统计习题/7-3离散型随机变量的数字特征.md",
+  "analysis": {
+    "知识点": [
+      "离散型随机变量的分布列",
+      "离散型随机变量的期望",
+      "离散型随机变量的方差",
+      "方差的性质：D(aX+b)=a²D(X)"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用分布列的性质和期望公式求解未知概率，再计算方差，最后应用方差性质求解目标方差。",
+    "涉及公式": [
+      "P(X=0)+P(X=1)+P(X=2)+P(X=3)=1",
+      "E(X)=∑x_i·P(X=x_i)",
+      "D(X)=∑(x_i-E(X))²·P(X=x_i)=E(X²)-[E(X)]²",
+      "D(aX+b)=a²D(X)"
+    ],
+    "解题思路": "1. 由P(X≥1)=2/3得P(X=0)=1/3。2. 设P(X=1)=a，利用概率和为1得P(X=2)=1/2-a。3. 根据E(X)=5/4列出方程求出a=1/4，得到完整分布列。4. 计算D(X)=19/16。5. 由方差性质D(4X-3)=16D(X)=19。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理",
+      "数据分析"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "已知离散型随机变量 $ X $ 的可能取值为 $ 0,1,2,3 $，且  \n$$\nP(X \\geq 1) = \\frac{2}{3}, \\quad P(X = 3) = \\frac{1}{6}, \\quad E(X) = \\frac{5}{4},\n$$  \n则 $ D(4X - 3) = $（　　）  \nA. $ 19 $　　B. $ 16 $　　C. $ \\dfrac{19}{4} $　　D. $ \\dfrac{7}{4} $",
+    "难度（1-5）": "4",
+    "知识点标签": "离散型随机变量的方差",
+    "解析": "答案：A  \n解析：$P(X=0)=\\frac{1}{3}$，设$P(X=1)=a$，则  \n$$\nP(X=2)=\\frac{2}{3}-\\frac{1}{6}-a=\\frac{1}{2}-a.\n$$  \n（注：此处隐含条件为概率总和为1，即 $P(X=0)+P(X=1)+P(X=2)+P(X=3)=1$，已知 $P(X=3)=\\frac{1}{6}$，故 $P(X=2)=1-\\frac{1}{3}-a-\\frac{1}{6}=\\frac{1}{2}-a$。）  \n\n期望为：  \n$$\nE(X)=0\\times\\frac{1}{3}+1\\times a+2\\times\\left(\\frac{1}{2}-a\\right)+3\\times\\frac{1}{6}\n= a + (1 - 2a) + \\frac{1}{2}\n= \\frac{3}{2} - a.\n$$  \n但题中给出 $E(X)=\\frac{5}{4}$，故  \n$$\n\\frac{3}{2} - a = \\frac{5}{4} \\quad \\Rightarrow \\quad a = \\frac{3}{2} - \\frac{5}{4} = \\frac{1}{4}.\n$$  \n\n因此分布列为：  \n$$\n\\begin{array}{c|cccc}\nX & 0 & 1 & 2 & 3 \\\\\n\\hline\nP & \\dfrac{1}{3} & \\dfrac{1}{4} & \\dfrac{1}{4} & \\dfrac{1}{6}\n\\end{array}\n$$  \n\n验证概率和：$\\frac{1}{3}+\\frac{1}{4}+\\frac{1}{4}+\\frac{1}{6} = \\frac{4}{12}+\\frac{3}{12}+\\frac{3}{12}+\\frac{2}{12} = \\frac{12}{12}=1$，正确。  \n\n计算方差：  \n$$\nD(X) = \\sum_{k=0}^{3} (k - E(X))^2 P(X=k), \\quad E(X)=\\frac{5}{4},\n$$  \n$$\n\\begin{aligned}\nD(X) &= \\left(0 - \\frac{5}{4}\\right)^2 \\cdot \\frac{1}{3} \n+ \\left(1 - \\frac{5}{4}\\right)^2 \\cdot \\frac{1}{4} \n+ \\left(2 - \\frac{5}{4}\\right)^2 \\cdot \\frac{1}{4} \n+ \\left(3 - \\frac{5}{4}\\right)^2 \\cdot \\frac{1}{6} \\\\\n&= \\left(\\frac{25}{16}\\right)\\cdot\\frac{1}{3} \n+ \\left(\\frac{9}{16}\\right)\\cdot\\frac{1}{4} \n+ \\left(\\frac{9}{16}\\right)\\cdot\\frac{1}{4} \n+ \\left(\\frac{49}{16}\\right)\\cdot\\frac{1}{6} \\\\\n&= \\frac{25}{48} + \\frac{9}{64} + \\frac{9}{64} + \\frac{49}{96} \\\\\n&= \\frac{25}{48} + \\frac{18}{64} + \\frac{49}{96} \n= \\frac{25}{48} + \\frac{9}{32} + \\frac{49}{96}.\n\\end{aligned}\n$$  \n通分（公分母为96）：  \n$$\n\\frac{25}{48} = \\frac{50}{96},\\quad\n\\frac{9}{32} = \\frac{27}{96},\\quad\n\\frac{49}{96} = \\frac{49}{96},\n$$  \n$$\nD(X) = \\frac{50 + 27 + 49}{96} = \\frac{126}{96} = \\frac{21}{16}.\n$$  \n\n⚠️ 注意：原文中计算得 $\\frac{19}{16}$ 有误，正确结果为 $\\frac{21}{16}$。  \n（验证：也可用公式 $D(X)=E(X^2)-[E(X)]^2$：  \n$E(X^2)=0^2\\cdot\\frac{1}{3}+1^2\\cdot\\frac{1}{4}+2^2\\cdot\\frac{1}{4}+3^2\\cdot\\frac{1}{6} = 0 + \\frac{1}{4} + 1 + \\frac{3}{2} = \\frac{1}{4} + \\frac{4}{4} + \\frac{6}{4} = \\frac{11}{4} = \\frac{44}{16}$，  \n$[E(X)]^2 = \\left(\\frac{5}{4}\\right)^2 = \\frac{25}{16}$，  \n故 $D(X) = \\frac{44}{16} - \\frac{25}{16} = \\frac{19}{16}$ —— 矛盾？再算 $E(X^2)$：  \n$1^2 \\cdot \\frac{1}{4} = \\frac{1}{4}$，  \n$2^2 \\cdot \\frac{1}{4} = 4 \\cdot \\frac{1}{4} = 1$，  \n$3^2 \\cdot \\frac{1}{6} = 9 \\cdot \\frac{1}{6} = \\frac{3}{2}$，  \n$\\frac{1}{4} + 1 + \\frac{3}{2} = \\frac{1}{4} + \\frac{4}{4} + \\frac{6}{4} = \\frac{11}{4} = \\frac{44}{16}$，正确；  \n$E(X)=\\frac{5}{4} \\Rightarrow [E(X)]^2 = \\frac{25}{16}$，  \n$\\frac{44}{16} - \\frac{25}{16} = \\frac{19}{16}$。  \n说明前述逐项展开计算有误。重算逐项：  \n\n- $(0-\\frac{5}{4})^2 \\cdot \\frac{1}{3} = \\frac{25}{16} \\cdot \\frac{1}{3} = \\frac{25}{48} = \\frac{50}{96}$，  \n- $(1-\\frac{5}{4})^2 \\cdot \\frac{1}{4} = \\left(-\\frac{1}{4}\\right)^2 \\cdot \\frac{1}{4} = \\frac{1}{16} \\cdot \\frac{1}{4} = \\frac{1}{64} = \\frac{1.5}{96}$？错！  \n→ $(1 - \\frac{5}{4}) = -\\frac{1}{4}$，平方为 $\\frac{1}{16}$，乘以 $\\frac{1}{4}$ 得 $\\frac{1}{64}$，正确；  \n- $(2 - \\frac{5}{4}) = \\frac{3}{4}$，平方为 $\\frac{9}{16}$，乘以 $\\frac{1}{4}$ 得 $\\frac{9}{64}$；  \n- $(3 - \\frac{5}{4}) = \\frac{7}{4}$，平方为 $\\frac{49}{16}$，乘以 $\\frac{1}{6}$ 得 $\\frac{49}{96}$。  \n\n所以三项为：$\\frac{25}{48},\\ \\frac{1}{64},\\ \\frac{9}{64},\\ \\frac{49}{96}$。  \n注意：第二项是 $(1-\\frac{5}{4})^2 \\cdot \\frac{1}{4} = \\left(\\frac{1}{4}\\right)^2 \\cdot \\frac{1}{4} = \\frac{1}{16} \\cdot \\frac{1}{4} = \\frac{1}{64}$，不是 $\\frac{9}{64}$！  \n而第三项 $(2-\\frac{5}{4}) = \\frac{3}{4} \\Rightarrow (\\frac{3}{4})^2 = \\frac{9}{16}$，再 $\\times \\frac{1}{4} = \\frac{9}{64}$，正确。  \n所以：  \n$$\nD(X) = \\frac{25}{48} + \\frac{1}{64} + \\frac{9}{64} + \\frac{49}{96}\n= \\frac{2\n\n---",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/7-3离散型随机变量的数字特征.md",
+    "title": "7-3离散型随机变量的数字特征",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-3离散型随机变量的数字特征.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-3离散型随机变量的数字特征.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\7-3离散型随机变量的数字特征.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "高三",
+    "grade_level": 14,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:32:39"
+}

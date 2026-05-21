@@ -14,7 +14,7 @@ class _InitMixin:
         try:
             self.max_display_per_group = max(
                 3,
-                min(10, int(os.getenv("SEARCH_RESPONSE_MAX_ITEMS_PER_GROUP", "5")))
+                min(15, int(os.getenv("SEARCH_RESPONSE_MAX_ITEMS_PER_GROUP", "10")))  # 【V103.0优化】默认值从5增加到10，最大值从10增加到15
             )
         except ValueError:
-            self.max_display_per_group = 5
+            self.max_display_per_group = 10

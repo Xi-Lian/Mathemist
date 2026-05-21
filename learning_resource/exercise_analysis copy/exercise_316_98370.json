@@ -1,0 +1,57 @@
+{
+  "exercise_id": "exercise_316_98370",
+  "resource_type": "exercise",
+  "title": "5-3-2诱导公式五、六",
+  "source_file": "云端习题/函数习题/5-3-2诱导公式五、六.md",
+  "analysis": {
+    "知识点": [
+      "诱导公式",
+      "三角函数的周期性",
+      "正弦函数",
+      "余弦函数",
+      "正切函数"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用诱导公式和周期性化简三角函数表达式",
+    "涉及公式": [
+      "sin(2kπ + α) = sin α",
+      "sin(π - α) = sin α",
+      "sin(π + α) = -sin α",
+      "tan(kπ + α) = tan α",
+      "sin(π/2 + α) = cos α",
+      "cos(π/2 + α) = -sin α"
+    ],
+    "解题思路": "利用三角函数的周期性和诱导公式，将角度化简到基本区间（0~2π或0~π/2），再根据符号判断化简结果。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）（2024年信阳期末）下列化简正确的是（　　）   A. $\\sin(2024\\pi - \\alpha) = -\\sin \\alpha$   B. $\\tan(\\alpha - 2025\\pi) = \\tan \\alpha$   C. $\\sin\\left(\\dfrac{11\\pi}{2} + \\alpha\\right) = -\\cos \\alpha$   D. $\\cos\\left(\\dfrac{7\\pi}{2} - \\alpha\\right) = \\sin \\alpha$",
+    "难度（1-5）": "3",
+    "知识点标签": "诱导公式;周期化简",
+    "解析": "答案：ABC   解析：对于A，$\\sin(2024\\pi - \\alpha) = -\\sin\\alpha$，故正确；   对于B，$\\tan(\\alpha - 2025\\pi) = \\tan(\\alpha - \\pi) = \\tan\\alpha$，故正确；   对于C，$\\sin\\left(\\frac{11\\pi}{2} + \\alpha\\right) = \\sin\\left(\\frac{11\\pi}{2} + \\alpha - 6\\pi\\right) = \\sin\\left(-\\frac{\\pi}{2} + \\alpha\\right) = -\\cos\\alpha$，故正确；   对于D，$\\cos\\left(\\frac{7\\pi}{2} - \\alpha\\right) = \\cos\\left(\\frac{7\\pi}{2} - \\alpha - 4\\pi\\right) = \\cos\\left(-\\frac{\\pi}{2} - \\alpha\\right) = \\cos\\left(\\frac{\\pi}{2} + \\alpha\\right) = -\\sin\\alpha$，故错误．   综上，正确选项为ABC．",
+    "适用场景": "综合运用",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-3-2诱导公式五、六.md",
+    "title": "5-3-2诱导公式五、六",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-2诱导公式五、六.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-2诱导公式五、六.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-3-2诱导公式五、六.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:27"
+}

@@ -58,6 +58,32 @@ class _ParseCloudLessonPlanTablesMixin:
                 content = self._build_lesson_plan_fallback_content(row, logical_path, linked_row, extracted_topics)
                 content_source = "index_fallback"
 
+            # 智能生成原文件云端链接
+            original_file_url = ""
+            original_filename = ""
+            
+            if linked_row:
+                # 优先使用关联文件的信息
+                original_file_url = linked_row.get("云端链接", "")
+                original_filename = linked_row.get("文件名", "")
+            else:
+                # 尝试生成原文件链接
+                if markdown_url and markdown_url.endswith('.md'):
+                    # 尝试替换为常见的文档格式
+                    common_extensions = ['.pdf', '.docx', '.doc', '.pptx', '.ppt']
+                    for ext in common_extensions:
+                        potential_url = markdown_url.rsplit('.md', 1)[0] + ext
+                        # 生成对应的原文件名
+                        potential_filename = filename.rsplit('.md', 1)[0] + ext
+                        # 暂时只生成链接，后续可以添加验证逻辑
+                        if not original_file_url:
+                            original_file_url = potential_url
+                            original_filename = potential_filename
+                
+                # 如果没有生成原文件链接，使用关联文件名
+                if not original_filename and linked_filename:
+                    original_filename = linked_filename
+
             item = {
                 'resource_type': 'lesson_plan',
                 'source_file': logical_path,
@@ -71,8 +97,8 @@ class _ParseCloudLessonPlanTablesMixin:
                 '云端链接': markdown_url,
                 '完整路径': row.get("完整路径", ""),
                 '关联文件': linked_filename,
-                '原文件云端链接': linked_row.get("云端链接", "") if linked_row else "",
-                '原文件名': linked_row.get("文件名", "") if linked_row else linked_filename,
+                '原文件云端链接': original_file_url,
+                '原文件名': original_filename,
                 '图片数量': row.get("图片数量", ""),
                 '备注': row.get("备注", ""),
                 '板块': row.get("板块", ""),

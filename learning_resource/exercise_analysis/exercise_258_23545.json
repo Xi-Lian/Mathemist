@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_258_23545",
+  "resource_type": "exercise",
+  "title": "5-1-1任意角",
+  "source_file": "云端习题/函数习题/5-1-1任意角.md",
+  "analysis": {
+    "知识点": [
+      "象限角",
+      "终边相同的角",
+      "角的集合表示",
+      "倍角与半角的象限判断"
+    ],
+    "题型": "解答题",
+    "核心考点": "根据终边位置写出角的集合，并判断倍角、半角所在的象限",
+    "涉及公式": [
+      "α的集合表示：{α | k·360° + θ1 < α < k·360° + θ2, k∈Z}",
+      "2α的范围推导",
+      "α/2的范围推导及分k奇偶讨论"
+    ],
+    "解题思路": "先由图形确定α的终边范围，写出一般形式的集合；然后分别将不等式乘以2和除以2，得到2α和α/2的范围，再根据终边所在象限判断象限位置，注意α/2需分k的奇偶性讨论。",
+    "考察能力": [
+      "逻辑推理",
+      "运算能力"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": true,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "如图，写出终边落在图中阴影部分的角 $\\alpha$ 的集合，并指出 $2\\alpha$、$\\dfrac{\\alpha}{2}$ 分别是第几象限的角。",
+    "难度（1-5）": "4",
+    "知识点标签": "象限角的集合表示",
+    "解析": "答案：$\\left\\{\\alpha \\mid k\\cdot 360^\\circ + 135^\\circ < \\alpha < k\\cdot 360^\\circ + 150^\\circ,\\; k \\in \\mathbb{Z} \\right\\}$；$2\\alpha$ 是第四象限角，$\\dfrac{\\alpha}{2}$ 是第一或第三象限角。   解析：由题意可知 $k\\cdot 360^\\circ + 135^\\circ < \\alpha < k\\cdot 360^\\circ + 150^\\circ$，$k \\in \\mathbb{Z}$，   所以 $k\\cdot 720^\\circ + 270^\\circ < 2\\alpha < k\\cdot 720^\\circ + 300^\\circ$，$k \\in \\mathbb{Z}$，即 $2\\alpha$ 的终边落在第四象限，故 $2\\alpha$ 是第四象限角；   又 $\\dfrac{\\alpha}{2}$ 满足 $k\\cdot 180^\\circ + 67.5^\\circ < \\dfrac{\\alpha}{2} < k\\cdot 180^\\circ + 75^\\circ$，$k \\in \\mathbb{Z}$，   当 $k$ 为偶数（设 $k = 2m$）时，$m\\cdot 360^\\circ + 67.5^\\circ < \\dfrac{\\alpha}{2} < m\\cdot 360^\\circ + 75^\\circ$，在第一象限；   当 $k$ 为奇数（设 $k = 2m+1$）时，$m\\cdot 360^\\circ + 247.5^\\circ < \\dfrac{\\alpha}{2} < m\\cdot 360^\\circ + 255^\\circ$，在第三象限。   因此 $\\dfrac{\\alpha}{2}$ 是第一或第三象限角。",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-1-1任意角.md",
+    "title": "5-1-1任意角",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-1-1任意角.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-1-1任意角.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-1-1任意角.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:26:46"
+}

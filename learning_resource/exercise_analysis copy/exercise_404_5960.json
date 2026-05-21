@@ -1,0 +1,54 @@
+{
+  "exercise_id": "exercise_404_5960",
+  "resource_type": "exercise",
+  "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "正弦差角公式",
+      "三角函数值域",
+      "角的范围限制",
+      "辅助角公式"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用正弦差角公式确定角的关系，再通过角的范围限制和辅助角公式求三角函数的最值",
+    "涉及公式": [
+      "sin(α-β)=sinαcosβ-cosαsinβ",
+      "sin(π/2+θ)=cosθ",
+      "cos(π/2+θ)=-sinθ",
+      "asinθ+bcosθ=√(a²+b²)sin(θ+φ)"
+    ],
+    "解题思路": "由已知条件得sin(α-β)=1，结合α,β∈[0,π]推出α-β=π/2，进而用β表示α；将目标式化简为cosα+cosβ，代入α=β+π/2得cosβ-sinβ，利用辅助角公式化为√2cos(β+π/4)；根据β的范围求该式的取值范围，得到最大值1和最小值-1",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "压轴题",
+    "是否需要画图": false,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "(2024年合肥模拟)设$\\alpha$，$\\beta\\in[0, \\pi]$，且满足$\\sin \\alpha \\cos \\beta - \\cos \\alpha \\sin \\beta = 1$，则$\\sin (2\\alpha - \\beta) + \\sin (\\alpha - 2\\beta)$的最大值为\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_，最小值为\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_．",
+    "难度（1-5）": "5",
+    "知识点标签": "正弦差角;三角函数最值",
+    "解析": "答案：$1$；$-1$   解析：由$\\sin \\alpha \\cos \\beta - \\cos \\alpha \\sin \\beta = 1$，得$\\sin(\\alpha - \\beta) = 1$．   又$\\alpha, \\beta \\in [0, \\pi]$，∴$-\\pi \\leq \\alpha - \\beta \\leq \\pi$，   ∴$\\alpha - \\beta = \\dfrac{\\pi}{2}$．   于是$\\alpha = \\beta + \\dfrac{\\pi}{2}$，结合$\\beta \\in [0, \\pi]$且$\\alpha \\in [0, \\pi]$，得$\\beta \\in \\left[0, \\dfrac{\\pi}{2}\\right]$，$\\alpha \\in \\left[\\dfrac{\\pi}{2}, \\pi\\right]$．    计算：   $$ \\sin(2\\alpha - \\beta) + \\sin(\\alpha - 2\\beta)  = \\sin\\left(\\alpha + (\\alpha - \\beta)\\right) + \\sin\\left((\\alpha - \\beta) - \\beta\\right)  = \\sin\\left(\\alpha + \\frac{\\pi}{2}\\right) + \\sin\\left(\\frac{\\pi}{2} - \\beta\\right) = \\cos \\alpha + \\cos \\beta. $$  但由$\\alpha = \\beta + \\dfrac{\\pi}{2}$，有$\\cos \\alpha = \\cos\\left(\\beta + \\dfrac{\\pi}{2}\\right) = -\\sin \\beta$，   故   $$ \\cos \\alpha + \\cos \\beta = -\\sin \\beta + \\cos \\beta = \\sqrt{2}\\cos\\left(\\beta + \\frac{\\pi}{4}\\right). $$  由于$\\beta \\in \\left[0, \\dfrac{\\pi}{2}\\right]$，则$\\beta + \\dfrac{\\pi}{4} \\in \\left[\\dfrac{\\pi}{4}, \\dfrac{3\\pi}{4}\\right]$，   ∴$\\cos\\left(\\beta + \\dfrac{\\pi}{4}\\right) \\in \\left[-\\dfrac{\\sqrt{2}}{2}, \\dfrac{\\sqrt{2}}{2}\\right]$，   ∴$\\sqrt{2}\\cos\\left(\\beta + \\dfrac{\\pi}{4}\\right) \\in [-1, 1]$．    或更简洁地（按原推导修正符号与逻辑）：   由$\\alpha - \\beta = \\dfrac{\\pi}{2}$，得   $$ \\sin(2\\alpha - \\beta) + \\sin(\\alpha - 2\\beta)  = \\sin\\left(\\alpha + \\frac{\\pi}{2}\\right) + \\sin\\left(\\alpha - 2\\beta\\right). $$   而$\\alpha - 2\\beta = (\\alpha - \\beta) - \\beta = \\dfrac{\\pi}{2} - \\beta$，   所以   $$ \\sin\\left(\\alpha + \\frac{\\pi}{2}\\right) + \\sin\\left(\\frac{\\pi}{2} - \\beta\\right)  = \\cos \\alpha + \\cos \\beta. $$   再代入$\\alpha = \\beta + \\dfrac{\\pi}{2}$，得$\\cos \\alpha = -\\sin \\beta$，   故表达式为$\\cos \\beta - \\sin \\beta = \\sqrt{2}\\cos\\left(\\beta + \\dfrac{\\pi}{4}\\right)$，   值域仍为$[-1, 1]$．    综上，$\\sin(2\\alpha - \\beta) + \\sin(\\alpha - 2\\beta)$ 的取值范围为 $[-1,\\, 1]$，最大值为 $1$，最小值为 $-1$．",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.8999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:28:30"
+}

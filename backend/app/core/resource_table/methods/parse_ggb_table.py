@@ -68,5 +68,52 @@ class _ParseGgbTableMixin:
                 logger.error(f"解析GGB Excel文件失败: {e}")
                 return []
         
-        logger.warning(f"GGB汇总表不存在: {ggb_file} 或 {ggb_xlsx}")
+        # 尝试查找根目录下的*ggb信息.xlsx文件
+        import glob
+        ggb_files = list(self.learning_resource_path.glob('*ggb信息.xlsx'))
+        
+        if ggb_files:
+            all_data = []
+            for ggb_file in ggb_files:
+                try:
+                    import pandas as pd
+                    
+                    # 读取Excel文件
+                    df = pd.read_excel(ggb_file)
+                    
+                    # 转换为字典列表
+                    data = []
+                    i = 1
+                    for _, row in df.iterrows():
+                        # 为GGB资源创建有效的标题
+                        title_parts = []
+                        if pd.notna(row.get('章节')) and row['章节'].strip():
+                            title_parts.append(row['章节'].strip())
+                        if pd.notna(row.get('ggb文件名')) and row['ggb文件名'].strip():
+                            title_parts.append(row['ggb文件名'].strip())
+                        if pd.notna(row.get('教学用途')) and row['教学用途'].strip():
+                            title_parts.append(row['教学用途'].strip())
+                        
+                        title = ' - '.join(title_parts) if title_parts else f"GGB资源_{i}"
+                        
+                        item = {
+                            'resource_type': 'ggb',
+                            'source_file': str(ggb_file.relative_to(self.learning_resource_path)),
+                            'title': title,
+                            **{k: str(v) if pd.notna(v) else '' for k, v in row.items()}
+                        }
+                        data.append(item)
+                        i += 1
+                    
+                    all_data.extend(data)
+                    logger.info(f"解析GGB汇总表({ggb_file.name})，共{len(data)}条记录")
+                    
+                except Exception as e:
+                    logger.error(f"解析GGB Excel文件失败 {ggb_file.name}: {e}")
+                    continue
+            
+            if all_data:
+                return all_data
+        
+        logger.warning(f"GGB汇总表不存在: {ggb_file} 或 {ggb_xlsx} 或根目录下的*ggb信息.xlsx")
         return []

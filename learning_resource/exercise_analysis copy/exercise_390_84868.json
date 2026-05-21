@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_390_84868",
+  "resource_type": "exercise",
+  "title": "5-5-2两角差的余弦公式",
+  "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+  "analysis": {
+    "知识点": [
+      "同角三角函数的基本关系",
+      "两角差的余弦公式",
+      "角的范围判断与符号确定"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用已知角的三角函数值，通过角的变换和两角差的余弦公式求值",
+    "涉及公式": [
+      "sin²θ + cos²θ = 1",
+      "cos(A - B) = cosA cosB + sinA sinB"
+    ],
+    "解题思路": "先根据角的范围确定sin(π/4+α)和sin(π/4-β/2)的正负并求出其值；再将α+β/2表示为(π/4+α) - (π/4-β/2)，利用两角差的余弦公式展开代入计算。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "若 $0 < \\alpha < \\dfrac{\\pi}{2}$，$-\\dfrac{\\pi}{2} < \\beta < 0$，$\\cos\\left(\\dfrac{\\pi}{4}+\\alpha\\right)=\\dfrac{1}{3}$，$\\cos\\left(\\dfrac{\\pi}{4}-\\dfrac{\\beta}{2}\\right)=\\dfrac{\\sqrt{3}}{3}$，则   $\\sin\\left(\\dfrac{\\pi}{4}-\\dfrac{\\beta}{2}\\right) = \\, \\underline{\\phantom{\\dfrac{\\sqrt{6}}{3}}}$，   $\\cos\\left(\\alpha+\\dfrac{\\beta}{2}\\right) = \\, \\underline{\\phantom{\\dfrac{\\sqrt{6}-2\\sqrt{2}}{9}}}$．",
+    "难度（1-5）": "4",
+    "知识点标签": "正弦余弦关系;余弦差角;综合求值",
+    "解析": "答案: $\\dfrac{\\sqrt{6}}{3}$; $\\dfrac{5\\sqrt{3}}{9}$   解析: 因为 $0 < \\alpha < \\dfrac{\\pi}{2}$，所以 $\\dfrac{\\pi}{4} < \\dfrac{\\pi}{4} + \\alpha < \\dfrac{3\\pi}{4}$．又因为 $\\cos\\left(\\dfrac{\\pi}{4} + \\alpha\\right) = \\dfrac{1}{3}$，所以 $\\sin\\left(\\dfrac{\\pi}{4} + \\alpha\\right) = \\dfrac{2\\sqrt{2}}{3}$．   因为 $-\\dfrac{\\pi}{2} < \\beta < 0$，所以 $\\dfrac{\\pi}{4} < \\dfrac{\\pi}{4} - \\dfrac{\\beta}{2} < \\dfrac{\\pi}{2}$．又因为 $\\cos\\left(\\dfrac{\\pi}{4} - \\dfrac{\\beta}{2}\\right) = \\dfrac{\\sqrt{3}}{3}$，所以 $\\sin\\left(\\dfrac{\\pi}{4} - \\dfrac{\\beta}{2}\\right) = \\dfrac{\\sqrt{6}}{3}$．   于是   $$ \\cos\\left(\\alpha + \\dfrac{\\beta}{2}\\right)  = \\cos\\left[\\left(\\dfrac{\\pi}{4} + \\alpha\\right) - \\left(\\dfrac{\\pi}{4} - \\dfrac{\\beta}{2}\\right)\\right]  = \\cos\\left(\\dfrac{\\pi}{4} + \\alpha\\right)\\cos\\left(\\dfrac{\\pi}{4} - \\dfrac{\\beta}{2}\\right) + \\sin\\left(\\dfrac{\\pi}{4} + \\alpha\\right)\\sin\\left(\\dfrac{\\pi}{4} - \\dfrac{\\beta}{2}\\right) = \\dfrac{1}{3} \\cdot \\dfrac{\\sqrt{3}}{3} + \\dfrac{2\\sqrt{2}}{3} \\cdot \\dfrac{\\sqrt{6}}{3} = \\dfrac{\\sqrt{3}}{9} + \\dfrac{2\\sqrt{12}}{9} = \\dfrac{\\sqrt{3}}{9} + \\dfrac{4\\sqrt{3}}{9} = \\dfrac{5\\sqrt{3}}{9}. $$",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+    "title": "5-5-2两角差的余弦公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-2两角差的余弦公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:18"
+}

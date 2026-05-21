@@ -64,7 +64,8 @@ class _CreateResourceMixin:
             question_type,
         )
         resource["match_result"] = match_result
-        update_resource_with_match(resource, match_result)
+        # V311.0改进：传递metadata，以便在分别查询模式下能够保留_matched_themes信息
+        update_resource_with_match(resource, match_result, metadata)
         apply_relevance_thresholds(resource, resource_type, resource_types)
         run_resource_processors(self, resource, metadata, resource_type)
         apply_quality_controls(self, resource, resource_type)

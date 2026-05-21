@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_387_84868",
+  "resource_type": "exercise",
+  "title": "5-5-2两角差的余弦公式",
+  "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+  "analysis": {
+    "知识点": [
+      "正弦函数求值",
+      "余弦函数求值",
+      "余弦差角公式",
+      "三角形内角范围判断"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用三角形内角范围确定三角函数值的符号，并应用余弦差角公式计算",
+    "涉及公式": [
+      "sin²θ + cos²θ = 1",
+      "cos(A - B) = cosA cosB + sinA sinB"
+    ],
+    "解题思路": "由cosB为负且B为三角形内角，判断B为钝角，求出sinB；由sinA为正且A为三角形内角，判断A为锐角，求出cosA；代入余弦差角公式计算得结果",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "在$\\triangle ABC$中，$\\sin A=\\frac{4}{5}$，$\\cos B=-\\frac{12}{13}$，则$\\cos (A-B)=$__________．",
+    "难度（1-5）": "3",
+    "知识点标签": "余弦差角的三角形内角",
+    "解析": "答案: $-\\dfrac{16}{65}$   解析: 因为 $\\cos B = -\\dfrac{12}{13}$，且 $0 < B < \\pi$，所以 $\\dfrac{\\pi}{2} < B < \\pi$，   $$ \\sin B = \\sqrt{1 - \\cos^2 B} = \\sqrt{1 - \\left(-\\dfrac{12}{13}\\right)^2} = \\dfrac{5}{13}, $$   又 $0 < A < \\dfrac{\\pi}{2}$，所以   $$ \\cos A = \\sqrt{1 - \\sin^2 A} = \\sqrt{1 - \\left(\\dfrac{4}{5}\\right)^2} = \\dfrac{3}{5}. $$   因此，   $$ \\cos(A - B) = \\cos A \\cos B + \\sin A \\sin B = \\dfrac{3}{5} \\times \\left(-\\dfrac{12}{13}\\right) + \\dfrac{4}{5} \\times \\dfrac{5}{13} = -\\dfrac{16}{65}. $$",
+    "适用场景": "综合运用",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+    "title": "5-5-2两角差的余弦公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-2两角差的余弦公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:17"
+}

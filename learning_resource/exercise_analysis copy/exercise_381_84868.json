@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_381_84868",
+  "resource_type": "exercise",
+  "title": "5-5-2两角差的余弦公式",
+  "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+  "analysis": {
+    "知识点": [
+      "余弦差角公式",
+      "余弦函数的零点",
+      "三角方程求解"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用两角差的余弦公式化简三角函数表达式，并求解余弦方程",
+    "涉及公式": [
+      "cos(A-B) = cosA cosB + sinA sinB",
+      "cos(-α) = cosα",
+      "cosα = 0的解"
+    ],
+    "解题思路": "将原式逆用两角差的余弦公式，得到cos(α/3 - 4α/3) = cos(-α) = cosα = 0，再在[0,2π]内求解cosα=0得到α=π/2或3π/2，对应选项C、D。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）若 $\\alpha \\in [0, 2\\pi]$，$\\sin \\frac{\\alpha}{3} \\sin \\frac{4\\alpha}{3} + \\cos \\frac{\\alpha}{3} \\cos \\frac{4\\alpha}{3} = 0$，则 $\\alpha$ 的值可能是（　　）   A. $\\dfrac{\\pi}{6}$　　B. $\\dfrac{\\pi}{4}$　　C. $\\dfrac{\\pi}{2}$　　D. $\\dfrac{3\\pi}{2}$",
+    "难度（1-5）": "3",
+    "知识点标签": "余弦差角;解方程",
+    "解析": "答案: CD   解析: 因为 $\\alpha \\in [0, 2\\pi]$，   $$ \\sin \\frac{\\alpha}{3} \\sin \\frac{4\\alpha}{3} + \\cos \\frac{\\alpha}{3} \\cos \\frac{4\\alpha}{3}  = \\cos \\left( \\frac{\\alpha}{3} - \\frac{4\\alpha}{3} \\right)  = \\cos (-\\alpha)  = \\cos \\alpha = 0, $$   则 $\\alpha = \\dfrac{\\pi}{2}$ 或 $\\alpha = \\dfrac{3\\pi}{2}$．故选 CD．",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+    "title": "5-5-2两角差的余弦公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-2两角差的余弦公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:14"
+}

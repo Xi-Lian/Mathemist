@@ -14,7 +14,7 @@ class _ParseStandardTableMixin:
         """
         # 找到表格开始和结束位置
         table_start = -1
-        table_end = -1
+        table_end = len(lines)  # 默认到文件末尾
         
         for i, line in enumerate(lines):
             # 跳过标题行（以#开头）
@@ -24,15 +24,22 @@ class _ParseStandardTableMixin:
             # 检查是否是表格开始行（包含|）
             if '|' in line and table_start == -1:
                 table_start = i
-            # 检查是否是表格结束行（不包含|且不包含+，且不是空行）
+            # 检查是否是表格结束：连续2个非表格行（不包含|且不是空行）
             elif '|' not in line and '+' not in line and table_start != -1:
-                # 检查是否是空行（只有空格或完全为空）
+                # 空行不计入结束判断
                 if line.strip() == '':
-                    # 空行，继续解析
                     continue
-                # 非空行且不包含|或+，表格结束
-                table_end = i
-                break
+                # 检查后续是否还有表格行
+                has_more_table_rows = False
+                for j in range(i + 1, min(i + 3, len(lines))):  # 检查后面3行
+                    if '|' in lines[j]:
+                        has_more_table_rows = True
+                        break
+                
+                if not has_more_table_rows:
+                    # 后面没有表格行了，表格结束
+                    table_end = i
+                    break
         
         if table_start == -1:
             return []
@@ -121,6 +128,7 @@ class _ParseStandardTableMixin:
         
         # 解析数据行
         data = []
+        skipped_count = 0
         for line in data_lines:
             row = self._parse_table_row(line)
             
@@ -131,6 +139,8 @@ class _ParseStandardTableMixin:
             if not is_separator:
                 # 如果列数不匹配，尝试调整
                 if len(row) != len(headers):
+                    logger.debug(f"    [跳过] 列数不匹配: 期望{len(headers)}列, 实际{len(row)}列, 内容: {line[:80]}...")
+                    skipped_count += 1
                     # 如果列数比表头多，且最后一列为空，则去掉最后一列
                     if len(row) > len(headers) and not row[-1].strip():
                         row = row[:-1]
@@ -142,5 +152,8 @@ class _ParseStandardTableMixin:
                 if len(row) == len(headers):
                     row_dict = {headers[i]: row[i] for i in range(len(headers))}
                     data.append(row_dict)
+        
+        if skipped_count > 0:
+            logger.warning(f"    [V53.10修复] 跳过了{skipped_count}行列数不匹配的数据")
         
         return data

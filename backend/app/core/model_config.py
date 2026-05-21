@@ -20,6 +20,10 @@ import threading
 # 设置 HuggingFace 镜像源，避免连接超时
 os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
+# 加载 .env 文件
+from dotenv import load_dotenv
+load_dotenv()
+
 from pathlib import Path
 from typing import Any, Optional
 
@@ -142,7 +146,7 @@ class ModelConfig:
         """
         provider = self.LLM_PROVIDER
         if provider not in {"auto", "deepseek", "openai_compatible"}:
-            print(f"⚠️  未知 LLM_PROVIDER={provider}，回退到 auto")
+            print(f"警告: 未知 LLM_PROVIDER={provider}，回退到 auto")
             provider = "auto"
         
         if provider == "deepseek":
@@ -154,16 +158,16 @@ class ModelConfig:
             return
         
         # auto 模式：优先 DeepSeek，失败后尝试 OpenAI 兼容
-        if self._is_valid_api_key(self.DEEPSEEK_API_KEY):
+        if ModelConfig._is_valid_api_key(self.DEEPSEEK_API_KEY):
             if self._init_deepseek_model():
                 return
             print("⚠️  DeepSeek 初始化失败，尝试 OpenAI 兼容模式")
         
-        if self._is_valid_api_key(self.OPENAI_COMPAT_API_KEY):
+        if ModelConfig._is_valid_api_key(self.OPENAI_COMPAT_API_KEY):
             self._init_openai_compatible_model()
             return
         
-        print("⚠️  未找到可用模型配置，请检查 .env 中的 API Key")
+        print("未找到可用模型配置，请检查 .env 中的 API Key")
 
     @staticmethod
     def _resolve_local_embedding_path(model_path: str) -> Optional[str]:
@@ -199,17 +203,22 @@ class ModelConfig:
         Returns:
             是否初始化成功
         """
+        print(f"开始初始化 DeepSeek 模型...")
+        print(f"   DEEPSEEK_API_KEY: {self.DEEPSEEK_API_KEY[:5]}...{self.DEEPSEEK_API_KEY[-5:] if len(self.DEEPSEEK_API_KEY) > 10 else self.DEEPSEEK_API_KEY}")
+        print(f"   DEEPSEEK_MODEL: {self.DEEPSEEK_MODEL}")
+        
         if ChatDeepSeek is None:
             print("⚠️  未安装 langchain-deepseek，无法使用 DeepSeek 模型")
             self._deepseek_llm = None
             return False
         
-        if not self._is_valid_api_key(self.DEEPSEEK_API_KEY):
-            print("⚠️  DeepSeek API Key 未配置")
+        if not ModelConfig._is_valid_api_key(self.DEEPSEEK_API_KEY):
+            print("⚠️  DeepSeek API Key 未配置或无效")
             self._deepseek_llm = None
             return False
         
         try:
+            print("   正在创建 ChatDeepSeek 实例...")
             self._deepseek_llm = ChatDeepSeek(
                 model=self.DEEPSEEK_MODEL,
                 api_key=self.DEEPSEEK_API_KEY,
@@ -218,10 +227,12 @@ class ModelConfig:
             )
             self._llm = self._deepseek_llm
             self._llm_provider_resolved = "deepseek"
-            print(f"✅ DeepSeek模型初始化成功: {self.DEEPSEEK_MODEL}")
+            print(f"DeepSeek模型初始化成功: {self.DEEPSEEK_MODEL}")
             return True
         except Exception as e:
-            print(f"⚠️  DeepSeek模型初始化失败: {e}")
+            print(f"警告: DeepSeek模型初始化失败: {e}")
+            import traceback
+            traceback.print_exc()
             self._deepseek_llm = None
             return False
     
@@ -237,7 +248,7 @@ class ModelConfig:
             self._openai_compat_llm = None
             return False
         
-        if not self._is_valid_api_key(self.OPENAI_COMPAT_API_KEY):
+        if not ModelConfig._is_valid_api_key(self.OPENAI_COMPAT_API_KEY):
             print("⚠️  OpenAI 兼容 API Key 未配置")
             self._openai_compat_llm = None
             return False
@@ -255,10 +266,10 @@ class ModelConfig:
             self._openai_compat_llm = ChatOpenAI(**kwargs)
             self._llm = self._openai_compat_llm
             self._llm_provider_resolved = "openai_compatible"
-            print(f"✅ OpenAI兼容模型初始化成功: {self.OPENAI_COMPAT_MODEL}")
+            print(f"OpenAI兼容模型初始化成功: {self.OPENAI_COMPAT_MODEL}")
             return True
         except Exception as e:
-            print(f"⚠️  OpenAI兼容模型初始化失败: {e}")
+            print(f"警告: OpenAI兼容模型初始化失败: {e}")
             self._openai_compat_llm = None
             return False
     
@@ -322,9 +333,9 @@ class ModelConfig:
                     local_files_only=local_files_only,
                 )
                 process_singletons["embedding_model"] = self._embedding_model
-                print(f"✅ Embedding模型初始化成功: {model_source}")
+                print(f"Embedding模型初始化成功: {model_source}")
             except Exception as e:
-                print(f"⚠️  Embedding模型初始化失败: {e}")
+                print(f"Embedding模型初始化失败: {e}")
                 raise ValueError(f"Embedding模型初始化失败: {e}")
         return self._embedding_model
     
@@ -343,7 +354,7 @@ class ModelConfig:
                     allow_reset=True,
                 ),
             )
-            print(f"✅ ChromaDB客户端初始化成功: {self.CHROMA_DB_DIR}")
+            print(f"ChromaDB客户端初始化成功: {self.CHROMA_DB_DIR}")
         return self._chroma_client
     
     def get_content_processor(self) -> SmartContentProcessor:
@@ -355,7 +366,7 @@ class ModelConfig:
         """
         if self._content_processor is None:
             self._content_processor = SmartContentProcessor()
-            print("✅ 智能内容处理器初始化成功")
+            print("智能内容处理器初始化成功")
         return self._content_processor
     
     def get_model(self, task_type: str = "default") -> Any:
@@ -369,10 +380,13 @@ class ModelConfig:
             模型实例
         """
         if self._llm is None:
-            raise ValueError(
-                "模型未初始化，请检查 .env："
-                "DEEPSEEK_API_KEY（DeepSeek）或 OPENAI_COMPAT_API_KEY（OpenAI兼容）"
-            )
+            print("模型未初始化，尝试重新初始化...")
+            self._init_llm()
+            if self._llm is None:
+                raise ValueError(
+                    "模型未初始化，请检查 .env："
+                    "DEEPSEEK_API_KEY（DeepSeek）或 OPENAI_COMPAT_API_KEY（OpenAI兼容）"
+                )
         
         # 教案生成任务需要更大的输出长度
         if task_type == "lesson_plan":

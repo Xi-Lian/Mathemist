@@ -14,6 +14,23 @@ class _AnalyzeWithKeywordsMixin:
         """
         user_input_lower = user_input.lower()
         
+        # V46.1修复：优先检查教案系统的特殊指令
+        # 这些指令应该直接进入教案系统，而不是资源检索
+        lesson_plan_special_commands = [
+            "查看完整教案", "完整教案", "导出教案", 
+            "导出为markdown", "导出为html", "导出为word",
+            "修改教案", "调整教案"
+        ]
+        is_lesson_plan_command = any(cmd in user_input for cmd in lesson_plan_special_commands)
+        if is_lesson_plan_command:
+            print(f"🎯 V46.1检测到教案系统特殊指令，强制使用generate_lesson_plan意图")
+            return self._get_single_intent_result(
+                self.INTENT_LESSON_PLAN,
+                "检测到教案系统特殊指令",
+                "用户需要查看/导出/修改已生成的教案",
+                []
+            )
+        
         # 检查指令词
         has_resource_retrieval = any(keyword in user_input for keyword in self.INSTRUCTION_KEYWORDS["resource_retrieval"])
         has_content_generation = any(keyword in user_input for keyword in self.INSTRUCTION_KEYWORDS["content_generation"])

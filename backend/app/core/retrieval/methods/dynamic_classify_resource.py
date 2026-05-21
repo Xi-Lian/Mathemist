@@ -117,7 +117,7 @@ class _DynamicClassifyResourceMixin:
                 return "theory"
 
         # 4. 查询层只做轻量约束，不再强行改类。
-        if "教案" in query and ("教案" in content or "教学" in content):
+        if "教案" in query and ("教案" in content or "教学" in content or "教学目标" in content or "教学过程" in content):
             return "lesson_plan"
         if ("教学大纲" in query or "课程标准" in query) and ("教学大纲" in content or "教学任务" in content):
             return "syllabus"

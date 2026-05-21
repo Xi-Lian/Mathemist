@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_343_85819",
+  "resource_type": "exercise",
+  "title": "5-4-2正弦函数、余弦函数的单调性与最值",
+  "source_file": "云端习题/函数习题/5-4-2正弦函数、余弦函数的单调性与最值.md",
+  "analysis": {
+    "知识点": [
+      "正弦函数的单调性",
+      "复合函数的单调性",
+      "参数求解"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用正弦函数的单调区间求解参数φ",
+    "涉及公式": [
+      "y = sin(u)的单调递增区间: u ∈ [2kπ - π/2, 2kπ + π/2], k∈Z",
+      "周期公式: T = 2π/ω"
+    ],
+    "解题思路": "由区间长度等于正弦函数半个周期，确定该区间恰为f(x)的一个完整单调递增区间；令区间端点对应的3x+φ分别等于正弦函数单调递增区间的左右端点，建立方程组求解φ，再结合φ的范围确定具体值。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "3"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "(2024年永州二模)已知函数$f(x)=\\sin(3x+\\varphi)$（$0<\\varphi<2\\pi$）在区间$\\left[\\dfrac{\\pi}{6}, \\dfrac{\\pi}{2}\\right]$上单调递增，则$\\varphi=$（　　）   A. $\\dfrac{\\pi}{8}$　　B. $\\dfrac{\\pi}{4}$　　C. $\\dfrac{\\pi}{2}$　　D. $\\pi$",
+    "难度（1-5）": "4",
+    "知识点标签": "正弦函数;单调性;参数求解",
+    "解析": "答案: D   解析: 根据题意，函数 $ f(x) = \\sin(3x + \\varphi) $，其周期 $ T = \\dfrac{2\\pi}{3} $，在一个周期内，$ f(x) $ 的增区间和减区间的长度均为 $ \\dfrac{\\pi}{3} $。又由 $ f(x) $ 在区间 $ \\left[ \\dfrac{\\pi}{6}, \\dfrac{\\pi}{2} \\right] $ 上单调递增，且   $$ \\dfrac{\\pi}{2} - \\dfrac{\\pi}{6} = \\dfrac{\\pi}{3}, $$   故该区间恰为一个完整的单调递增区间。   正弦函数 $ y = \\sin u $ 在 $ u \\in \\left[ 2k\\pi - \\dfrac{\\pi}{2},\\, 2k\\pi + \\dfrac{\\pi}{2} \\right] $（$ k \\in \\mathbb{Z} $）上单调递增。   令 $ u = 3x + \\varphi $，则当 $ x \\in \\left[ \\dfrac{\\pi}{6}, \\dfrac{\\pi}{2} \\right] $ 时，需满足：   $$ 3 \\cdot \\dfrac{\\pi}{6} + \\varphi = 2k\\pi - \\dfrac{\\pi}{2}, \\quad  3 \\cdot \\dfrac{\\pi}{2} + \\varphi = 2k\\pi + \\dfrac{\\pi}{2}, \\quad k \\in \\mathbb{Z}. $$   两式相减验证一致性：   $$ \\left(3 \\cdot \\dfrac{\\pi}{2} + \\varphi\\right) - \\left(3 \\cdot \\dfrac{\\pi}{6} + \\varphi\\right) = \\dfrac{3\\pi}{2} - \\dfrac{\\pi}{2} = \\pi, $$   而右边差值为 $ \\left(2k\\pi + \\dfrac{\\pi}{2}\\right) - \\left(2k\\pi - \\dfrac{\\pi}{2}\\right) = \\pi $，一致。   由第一式解得：   $$ \\dfrac{\\pi}{2} + \\varphi = 2k\\pi - \\dfrac{\\pi}{2} \\quad \\Rightarrow \\quad \\varphi = 2k\\pi - \\pi. $$   又由 $ 0 < \\varphi < 2\\pi $，代入得：   $$ 0 < 2k\\pi - \\pi < 2\\pi \\quad \\Rightarrow \\quad \\pi < 2k\\pi < 3\\pi \\quad \\Rightarrow \\quad \\dfrac{1}{2} < k < \\dfrac{3}{2}. $$   因 $ k \\in \\mathbb{Z} $，故 $ k = 1 $，从而 $ \\varphi = 2\\pi - \\pi = \\pi $。   故选 D。",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-4-2正弦函数、余弦函数的单调性与最值.md",
+    "title": "5-4-2正弦函数、余弦函数的单调性与最值",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-4-2正弦函数、余弦函数的单调性与最值.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-4-2正弦函数、余弦函数的单调性与最值.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-4-2正弦函数、余弦函数的单调性与最值.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:27:44"
+}

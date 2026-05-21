@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_395_5960",
+  "resource_type": "exercise",
+  "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "正弦和角公式",
+      "三角形内角和定理",
+      "三角形形状判断"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用正弦和角公式与三角形内角和关系，将条件转化为角的关系，判断三角形形状",
+    "涉及公式": [
+      "sin(B+C)=sinBcosC+cosBsinC",
+      "sin(B-C)=sinBcosC-cosBsinC"
+    ],
+    "解题思路": "由三角形内角和得A=π-(B+C)，代入sinA=2sinCcosB，利用正弦和角公式展开，化简得到sin(B-C)=0，结合角的范围推出B=C，故为等腰三角形",
+    "考察能力": [
+      "逻辑推理",
+      "运算能力"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "在 $\\triangle ABC$ 中，如果 $\\sin A = 2 \\sin C \\cos B$，那么这个三角形是（　　）   A. 锐角三角形　　B. 直角三角形　　C. 等腰三角形　　D. 等边三角形",
+    "难度（1-5）": "3",
+    "知识点标签": "正弦和角公式的三角形形状",
+    "解析": "答案: C   解析: 因为 $A + B + C = \\pi$，所以 $A = \\pi - (B + C)$．   由已知可得   \\[ \\sin(B + C) = 2 \\sin C \\cos B  \\Rightarrow \\sin B \\cos C + \\cos B \\sin C = 2 \\sin C \\cos B  \\Rightarrow \\sin B \\cos C - \\cos B \\sin C = 0  \\Rightarrow \\sin(B - C) = 0. \\]   因为 $0 < B < \\pi$，$0 < C < \\pi$，所以 $-\\pi < B - C < \\pi$，故 $B - C = 0$，即 $B = C$．   所以 $\\triangle ABC$ 为等腰三角形．故选 C．",
+    "适用场景": "综合运用",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:22"
+}

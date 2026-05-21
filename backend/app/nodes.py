@@ -28,6 +28,7 @@ from .search_agent_runtime import (
     build_search_response_payload,
     count_retrieved_resources,
     execute_search_tool_calls,
+    extract_exercise_details,
     get_empty_retrieved_resources,
     has_any_retrieved_resources,
     merge_retrieved_resources,
@@ -35,21 +36,28 @@ from .search_agent_runtime import (
     retry_search_until_results,
 )
 from .state import MathAgentState
+import threading
 
 # 缓存核心实例，避免重复创建
 _cached_retriever = None
+_retriever_lock = threading.Lock()
 
 
 def get_resource_retriever() -> ResourceRetriever:
     """
-    获取资源检索器实例（单例模式）
+    获取资源检索器实例（单例模式，线程安全）
 
     Returns:
         ResourceRetriever实例
     """
     global _cached_retriever
     if _cached_retriever is None:
-        _cached_retriever = ResourceRetriever()
+        with _retriever_lock:
+            # 双重检查锁定
+            if _cached_retriever is None:
+                print("=== 创建新的 ResourceRetriever 实例 ===")
+                _cached_retriever = ResourceRetriever()
+                print(f"=== ResourceRetriever 实例创建成功，类型: {type(_cached_retriever).__name__} ===")
     return _cached_retriever
 
 
@@ -142,7 +150,14 @@ def search_resources_tool(
     """
     retriever = get_resource_retriever()
     query_candidates = normalize_query_inputs(query, queries)
-    print(f"🧠 search_resources_tool 收到多 query: {query_candidates}, resource_types={resource_types or []}")
+    print(f"=" * 60)
+    print(f"=== search_resources_tool START ===")
+    print(f"原始查询: {query}")
+    print(f"查询变体: {query_candidates}")
+    print(f"资源类型: {resource_types}")
+    print(f"retriever 类型: {type(retriever).__name__}")
+    print(f"retrieve 方法来源: {getattr(retriever.retrieve, '__module__', 'unknown')}")
+    print(f"=" * 60)
 
     all_results: List[Dict[str, Any]] = []
     best_query = query
@@ -150,9 +165,10 @@ def search_resources_tool(
 
     for idx, candidate_query in enumerate(query_candidates, start=1):
         print(
-            f"🔎 search_resources_tool 执行查询[{idx}/{len(query_candidates)}]: "
+            f"search_resources_tool 执行查询[{idx}/{len(query_candidates)}]: "
             f"{candidate_query!r}, resource_types={resource_types or []}"
         )
+        print(f"[V107.0调试] search_resources_tool 调用 retrieve 方法")
         candidate_resources = retriever.retrieve(
             query=candidate_query,
             intent="search",
@@ -161,12 +177,12 @@ def search_resources_tool(
         if not isinstance(candidate_resources, dict):
             candidate_resources = get_empty_retrieved_resources()
         candidate_count = count_retrieved_resources(candidate_resources)
-        print(f"   ↳ 查询[{idx}] 返回资源总数: {candidate_count}")
+        print(f"   查询[{idx}] 返回资源总数: {candidate_count}")
         all_results.append(candidate_resources)
         if candidate_count > best_count:
             best_query = candidate_query
             best_count = candidate_count
-            print(f"   ✅ 查询[{idx}] 成为当前最佳结果")
+            print(f"   查询[{idx}] 成为当前最佳结果")
 
     retrieved_resources = merge_retrieved_resources(all_results)
     formatted_response = build_search_response_payload(
@@ -197,18 +213,18 @@ def intent_understanding_node(state: MathAgentState) -> Dict[str, Any]:
         更新的状态，包含意图信息
     """
     print(f"\n{'=' * 80}")
-    print("🧠 INTENT_UNDERSTANDING_NODE 被调用")
+    print("INTENT_UNDERSTANDING_NODE 被调用")
     print(f"{'=' * 80}")
-    print(f"📝 用户输入：{state.user_input}")
-    print(f"📚 state.messages 数量：{len(state.messages) if state.messages else 0}")
+    print(f"用户输入：{state.user_input}")
+    print(f"state.messages 数量：{len(state.messages) if state.messages else 0}")
     print(
-        f"📚 state.chat_history 数量：{len(state.chat_history) if state.chat_history else 0}"
+        f"state.chat_history 数量：{len(state.chat_history) if state.chat_history else 0}"
     )
-    print(f"📚 state.context: {state.context}")
+    print(f"state.context: {state.context}")
 
     # 如果 messages 不为空，打印消息详情
     if state.messages:
-        print(f"📋 state.messages 详情:")
+        print(f"state.messages 详情:")
         for i, msg in enumerate(state.messages[-5:]):  # 只打印最近 5 条
             msg_type = (
                 msg.get("type", "unknown")
@@ -241,7 +257,7 @@ def intent_understanding_node(state: MathAgentState) -> Dict[str, Any]:
     if not chat_history and getattr(state, "messages", None):
         chat_history = _messages_to_chat_history(state.messages)
 
-    print(f"📚 传递给 IntentAnalyzer 的 chat_history 数量：{len(chat_history)}")
+    print(f"[教案] 传递给 IntentAnalyzer 的 chat_history 数量：{len(chat_history)}")
 
     # 传递给 analyze 方法
     return analyzer.analyze(state.user_input, chat_history=chat_history)
@@ -261,8 +277,8 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
     print(f"\n{'=' * 80}")
     print("🚀 RESOURCE_RETRIEVAL_NODE 被调用")
     print(f"{'=' * 80}")
-    print(f"📝 用户输入: {state.user_input}")
-    print(f"🎯 意图: {state.intent}")
+    print(f"[习题] 用户输入: {state.user_input}")
+    print(f"[目标] 意图: {state.intent}")
 
     skip_retrieval = False
     if hasattr(state, 'skip_retrieval'):
@@ -304,6 +320,20 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
     elif isinstance(state, dict):
         clarified_topic = state.get("clarified_topic", None)
 
+    # V53.0：获取课件教学用途（如"练习课"/"复习课"/"新授课"），用于课件结果过滤
+    courseware_teaching_use = None
+    if hasattr(state, "courseware_teaching_use"):
+        courseware_teaching_use = getattr(state, "courseware_teaching_use", None)
+    elif isinstance(state, dict):
+        courseware_teaching_use = state.get("courseware_teaching_use", None)
+
+    # 【V107.0修复】获取难度信息，用于习题难度过滤
+    difficulty_info = None
+    if hasattr(state, "difficulty_info"):
+        difficulty_info = getattr(state, "difficulty_info", None)
+    elif isinstance(state, dict):
+        difficulty_info = state.get("difficulty_info", None)
+
     retrieved_resources = retriever.retrieve(
         query=state.user_input,
         intent=state.intent,
@@ -311,6 +341,8 @@ def resource_retrieval_node(state: MathAgentState) -> Dict[str, Any]:
         quantity_limit=quantity_limit,
         grade_info=grade_info,
         clarified_topic=clarified_topic,
+        courseware_teaching_use=courseware_teaching_use,
+        difficulty_info=difficulty_info,  # 【V107.0修复】传递难度信息
     )
     if not isinstance(retrieved_resources, dict):
         retrieved_resources = get_empty_retrieved_resources()
@@ -329,9 +361,9 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
     - 不再默认进入检索链路
     """
     print(f"\n{'=' * 80}")
-    print("🛠️ SEARCH_AGENT_NODE 被调用")
+    print("SEARCH_AGENT_NODE 被调用")
     print(f"{'=' * 80}")
-    print(f"📝 用户输入: {state.user_input}")
+    print(f"用户输入: {state.user_input}")
 
     model = IntentAnalyzer().model_config.get_model("intent")
     llm_with_tools = model.bind_tools([search_resources_tool])
@@ -341,15 +373,24 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
             "你是高中数学资源助手。\n"
             "你的职责是先判断用户是否真的需要检索本地资源库。\n"
             "规则：\n"
-            "1. 只有用户明确要找现成资源、教案、习题、课件、课例、GGB 或教学大纲时，才调用 search_resources_tool。\n"
-            "2. 如果用户只是在打招呼、闲聊、确认、或者主题还很模糊，就直接对话，不要调用工具。\n"
-            "3. 你必须结合当前对话历史理解省略信息。如果用户这轮没重复主题，但上文已经明确主题或资源类型，要先在脑中补全后再判断。\n"
-            "4. 如果主题仍然不够明确，先反问确认需求，不要瞎搜。\n"
-            "5. 如果调用了工具，必须提供一条主查询 query；当主查询可能不稳定时，再额外提供 1-3 条 queries 作为语义等价或互补表达。\n"
-            "6. 这些 queries 必须由你根据语义理解自行生成，不要机械复制，也不要依赖固定模板。\n"
-            "7. 多 query 的目标是覆盖不同自然表达，例如是否保留“的”、是否保留并列标点、是否用更完整的主题短语，但都必须忠实于用户原意。\n"
-            "8. 如果调用了工具，优先使用工具返回的 formatted_response 直接回复，不要重复编造资源。\n"
-            "9. 回复说人话，简洁。"
+            "1. 当用户输入包含以下关键词时，调用 search_resources_tool 进行检索：\n"
+            "   - 资源类型：资源、教案、教学设计、课件、PPT、幻灯片、演示文稿、课例、视频、微课、GGB、GeoGebra\n"
+            "   - 习题相关：习题、练习题、练习、题目、题、试题、测试题、例题\n"
+            "   - 教学相关：教学案例、教学设计、教学方案、备课、导学案\n"
+            "   - 教学大纲：教学大纲、课程标准、学业要求（注意：只有明确提到\"大纲\"、\"课程标准\"时才归类为教学大纲）\n"
+            "2. 【重要】资源类型优先级规则：\n"
+            "   - 当用户提到\"课件\"时，resource_types必须设置为[\"课件\"]，不要设置为其他类型\n"
+            "   - \"练习课课件\"是\"练习课\"类型的课件，resource_types应设置为[\"课件\"]\n"
+            "   - \"新授课课件\"是\"新授课\"类型的课件，resource_types应设置为[\"课件\"]\n"
+            "   - \"课件\"和\"教学大纲\"互斥：用户明确要课件时，绝不能设置为教学大纲\n"
+            "3. 【重要】只要用户提到具体的数学主题+资源类型（如'余弦定理课件'、'二次函数教案'、'分步乘法课件'），就必须调用 search_resources_tool，即使主题看起来很简单。\n"
+            "4. 你必须结合当前对话历史理解省略信息。如果用户这轮没重复主题，但上文已经明确主题或资源类型，要先在脑中补全后再判断。\n"
+            "5. 只有在完全没有主题信息时（如'给我一些资源'、'我想学习'），才需要反问确认。对于有明确主题的查询，直接调用工具检索。\n"
+            "6. 如果调用了工具，必须提供一条主查询 query；当主查询可能不稳定时，再额外提供 1-3 条 queries 作为语义等价或互补表达。\n"
+            "7. 这些 queries 必须由你根据语义理解自行生成，不要机械复制，也不要依赖固定模板。\n"
+            "8. 多 query 的目标是覆盖不同自然表达，例如是否保留\"的\"、是否保留并列标点、是否用更完整的主题短语，但都必须忠实于用户原意。\n"
+            "9. 如果调用了工具，优先使用工具返回的 formatted_response 直接回复，不要重复编造资源。\n"
+            "10. 回复说人话，简洁。"
         )
     )
 
@@ -357,10 +398,10 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
     model_response = llm_with_tools.invoke([system_message, *conversation_messages])
 
     tool_calls = getattr(model_response, "tool_calls", None) or []
-    print(f"🧰 SEARCH_AGENT_NODE tool_calls 数量: {len(tool_calls)}")
+    print(f"SEARCH_AGENT_NODE tool_calls 数量: {len(tool_calls)}")
     if not tool_calls:
         response_text = (getattr(model_response, "content", "") or "").strip()
-        print(f"⚠️ SEARCH_AGENT_NODE 未调用工具，模型直接回复: {response_text[:300]}")
+        print(f"SEARCH_AGENT_NODE 未调用工具，模型直接回复: {response_text[:300]}")
         if not response_text:
             response_text = "你先告诉我是想搜资源、生成教案，还是做可视化，我再继续。"
         return {
@@ -380,12 +421,13 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
         search_tool=search_resources_tool,
         original_user_query=state.user_input,
         max_search_rounds=3,
+        llm=model,
     )
 
-    print(f"📦 SEARCH_AGENT_NODE 最终选中资源总数: {count_retrieved_resources(retrieved_resources)}")
+    print(f"SEARCH_AGENT_NODE 最终选中资源总数: {count_retrieved_resources(retrieved_resources)}")
 
     if not has_any_retrieved_resources(retrieved_resources):
-        print("⚠️ SEARCH_AGENT_NODE 最终判定为无检索结果，进入没找到兜底回复")
+        print("SEARCH_AGENT_NODE 最终判定为无检索结果，进入没找到兜底回复")
         response_text = _generate_ai_reply(
             model,
             (
@@ -397,7 +439,7 @@ def search_agent_node(state: MathAgentState) -> Dict[str, Any]:
             "这次在本地资源库里没找到合适结果。你可以补充资源类型、年级或更具体的主题，我再帮你缩小范围。",
         )
     elif not response_text:
-        print("ℹ️ SEARCH_AGENT_NODE 检索到结果，但 formatted_response 为空，进入简短说明回复")
+        print("SEARCH_AGENT_NODE 检索到结果，但 formatted_response 为空，进入简短说明回复")
         response_text = _generate_ai_reply(
             model,
             (
@@ -430,16 +472,16 @@ def unified_lesson_plan_node(state: MathAgentState) -> Dict[str, Any]:
     Returns:
         更新的状态
     """
-    print(f"\n📝 统一教案生成节点启动")
-    print(f"📝 用户输入: {state.user_input}")
-    print(f"📝 现有会话ID: {state.lesson_plan_session_id}")
+    print(f"\n[习题] 统一教案生成节点启动")
+    print(f"[习题] 用户输入: {state.user_input}")
+    print(f"[习题] 现有会话ID: {state.lesson_plan_session_id}")
 
     # 调用统一教案系统
     result = unified_lesson_plan_system.process_lesson_plan_request(
         state.user_input, session_id=state.lesson_plan_session_id
     )
 
-    print(f"📝 统一教案系统结果: {result.get('status', 'unknown')}")
+    print(f"[习题] 统一教案系统结果: {result.get('status', 'unknown')}")
 
     # 构建返回的状态更新
     updates = {"current_step": "unified_lesson_plan", "error": None}
@@ -595,13 +637,25 @@ def response_formatting_node(state: MathAgentState) -> Dict[str, Any]:
     if isinstance(state, dict):
         chat_history = state.get("chat_history", []) or []
         user_input = state.get("user_input", "")
+        retrieved_resources = state.get("retrieved_resources", {})
     else:
         chat_history = getattr(state, "chat_history", []) or []
         user_input = getattr(state, "user_input", "")
+        retrieved_resources = getattr(state, "retrieved_resources", {})
     chat_history = chat_history + [
         {"role": "user", "content": user_input},
         {"role": "assistant", "content": response}
     ]
+
+    # 提取习题结构化详情，供前端做分区展示（题目框 / 答案框 / 知识点标签等）
+    # 关键：用 builder 的 _filter_by_relevance 过滤（与 response 文本中的展示逻辑一致），
+    # 只提取"可见"习题，被隐藏的低相关性资源不出现在卡片中。
+    raw_exercise_resources = retrieved_resources.get("exercise_resources", []) if retrieved_resources else []
+    if raw_exercise_resources:
+        filtered_exercise_resources = builder._filter_by_relevance(raw_exercise_resources, state, "习题资源")
+        exercise_details = extract_exercise_details({"exercise_resources": filtered_exercise_resources})
+    else:
+        exercise_details = []
 
     return {
         "response": response,
@@ -612,4 +666,5 @@ def response_formatting_node(state: MathAgentState) -> Dict[str, Any]:
         "chat_history": chat_history,
         "lesson_plan_session_id": lesson_plan_session_id,
         "export_data": export_data,
+        "exercise_details": exercise_details,
     }

@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_789_95070",
+  "resource_type": "exercise",
+  "title": "7-5正态分布",
+  "source_file": "云端习题/概率与统计习题/7-5正态分布.md",
+  "analysis": {
+    "知识点": [
+      "二项分布",
+      "独立事件的概率",
+      "组合数计算"
+    ],
+    "题型": "解答题",
+    "核心考点": "利用二项分布模型求解独立重复试验的概率及分布列",
+    "涉及公式": [
+      "$P(X=k) = \\binom{n}{k} p^k (1-p)^{n-k}$",
+      "$\\binom{n}{k} = \\frac{n!}{k!(n-k)!}$"
+    ],
+    "解题思路": "(1) 甲通过每个项目的概率均为1/2，且项目独立，故甲恰好通过两个项目服从二项分布，直接代入公式计算。(2) 先计算每人被录用的概率（通过两个或三个项目），发现每人被录用概率均为1/2，且三人独立，因此被录用人数X服从二项分布B(3,1/2)，再列出分布列。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理",
+      "数据分析"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "在某公司的一次招聘中，应聘者要进行 $A$、$B$、$C$ 三个独立项目的测试，通过其中的两个或三个即可被录用。已知甲、乙、丙三人通过 $A$、$B$、$C$ 每个项目测试的概率都是 $\\frac{1}{2}$。  \n（1）求甲恰好通过两个项目测试的概率；  \n（2）设甲、乙、丙三人中被录用的人数为 $X$，求 $X$ 的分布列。",
+    "难度（1-5）": "3",
+    "知识点标签": "二项分布",
+    "解析": "答案：(1) $\\dfrac{3}{8}$；(2) 分布列略。  \n解析：(1) 甲恰好通过两个项目测试的概率为  \n\\[\n\\binom{3}{2} \\times \\left(\\frac{1}{2}\\right)^2 \\times \\left(1 - \\frac{1}{2}\\right)^1 = \\frac{3}{8}.\n\\]  \n(2) 因为甲、乙、丙三人被录用的概率均为  \n\\[\n\\binom{3}{2} \\times \\left(\\frac{1}{2}\\right)^2 \\times \\left(1 - \\frac{1}{2}\\right)^1 + \\binom{3}{3} \\times \\left(\\frac{1}{2}\\right)^3 = \\frac{1}{2},\n\\]  \n所以 $X \\sim B\\left(3,\\, \\dfrac{1}{2}\\right)$，  \n\\[\n\\begin{aligned}\nP(X=0) &= \\binom{3}{0} \\times \\left(1 - \\frac{1}{2}\\right)^3 = \\frac{1}{8}, \\\\\nP(X=1) &= \\binom{3}{1} \\times \\left(\\frac{1}{2}\\right)^1 \\times \\left(1 - \\frac{1}{2}\\right)^2 = \\frac{3}{8}, \\\\\nP(X=2) &= \\binom{3}{2} \\times \\left(\\frac{1}{2}\\right)^2 \\times \\left(1 - \\frac{1}{2}\\right)^1 = \\frac{3}{8}, \\\\\nP(X=3) &= \\binom{3}{3} \\times \\left(\\frac{1}{2}\\right)^3 = \\frac{1}{8}.\n\\end{aligned}\n\\]  \n分布列略。\n\n---",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/7-5正态分布.md",
+    "title": "7-5正态分布",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-5正态分布.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-5正态分布.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\7-5正态分布.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:33:17"
+}

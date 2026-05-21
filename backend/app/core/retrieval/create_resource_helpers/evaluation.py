@@ -21,5 +21,5 @@ def evaluate_resource_match(
     if core_theme:
         if resource_type == "exercise":
             return evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme, query, question_type, multi_theme_info)
-        return evaluate_non_exercise_match(retriever, doc, metadata, base_relevance, resource_type, core_theme)
+        return evaluate_non_exercise_match(retriever, doc, metadata, base_relevance, resource_type, core_theme, query)
     return build_no_core_theme_result(base_relevance, resource_type)

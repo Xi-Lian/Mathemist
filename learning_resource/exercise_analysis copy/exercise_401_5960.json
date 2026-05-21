@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_401_5960",
+  "resource_type": "exercise",
+  "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "诱导公式",
+      "同角三角函数关系",
+      "两角和的余弦公式"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用诱导公式和同角关系求三角函数值，再应用两角和的余弦公式计算",
+    "涉及公式": [
+      "sin(π/2 - α) = cosα",
+      "sin²α + cos²α = 1",
+      "cos(α+β) = cosα cosβ - sinα sinβ"
+    ],
+    "解题思路": "先由诱导公式得cosα=4/5，结合α范围求出sinα=3/5；由cosβ=5/13及β范围求出sinβ=12/13；代入两角和的余弦公式计算得-33/65",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2分钟"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "(2024年济宁任城区开学考试)已知$\\alpha,\\beta\\in\\left(0,\\dfrac{\\pi}{2}\\right)$，若$\\sin\\left(\\dfrac{\\pi}{2}-\\alpha\\right)=\\dfrac{4}{5}$，$\\cos\\beta=\\dfrac{5}{13}$，则$\\cos(\\alpha+\\beta)=$\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_．",
+    "难度（1-5）": "3",
+    "知识点标签": "诱导公式;余弦和角;同角关系",
+    "解析": "答案：$-\\dfrac{33}{65}$   解析：由 $\\alpha,\\beta\\in\\left(0,\\dfrac{\\pi}{2}\\right)$，$\\sin\\left(\\dfrac{\\pi}{2}-\\alpha\\right)=\\cos\\alpha=\\dfrac{4}{5}$，$\\cos\\beta=\\dfrac{5}{13}$，得 $\\sin\\alpha=\\dfrac{3}{5}$，$\\sin\\beta=\\dfrac{12}{13}$，则   $$ \\cos(\\alpha+\\beta)=\\cos\\alpha\\cos\\beta-\\sin\\alpha\\sin\\beta=\\dfrac{4}{5}\\times\\dfrac{5}{13}-\\dfrac{3}{5}\\times\\dfrac{12}{13}=-\\dfrac{33}{65}. $$",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:28"
+}

@@ -52,4 +52,16 @@ class _BuildLessonPlanFallbackContentMixin:
             parts.append(f"逻辑路径：{logical_path}")
 
         parts.append("说明：云端Markdown正文缺失，当前使用索引摘要参与检索。")
-        return "\n".join(parts)
+
+        content = "\n".join(parts)
+
+        # 添加额外的语义信息，从文件名和目录中提取更多关键词
+        semantic_parts = []
+        for text in [filename, directory, logical_path]:
+            if text:
+                semantic_parts.append(text)
+
+        if semantic_parts:
+            content += "\n" + " ".join(semantic_parts)
+
+        return content

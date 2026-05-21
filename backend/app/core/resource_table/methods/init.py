@@ -11,7 +11,8 @@ class _InitMixin:
         """
         # 确保learning_resource_path是绝对路径
         self.learning_resource_path = Path(learning_resource_path).resolve()
-        self.project_root = self.learning_resource_path.parent if self.learning_resource_path.name == "learning_resource" else self.learning_resource_path
+        # 处理learning_resource或learning-resource文件夹
+        self.project_root = self.learning_resource_path.parent if (self.learning_resource_path.name == "learning_resource" or self.learning_resource_path.name == "learning-resource") else self.learning_resource_path
         self.lesson_plan_cache_dir = self.project_root / "backend" / "data" / "cloud_lesson_plan_cache"
         self.lesson_plan_cache_dir.mkdir(parents=True, exist_ok=True)
         

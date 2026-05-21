@@ -36,13 +36,13 @@ class ConfigManager:
                 if config_path.exists():
                     with open(config_path, 'r', encoding='utf-8') as f:
                         config = yaml.safe_load(f)
-                        print(f"✅ 成功加载配置文件: {config_path}")
+                        print(f"成功加载配置文件: {config_path}")
                         return config
             
-            print(f"⚠️ 未找到配置文件，使用默认配置")
+            print(f"未找到配置文件，使用默认配置")
             return self._get_default_config()
         except Exception as e:
-            print(f"⚠️ 加载配置文件失败: {e}")
+            print(f"加载配置文件失败: {e}")
             return self._get_default_config()
     
     def _get_default_config(self) -> dict:

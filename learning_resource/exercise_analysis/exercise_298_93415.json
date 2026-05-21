@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_298_93415",
+  "resource_type": "exercise",
+  "title": "5-2-2同角三角函数的基本关系",
+  "source_file": "云端习题/函数习题/5-2-2同角三角函数的基本关系.md",
+  "analysis": {
+    "知识点": [
+      "同角三角函数基本关系",
+      "平方差公式",
+      "二倍角公式",
+      "归纳推理"
+    ],
+    "题型": "证明题",
+    "核心考点": "利用平方差公式和同角三角函数基本关系证明恒等式，并通过具体数值计算归纳出二倍角公式",
+    "涉及公式": [
+      "sin²x + cos²x = 1",
+      "cos²x - sin²x = cos2x",
+      "a² - b² = (a+b)(a-b)"
+    ],
+    "解题思路": "先计算特殊角数值，发现cos⁴x - sin⁴x与cos²x - sin²x相等；再利用平方差公式将cos⁴x - sin⁴x分解为(cos²x+sin²x)(cos²x-sin²x)，结合sin²x+cos²x=1完成证明；最后根据前两问结果推测与cos2x的关系",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "证明题",
+    "题干": "(1) 分别计算 $\\cos^4\\frac{\\pi}{6} - \\sin^4\\frac{\\pi}{6}$、$\\cos^2\\frac{\\pi}{6} - \\sin^2\\frac{\\pi}{6}$ 和 $\\cos\\frac{\\pi}{3}$ 的值，你有什么发现？   (2) 计算 $\\cos^4\\frac{\\pi}{4} - \\sin^4\\frac{\\pi}{4}$、$\\cos^2\\frac{\\pi}{4} - \\sin^2\\frac{\\pi}{4}$ 和 $\\cos\\frac{\\pi}{2}$ 的值，你有什么发现？   (3) 证明：对任意 $x \\in \\mathbb{R}$，有 $\\cos^2 x - \\sin^2 x = \\cos^4 x - \\sin^4 x$．   (4) 推测：对任意 $x \\in \\mathbb{R}$，$\\cos^2 x - \\sin^2 x$ 与 $\\cos 2x$ 的关系，不需证明．",
+    "难度（1-5）": "4",
+    "知识点标签": "恒等式证明的二倍角的归纳推理",
+    "解析": "答案：(1) $\\frac{1}{2}$；$\\frac{1}{2}$；$\\frac{1}{2}$，发现三者相等。   (2) $0$；$0$；$0$，发现三者相等。   (3) 证明见解析。   (4) $\\cos^2 x - \\sin^2 x = \\cos 2x$。    解析：   (1) $\\cos^4 \\frac{\\pi}{6} - \\sin^4 \\frac{\\pi}{6} = \\left( \\cos^2 \\frac{\\pi}{6} + \\sin^2 \\frac{\\pi}{6} \\right) \\left( \\cos^2 \\frac{\\pi}{6} - \\sin^2 \\frac{\\pi}{6} \\right) = \\cos^2 \\frac{\\pi}{6} - \\sin^2 \\frac{\\pi}{6} = \\frac{3}{4} - \\frac{1}{4} = \\frac{1}{2} = \\cos \\frac{\\pi}{3}$。   (2) $\\cos^4 \\frac{\\pi}{4} - \\sin^4 \\frac{\\pi}{4} = \\left( \\cos^2 \\frac{\\pi}{4} + \\sin^2 \\frac{\\pi}{4} \\right) \\left( \\cos^2 \\frac{\\pi}{4} - \\sin^2 \\frac{\\pi}{4} \\right) = \\cos^2 \\frac{\\pi}{4} - \\sin^2 \\frac{\\pi}{4} = \\frac{1}{2} - \\frac{1}{2} = 0 = \\cos \\frac{\\pi}{2}$。   (3) 证明：$\\cos^4 x - \\sin^4 x = \\left( \\cos^2 x + \\sin^2 x \\right) \\left( \\cos^2 x - \\sin^2 x \\right) = \\cos^2 x - \\sin^2 x$。   (4) 推测关系为 $\\cos^2 x - \\sin^2 x = \\cos 2x$。",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-2-2同角三角函数的基本关系.md",
+    "title": "5-2-2同角三角函数的基本关系",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-2同角三角函数的基本关系.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-2同角三角函数的基本关系.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-2-2同角三角函数的基本关系.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:13"
+}

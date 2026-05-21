@@ -6,7 +6,9 @@ class _GenerateMixin:
         self, 
         user_input: str, 
         theory_resources: List[Dict[str, Any]],
-        lesson_plan_patterns: List[Dict[str, Any]]
+        lesson_plan_patterns: List[Dict[str, Any]],
+        excellent_case_resources: List[Dict[str, Any]] = None,
+        usage_scenario: str = "daily_teaching"  # V48.0新增：使用场景
     ) -> str:
         """
         生成教案
@@ -15,30 +17,34 @@ class _GenerateMixin:
             user_input: 用户需求
             theory_resources: 理论资源列表
             lesson_plan_patterns: 优秀教案示例列表
+            usage_scenario: 使用场景（V48.0新增）
         
         Returns:
             生成的教案文本
         """
+        excellent_case_resources = excellent_case_resources or []
         print(f"\n====================================")
-        print(f"📝 教案生成开始")
-        print(f"📝 用户需求: {user_input}")
-        print(f"📚 向量数据库理论资源: {len(theory_resources)}条")
-        print(f"📄 向量数据库教案示例: {len(lesson_plan_patterns)}条")
-        print(f"📚 本地优秀教案共性文件: {'已加载' if self.lesson_plan_common_characteristics else '未找到'}")
-        print(f"📚 本地理论卡片文件: {'已加载' if self.theory_cards else '未找到'}")
+        print(f"教案生成开始")
+        print(f"用户需求: {user_input}")
+        print(f"向量数据库理论资源: {len(theory_resources)}条")
+        print(f"向量数据库教案示例: {len(lesson_plan_patterns)}条")
+        print(f"向量数据库优秀案例分析: {len(excellent_case_resources)}条")
+        print(f"本地优秀教案共性文件: {'已加载' if self.lesson_plan_common_characteristics else '未找到'}")
+        print(f"本地理论卡片文件: {'已加载' if self.theory_cards else '未找到'}")
         
         try:
             # 分析用户输入中的教学方法
             teaching_method = self._analyze_teaching_method(user_input)
-            print(f"🔍 分析教学方法: {teaching_method}")
+            print(f"分析教学方法: {teaching_method}")
             
             # 分析用户输入中的教学内容类型
             content_type = self._analyze_content_type(user_input)
-            print(f"📝 分析教学内容类型: {content_type}")
+            print(f"分析教学内容类型: {content_type}")
             
             # 准备输入数据 - 优先使用本地文件，向量数据库资源作为补充
             theory_text = self._format_theory_resources(theory_resources)
             patterns_text = self._format_lesson_plan_patterns(lesson_plan_patterns)
+            excellent_case_text = self._format_excellent_case_resources(excellent_case_resources)
             
             # 获取模型
             model = self.model_config.get_model("lesson_plan")
@@ -51,11 +57,13 @@ class _GenerateMixin:
                 "user_input": user_input,
                 "theory_resources": theory_text,
                 "lesson_plan_patterns": patterns_text,
+                "excellent_case_resources": excellent_case_text,
                 "lesson_plan_common_characteristics": self.lesson_plan_common_characteristics,
-                "theory_cards": self.theory_cards
+                "theory_cards": self.theory_cards,
+                "usage_scenario": usage_scenario  # V48.0新增：传递使用场景
             })
             
-            print(f"✅ 教案生成成功，长度: {len(lesson_plan)}字符")
+            print(f"教案生成成功，长度: {len(lesson_plan)}字符")
             
             # 验证理论引用（考虑教学方法和内容类型）
             validated_lesson_plan = self._validate_theory_references(lesson_plan, teaching_method, content_type)
@@ -78,5 +86,5 @@ class _GenerateMixin:
             return complete_plan
             
         except Exception as e:
-            print(f"❌ 教案生成失败: {str(e)}")
+            print(f"教案生成失败: {str(e)}")
             return self._get_error_response(str(e))

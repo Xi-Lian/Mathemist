@@ -13,7 +13,9 @@ class _ProcessGgbResourceMixin:
         filename = metadata.get('ggb文件名', '')
         chapter = metadata.get('章节', '')
         usage = metadata.get('教学用途', '')
+        cloud_url = metadata.get('云端链接', '')
         
         resource['title'] = f"GGB资源: {filename}"
         resource['content'] = f"章节：{chapter}\n教学用途：{usage}"
         resource['filename'] = filename
+        resource['cloud_url'] = cloud_url  # 添加云端链接，用于界面显示

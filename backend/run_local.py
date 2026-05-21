@@ -1,4 +1,9 @@
 import os
+import sys
+
+# 设置编码为UTF-8
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
 
 
 def _patch_langgraph_node_alias():
@@ -100,14 +105,15 @@ def main():
     os.environ.setdefault("PORT", "8000")
     os.environ.setdefault("HOST", "0.0.0.0")
 
-    from main import app
     import uvicorn
 
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8000"))
 
     print(f"🚀 启动后端服务器: http://{host}:{port}")
-    uvicorn.run(app, host=host, port=port)
+    print(f"📋 启动模式: 开发模式 (reload=True)")
+    # 使用导入字符串格式以支持重载模式
+    uvicorn.run("main:app", host=host, port=port, reload=True)
 
 
 if __name__ == "__main__":

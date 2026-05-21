@@ -19,9 +19,13 @@ DIRECT_GENERATE_KEYWORDS = ["直接生成", "跳过引导", "生成教案"]
 
 
 def handle_revision_request(system, user_input, session_id):
+    # V48.4修复：先检查是否包含生成关键词，如果是则不是修改请求
+    has_generation_keyword = any(keyword in user_input for keyword in GENERATION_KEYWORDS)
+    if has_generation_keyword:
+        print(f"✅ 检测到生成关键词，跳过修改请求判断")
+        return None, session_id
+    
     has_revision_request = any(keyword in user_input for keyword in REVISION_KEYWORDS)
-    if not has_revision_request and any(keyword in user_input for keyword in GENERATION_KEYWORDS):
-        has_revision_request = False
     if not has_revision_request:
         return None, session_id
 

@@ -1,0 +1,1386 @@
+[
+  {
+    "label": "函数板块",
+    "matched_count": 121,
+    "own_keywords": [
+      "函数板块"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数的基本概念与表示",
+    "matched_count": 11,
+    "own_keywords": [
+      "函数的基本概念与表示"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数的定义",
+    "matched_count": 6,
+    "own_keywords": [
+      "三要素",
+      "值域",
+      "函数定义",
+      "函数的定义",
+      "定义域",
+      "对应关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "区间与数集表示",
+    "matched_count": 2,
+    "own_keywords": [
+      "区间",
+      "区间与数集表示",
+      "半开半闭区间",
+      "开区间",
+      "数集",
+      "无穷区间",
+      "闭区间"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数的表示方法",
+    "matched_count": 0,
+    "own_keywords": [
+      "函数的表示方法",
+      "列表法",
+      "图像法",
+      "解析法"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "分段函数",
+    "matched_count": 3,
+    "own_keywords": [
+      "分段函数",
+      "图像绘制",
+      "定义域求解",
+      "求值与应用"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "映射的概念",
+    "matched_count": 0,
+    "own_keywords": [
+      "一对一映射",
+      "函数关系",
+      "多对一映射",
+      "映射",
+      "映射的概念"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复合函数的概念",
+    "matched_count": 3,
+    "own_keywords": [
+      "复合函数",
+      "复合函数的概念",
+      "定义域",
+      "对应关系拆解"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数的基本性质",
+    "matched_count": 26,
+    "own_keywords": [
+      "函数的基本性质"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "单调性",
+    "matched_count": 2,
+    "own_keywords": [
+      "单调性",
+      "单调递减",
+      "单调递增",
+      "图像法判断",
+      "定义法证明"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "最值",
+    "matched_count": 3,
+    "own_keywords": [
+      "单调性法",
+      "图像法",
+      "最值",
+      "最大值",
+      "最小值"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "奇偶性",
+    "matched_count": 3,
+    "own_keywords": [
+      "偶函数",
+      "图像特征",
+      "奇偶性",
+      "奇偶性判断",
+      "奇函数",
+      "定义域对称性"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "周期性",
+    "matched_count": 1,
+    "own_keywords": [
+      "周期函数",
+      "周期性",
+      "周期推导",
+      "最小正周期"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "对称性",
+    "matched_count": 4,
+    "own_keywords": [
+      "中心对称",
+      "周期性",
+      "奇偶性",
+      "对称性",
+      "轴对称"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "有界性",
+    "matched_count": 17,
+    "own_keywords": [
+      "三角函数",
+      "反比例函数",
+      "有界函数",
+      "有界性"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "基本初等函数",
+    "matched_count": 105,
+    "own_keywords": [
+      "基本初等函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "一次函数与正比例函数",
+    "matched_count": 15,
+    "own_keywords": [
+      "一次函数",
+      "一次函数与正比例函数",
+      "图像",
+      "性质",
+      "正比例函数",
+      "解析式",
+      "过定点问题"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "二次函数",
+    "matched_count": 7,
+    "own_keywords": [
+      "一般式",
+      "二次不等式",
+      "二次函数",
+      "交点式",
+      "图像与性质",
+      "对称轴",
+      "开口方向",
+      "根的分布",
+      "闭区间最值",
+      "顶点",
+      "顶点式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "幂函数",
+    "matched_count": 10,
+    "own_keywords": [
+      "单调性",
+      "图像与性质",
+      "奇偶性",
+      "定义",
+      "定义域",
+      "幂函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "指数函数",
+    "matched_count": 10,
+    "own_keywords": [
+      "单调性",
+      "图像与性质",
+      "定义",
+      "指数函数",
+      "指数运算",
+      "过定点"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "对数函数",
+    "matched_count": 11,
+    "own_keywords": [
+      "单调性",
+      "反函数关系",
+      "图像与性质",
+      "定义",
+      "对数函数",
+      "对数运算",
+      "换底公式",
+      "过定点"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三角函数",
+    "matched_count": 66,
+    "own_keywords": [
+      "三角函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三角函数的定义",
+    "matched_count": 32,
+    "own_keywords": [
+      "三角函数定义",
+      "三角函数的定义",
+      "任意角",
+      "余弦",
+      "弧度制",
+      "正切",
+      "正弦"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三角函数的图像与性质",
+    "matched_count": 13,
+    "own_keywords": [
+      "三角函数图像",
+      "三角函数的图像与性质",
+      "余弦函数",
+      "单调性",
+      "周期性",
+      "奇偶性",
+      "对称中心",
+      "对称轴",
+      "最值",
+      "正切函数",
+      "正弦函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "同角三角函数的基本关系",
+    "matched_count": 2,
+    "own_keywords": [
+      "sin²+cos²=1",
+      "tan=sin/cos",
+      "三角恒等式",
+      "同角三角函数的基本关系",
+      "同角关系",
+      "商数关系",
+      "平方关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "诱导公式",
+    "matched_count": 1,
+    "own_keywords": [
+      "-α公式",
+      "2π±α公式",
+      "3π/2±α",
+      "π/2±α",
+      "π±α公式",
+      "奇变偶不变",
+      "符号看象限",
+      "诱导公式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三角恒等变换",
+    "matched_count": 19,
+    "own_keywords": [
+      "asinx+bcosx",
+      "万能公式",
+      "三角恒等变换",
+      "三角恒等式",
+      "二倍角",
+      "升幂",
+      "半角",
+      "和差化积",
+      "和差角",
+      "恒等变换",
+      "积化和差",
+      "辅助角",
+      "降幂"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "二倍角公式",
+    "matched_count": 5,
+    "own_keywords": [
+      "cos2α",
+      "sin2α",
+      "tan2α",
+      "二倍角",
+      "二倍角公式",
+      "余弦二倍角",
+      "正切二倍角",
+      "正弦二倍角",
+      "降幂公式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "半角公式",
+    "matched_count": 1,
+    "own_keywords": [
+      "cos(α/2)",
+      "sin(α/2)",
+      "tan(α/2)",
+      "余弦半角",
+      "半角",
+      "半角公式",
+      "正切半角",
+      "正弦半角"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "和差角公式",
+    "matched_count": 11,
+    "own_keywords": [
+      "cos(A+B)",
+      "cos(A-B)",
+      "sin(A+B)",
+      "sin(A-B)",
+      "tan(A+B)",
+      "tan(A-B)",
+      "余弦和差",
+      "余弦和角",
+      "余弦差角",
+      "和差角公式",
+      "和角公式",
+      "差角公式",
+      "正切和差",
+      "正切和角",
+      "正切差角",
+      "正弦和差",
+      "正弦和角",
+      "正弦差角"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "和差化积",
+    "matched_count": 1,
+    "own_keywords": [
+      "sinA+sinB",
+      "sinA-sinB",
+      "和差化积",
+      "积化和差"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "辅助角公式",
+    "matched_count": 0,
+    "own_keywords": [
+      "asinx+bcosx",
+      "φ角求解",
+      "辅助角",
+      "辅助角公式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "解三角形",
+    "matched_count": 1,
+    "own_keywords": [
+      "SSA",
+      "SSA歧义",
+      "三角形面积",
+      "余弦定理",
+      "内切圆",
+      "外接圆",
+      "正弦定理",
+      "解三角形"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "反三角函数",
+    "matched_count": 4,
+    "own_keywords": [
+      "值域",
+      "反三角函数",
+      "反余弦",
+      "反正切",
+      "反正弦",
+      "定义",
+      "定义域"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数的图像与变换",
+    "matched_count": 2,
+    "own_keywords": [
+      "函数的图像与变换"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "基本函数的图像绘制",
+    "matched_count": 0,
+    "own_keywords": [
+      "图像绘制",
+      "基本函数的图像绘制",
+      "性质法",
+      "描点法"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数图像的平移变换",
+    "matched_count": 1,
+    "own_keywords": [
+      "上加下减",
+      "函数图像的平移变换",
+      "左加右减",
+      "平移变换"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "伸缩变换",
+    "matched_count": 0,
+    "own_keywords": [
+      "伸缩变换",
+      "横坐标伸缩",
+      "纵坐标伸缩"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "对称变换",
+    "matched_count": 0,
+    "own_keywords": [
+      "x轴对称",
+      "y轴对称",
+      "原点对称",
+      "对称变换",
+      "直线对称"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "翻折变换",
+    "matched_count": 0,
+    "own_keywords": [
+      "f(|x|",
+      "|f(x)|",
+      "绝对值翻折",
+      "翻折变换"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数的应用",
+    "matched_count": 19,
+    "own_keywords": [
+      "函数的应用"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数与方程",
+    "matched_count": 3,
+    "own_keywords": [
+      "二分法",
+      "二次函数零点",
+      "函数与方程",
+      "零点存在性定理",
+      "零点定义"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "函数模型及其应用",
+    "matched_count": 7,
+    "own_keywords": [
+      "一次函数模型",
+      "二次函数模型",
+      "函数模型",
+      "函数模型及其应用",
+      "分段函数模型",
+      "对数函数模型",
+      "幂函数模型",
+      "指数函数模型"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "导数与函数",
+    "matched_count": 10,
+    "own_keywords": [
+      "不等式证明",
+      "几何意义",
+      "单调性",
+      "定义",
+      "导数",
+      "导数与函数",
+      "恒成立问题",
+      "最值",
+      "极值",
+      "求导法则"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "其他常用函数",
+    "matched_count": 4,
+    "own_keywords": [
+      "其他常用函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "反比例函数",
+    "matched_count": 0,
+    "own_keywords": [
+      "双曲线",
+      "反比例函数",
+      "图像与性质",
+      "渐近线"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "对勾函数",
+    "matched_count": 4,
+    "own_keywords": [
+      "单调性",
+      "图像与性质",
+      "对勾函数",
+      "最值",
+      "耐克函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "绝对值函数",
+    "matched_count": 0,
+    "own_keywords": [
+      "图像与性质",
+      "绝对值函数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "立体几何板块",
+    "matched_count": 102,
+    "own_keywords": [
+      "立体几何板块"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间几何体的结构特征",
+    "matched_count": 46,
+    "own_keywords": [
+      "空间几何体的结构特征"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "多面体",
+    "matched_count": 19,
+    "own_keywords": [
+      "多面体",
+      "棱台",
+      "棱柱",
+      "棱锥",
+      "正方体",
+      "长方体"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "旋转体",
+    "matched_count": 24,
+    "own_keywords": [
+      "圆台",
+      "圆柱",
+      "圆锥",
+      "旋转体",
+      "球"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "简单组合体",
+    "matched_count": 2,
+    "own_keywords": [
+      "切割型",
+      "拼接型",
+      "简单组合体",
+      "组合体"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间几何体的三视图与直观图",
+    "matched_count": 5,
+    "own_keywords": [
+      "空间几何体的三视图与直观图"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三视图",
+    "matched_count": 1,
+    "own_keywords": [
+      "三视图",
+      "侧视图",
+      "俯视图",
+      "正视图",
+      "绘制规则"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "直观图",
+    "matched_count": 3,
+    "own_keywords": [
+      "斜二测画法",
+      "直观图",
+      "面积关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间几何体的表面积与体积",
+    "matched_count": 17,
+    "own_keywords": [
+      "空间几何体的表面积与体积"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "多面体的表面积",
+    "matched_count": 7,
+    "own_keywords": [
+      "侧面积",
+      "多面体的表面积",
+      "底面积",
+      "表面积"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "旋转体的表面积",
+    "matched_count": 7,
+    "own_keywords": [
+      "侧面积",
+      "旋转体的表面积",
+      "球的表面积",
+      "表面积"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "多面体的体积",
+    "matched_count": 4,
+    "own_keywords": [
+      "体积",
+      "多面体的体积",
+      "棱台体积",
+      "棱柱体积",
+      "棱锥体积"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "旋转体的体积",
+    "matched_count": 4,
+    "own_keywords": [
+      "体积",
+      "圆台体积",
+      "圆柱体积",
+      "圆锥体积",
+      "旋转体的体积",
+      "球的体积"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "简单组合体的表面积与体积",
+    "matched_count": 10,
+    "own_keywords": [
+      "体积",
+      "简单组合体的表面积与体积",
+      "组合体",
+      "表面积"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "几何体的外接球与内切球",
+    "matched_count": 3,
+    "own_keywords": [
+      "内切球",
+      "几何体的外接球与内切球",
+      "半径",
+      "外接球"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间点、直线、平面的位置关系",
+    "matched_count": 14,
+    "own_keywords": [
+      "空间点、直线、平面的位置关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "平面的基本性质",
+    "matched_count": 5,
+    "own_keywords": [
+      "公理",
+      "平面",
+      "平面的基本性质",
+      "点共线",
+      "点共面",
+      "线共点"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间中点与直线、点与平面的位置关系",
+    "matched_count": 0,
+    "own_keywords": [
+      "位置关系",
+      "点与平面",
+      "点与直线",
+      "空间中点与直线、点与平面的位置关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间中直线与直线的位置关系",
+    "matched_count": 7,
+    "own_keywords": [
+      "平行",
+      "异面",
+      "异面直线所成角",
+      "直线与直线",
+      "相交",
+      "空间中直线与直线的位置关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间中直线与平面的位置关系",
+    "matched_count": 6,
+    "own_keywords": [
+      "垂直",
+      "平行",
+      "直线与平面",
+      "相交",
+      "空间中直线与平面的位置关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间中平面与平面的位置关系",
+    "matched_count": 5,
+    "own_keywords": [
+      "垂直",
+      "平行",
+      "平面与平面",
+      "相交",
+      "空间中平面与平面的位置关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间中的平行关系",
+    "matched_count": 8,
+    "own_keywords": [
+      "空间中的平行关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "直线与平面平行",
+    "matched_count": 4,
+    "own_keywords": [
+      "判定定理",
+      "性质定理",
+      "直线与平面平行",
+      "线面平行"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "平面与平面平行",
+    "matched_count": 2,
+    "own_keywords": [
+      "判定定理",
+      "平面与平面平行",
+      "性质定理",
+      "面面平行"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "平行关系的传递性",
+    "matched_count": 7,
+    "own_keywords": [
+      "平行传递",
+      "平行关系的传递性",
+      "线线平行",
+      "线面平行",
+      "面面平行"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间中的垂直关系",
+    "matched_count": 10,
+    "own_keywords": [
+      "空间中的垂直关系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "直线与平面垂直",
+    "matched_count": 7,
+    "own_keywords": [
+      "判定定理",
+      "定义",
+      "性质定理",
+      "直线与平面垂直",
+      "线面垂直"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "平面与平面垂直",
+    "matched_count": 6,
+    "own_keywords": [
+      "判定定理",
+      "定义",
+      "平面与平面垂直",
+      "性质定理",
+      "面面垂直"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "二面角",
+    "matched_count": 0,
+    "own_keywords": [
+      "二面角",
+      "平面角",
+      "求解"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "线面角",
+    "matched_count": 4,
+    "own_keywords": [
+      "定义",
+      "求解",
+      "线面角"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间向量与立体几何",
+    "matched_count": 12,
+    "own_keywords": [
+      "空间向量与立体几何"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间向量的基本概念",
+    "matched_count": 0,
+    "own_keywords": [
+      "共线向量",
+      "共面向量",
+      "单位向量",
+      "相反向量",
+      "相等向量",
+      "空间向量",
+      "空间向量的基本概念",
+      "零向量"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间向量的运算",
+    "matched_count": 0,
+    "own_keywords": [
+      "减法",
+      "加法",
+      "向量运算",
+      "数乘",
+      "数量积",
+      "空间向量的运算"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间向量的坐标表示",
+    "matched_count": 2,
+    "own_keywords": [
+      "坐标表示",
+      "坐标运算",
+      "夹角",
+      "模",
+      "空间向量的坐标表示",
+      "空间直角坐标系"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间向量的基本定理",
+    "matched_count": 0,
+    "own_keywords": [
+      "共线向量定理",
+      "共面向量定理",
+      "基底",
+      "空间向量基本定理",
+      "空间向量的基本定理"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "空间向量的应用",
+    "matched_count": 10,
+    "own_keywords": [
+      "垂直",
+      "平行",
+      "空间向量的应用",
+      "角度",
+      "距离"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数板块",
+    "matched_count": 21,
+    "own_keywords": [
+      "复数板块"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的基本概念",
+    "matched_count": 14,
+    "own_keywords": [
+      "复数的基本概念"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "虚数单位",
+    "matched_count": 0,
+    "own_keywords": [
+      "i的周期性",
+      "虚数单位"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的定义",
+    "matched_count": 1,
+    "own_keywords": [
+      "复数",
+      "复数的定义",
+      "实部",
+      "虚部"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的分类",
+    "matched_count": 0,
+    "own_keywords": [
+      "复数的分类",
+      "实数",
+      "纯虚数",
+      "虚数"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数集",
+    "matched_count": 0,
+    "own_keywords": [
+      "包含关系",
+      "复数集"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数相等的充要条件",
+    "matched_count": 0,
+    "own_keywords": [
+      "复数相等",
+      "复数相等的充要条件",
+      "实部",
+      "虚部"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "共轭复数",
+    "matched_count": 13,
+    "own_keywords": [
+      "共轭复数",
+      "性质"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的代数形式运算",
+    "matched_count": 1,
+    "own_keywords": [
+      "复数的代数形式运算"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "加法运算",
+    "matched_count": 0,
+    "own_keywords": [
+      "加法",
+      "加法运算",
+      "运算律"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "减法运算",
+    "matched_count": 0,
+    "own_keywords": [
+      "减法",
+      "减法运算",
+      "几何意义"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "乘法运算",
+    "matched_count": 1,
+    "own_keywords": [
+      "乘法",
+      "乘法运算",
+      "共轭复数性质",
+      "运算律"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "除法运算",
+    "matched_count": 0,
+    "own_keywords": [
+      "分母实数化",
+      "除法",
+      "除法运算"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的几何意义",
+    "matched_count": 20,
+    "own_keywords": [
+      "复数的几何意义"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复平面",
+    "matched_count": 0,
+    "own_keywords": [
+      "复平面",
+      "实轴",
+      "虚轴"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三大一一对应关系",
+    "matched_count": 1,
+    "own_keywords": [
+      "一一对应",
+      "三大一一对应关系",
+      "复平面点",
+      "复数",
+      "平面向量"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的模",
+    "matched_count": 18,
+    "own_keywords": [
+      "公式",
+      "几何意义",
+      "复数的模",
+      "定义",
+      "性质",
+      "模"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数加减法的几何意义",
+    "matched_count": 1,
+    "own_keywords": [
+      "减法几何意义",
+      "加法几何意义",
+      "复数加减法的几何意义",
+      "距离"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "复数的三角形式",
+    "matched_count": 3,
+    "own_keywords": [
+      "复数的三角形式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三角形式的定义",
+    "matched_count": 2,
+    "own_keywords": [
+      "三角形式",
+      "三角形式的定义",
+      "模",
+      "辐角",
+      "辐角主值"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "代数形式与三角形式的互化",
+    "matched_count": 0,
+    "own_keywords": [
+      "互化",
+      "代数形式与三角形式的互化",
+      "公式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "三角形式的四则运算",
+    "matched_count": 1,
+    "own_keywords": [
+      "三角形式的四则运算",
+      "乘方",
+      "乘法",
+      "开方",
+      "除法"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "高考高频基础性质与易错点",
+    "matched_count": 0,
+    "own_keywords": [
+      "高考高频基础性质与易错点"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "概率与统计板块",
+    "matched_count": 80,
+    "own_keywords": [
+      "概率与统计板块"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "统计部分",
+    "matched_count": 28,
+    "own_keywords": [
+      "统计部分"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "数据的收集",
+    "matched_count": 11,
+    "own_keywords": [
+      "分层抽样",
+      "总体",
+      "抽样方法",
+      "数据的收集",
+      "样本",
+      "简单随机抽样",
+      "系统抽样"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "数据的整理与表示",
+    "matched_count": 10,
+    "own_keywords": [
+      "中位数",
+      "众数",
+      "平均数",
+      "折线图",
+      "数字特征",
+      "数据的整理与表示",
+      "方差",
+      "标准差",
+      "直方图",
+      "茎叶图",
+      "频率分布"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "变量的相关关系",
+    "matched_count": 4,
+    "own_keywords": [
+      "变量的相关关系",
+      "回归直线",
+      "散点图",
+      "相关关系",
+      "相关系数",
+      "线性相关"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "统计案例",
+    "matched_count": 3,
+    "own_keywords": [
+      "列联表",
+      "卡方统计量",
+      "回归分析",
+      "残差",
+      "独立性检验",
+      "相关指数",
+      "统计案例"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "概率部分",
+    "matched_count": 57,
+    "own_keywords": [
+      "概率部分"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "随机事件与概率",
+    "matched_count": 26,
+    "own_keywords": [
+      "不可能事件",
+      "事件关系",
+      "必然事件",
+      "概率",
+      "概率性质",
+      "随机事件",
+      "随机事件与概率",
+      "频率"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "古典概型",
+    "matched_count": 1,
+    "own_keywords": [
+      "古典概型",
+      "基本事件",
+      "概率公式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "几何概型",
+    "matched_count": 0,
+    "own_keywords": [
+      "体积型",
+      "几何概型",
+      "概率公式",
+      "长度型",
+      "面积型"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "排列、组合与二项式定理",
+    "matched_count": 14,
+    "own_keywords": [
+      "二项式定理",
+      "二项式系数",
+      "排列",
+      "排列、组合与二项式定理",
+      "排列数",
+      "组合",
+      "组合数",
+      "通项公式"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "随机变量及其分布",
+    "matched_count": 14,
+    "own_keywords": [
+      "分布列",
+      "方差",
+      "期望",
+      "正态分布",
+      "离散型",
+      "连续型",
+      "随机变量",
+      "随机变量及其分布"
+    ],
+    "unmatched_in_scope": []
+  },
+  {
+    "label": "条件概率与事件的独立性",
+    "matched_count": 2,
+    "own_keywords": [
+      "条件概率",
+      "条件概率与事件的独立性",
+      "独立性",
+      "独立重复试验"
+    ],
+    "unmatched_in_scope": []
+  }
+]

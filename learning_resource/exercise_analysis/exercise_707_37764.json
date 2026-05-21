@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_707_37764",
+  "resource_type": "exercise",
+  "title": "7-1条件概率与全概率公式",
+  "source_file": "云端习题/概率与统计习题/7-1条件概率与全概率公式.md",
+  "analysis": {
+    "知识点": [
+      "贝叶斯公式",
+      "条件概率",
+      "全概率公式"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用贝叶斯公式计算后验概率",
+    "涉及公式": [
+      "P(C|A) = P(C)P(A|C) / [P(C)P(A|C) + P(¬C)P(A|¬C)]",
+      "P(A|¬C) = 1 - P(¬A|¬C)"
+    ],
+    "解题思路": "先由P(¬A|¬C)=0.9得P(A|¬C)=0.1，再代入贝叶斯公式计算P(C|A)，化简得9/208。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "3"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "已知流感病毒分为甲、乙、丙三型，甲型流感病毒最容易发生变异，流感大流行就是甲型流感病毒出现新亚型或旧亚型重现引起的。根据以往的临床记录，某种诊断甲型流感病毒的试验有如下效果：若用 $A$ 表示事件“试验反应为阳性”，用 $C$ 表示事件“被诊断者患有甲型流感”，则 $P(A \\mid C) = 0.9$，$P(\\overline{A} \\mid \\overline{C}) = 0.9$。现对自然人群进行普查，若患有甲型流感的概率为 $0.005$，则  \n$$\nP(C \\mid A) = \\, ?\n$$  \nA. $\\displaystyle \\frac{9}{208}$  B. $\\displaystyle \\frac{19}{218}$  C. $\\displaystyle \\frac{1}{22}$  D. $\\displaystyle \\frac{7}{108}$",
+    "难度（1-5）": "4",
+    "知识点标签": "贝叶斯公式",
+    "解析": "答案: A  \n解析: 因为 $P(\\overline{A} \\mid \\overline{C}) = 0.9$，所以 $P(A \\mid \\overline{C}) = 0.1$。因为 $P(C) = 0.005$，所以 $P(\\overline{C}) = 0.995$。所以  \n$$\nP(C \\mid A) = \\frac{P(C)\\,P(A \\mid C)}{P(C)\\,P(A \\mid C) + P(\\overline{C})\\,P(A \\mid \\overline{C})}\n= \\frac{0.005 \\times 0.9}{0.005 \\times 0.9 + 0.995 \\times 0.1}\n= \\frac{9}{208}.\n$$\n\n---",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/7-1条件概率与全概率公式.md",
+    "title": "7-1条件概率与全概率公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-1条件概率与全概率公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-1条件概率与全概率公式.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\7-1条件概率与全概率公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:32:11"
+}

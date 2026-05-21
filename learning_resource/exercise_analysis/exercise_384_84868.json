@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_384_84868",
+  "resource_type": "exercise",
+  "title": "5-5-2两角差的余弦公式",
+  "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+  "analysis": {
+    "知识点": [
+      "三角恒等变换",
+      "余弦差角公式",
+      "同角三角函数平方关系"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用平方和关系构造余弦差角公式求解",
+    "涉及公式": [
+      "sin²α + cos²α = 1",
+      "cos(α-β) = cosα cosβ + sinα sinβ",
+      "(a-b)² = a² - 2ab + b²"
+    ],
+    "解题思路": "将已知两式分别平方后相加，利用同角平方和公式化简，得到关于cos(α-β)的方程，解出cos(α-β)的值。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "若 $\\sin \\alpha - \\sin \\beta = 1 - \\dfrac{\\sqrt{3}}{2}$，$\\cos \\alpha - \\cos \\beta = \\dfrac{1}{2}$，则 $\\cos(\\alpha - \\beta)$ 的值为（　　）   A. $\\dfrac{\\sqrt{3}}{2}$　　B. $\\dfrac{1}{2}$　　C. $\\dfrac{3}{4}$　　D. $1$",
+    "难度（1-5）": "3",
+    "知识点标签": "余弦差角的平方和",
+    "解析": "答案: A   解析: 依题意，$(\\sin \\alpha - \\sin \\beta)^2 = \\left(1 - \\frac{\\sqrt{3}}{2}\\right)^2$ ①，   $(\\cos \\alpha - \\cos \\beta)^2 = \\left(\\frac{1}{2}\\right)^2$ ②，   ① + ② 得：   $$ \\sin^2 \\alpha - 2\\sin \\alpha \\sin \\beta + \\sin^2 \\beta + \\cos^2 \\alpha - 2\\cos \\alpha \\cos \\beta + \\cos^2 \\beta = \\left(1 - \\frac{\\sqrt{3}}{2}\\right)^2 + \\left(\\frac{1}{2}\\right)^2 $$   即   $$ (\\sin^2 \\alpha + \\cos^2 \\alpha) + (\\sin^2 \\beta + \\cos^2 \\beta) - 2(\\cos \\alpha \\cos \\beta + \\sin \\alpha \\sin \\beta) = 1 - \\sqrt{3} + \\frac{3}{4} + \\frac{1}{4} $$   $$ 1 + 1 - 2\\cos(\\alpha - \\beta) = 2 - \\sqrt{3} $$   所以   $$ 2 - 2\\cos(\\alpha - \\beta) = 2 - \\sqrt{3} \\quad \\Rightarrow \\quad \\cos(\\alpha - \\beta) = \\frac{\\sqrt{3}}{2} $$   故选 A．",
+    "适用场景": "综合运用",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+    "title": "5-5-2两角差的余弦公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-2两角差的余弦公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:15"
+}

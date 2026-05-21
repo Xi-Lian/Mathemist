@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_300_53789",
+  "resource_type": "exercise",
+  "title": "5-3-1诱导公式二、三、四",
+  "source_file": "云端习题/函数习题/5-3-1诱导公式二、三、四.md",
+  "analysis": {
+    "知识点": [
+      "诱导公式",
+      "三角恒等式",
+      "正弦函数的奇偶性"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用诱导公式判断三角恒等式是否恒成立",
+    "涉及公式": [
+      "sin(-x) = -sin x",
+      "sin(π - x) = sin x",
+      "sin(π + x) = -sin x",
+      "sin(2π - x) = -sin x"
+    ],
+    "解题思路": "逐一验证每个选项：A选项应为sin(-x)=-sin x，原式错误；B选项正确；C选项应为sin(π+x)=-sin x，原式错误；D选项应为sin(2π-x)=-sin x，原式错误。因此只有B恒成立。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）已知 $x \\in \\mathbb{R}$，则下列等式恒成立的是（　　）   A. $\\sin(-x) = -\\sin x$　　B. $\\sin(\\pi - x) = \\sin x$　　C. $\\sin(\\pi + x) = -\\sin x$　　D. $\\sin(2\\pi - x) = -\\sin x$  注：原题选项中 A、C、D 的等式书写有误（不符合三角恒等式），已按标准恒等式修正为正确形式。若题目意在考查判断哪些**给出的等式**恒成立，则原始选项应为：  （多选）已知 $x \\in \\mathbb{R}$，则下列等式恒成立的是（　　）   A. $\\sin(-x) = \\sin x$　　B. $\\sin(\\pi - x) = \\sin x$　　C. $\\sin(\\pi + x) = \\sin x$　　D. $\\sin(2\\pi - x) = \\sin x$  但其中仅 **B 正确**；A、C、D 均不恒成立（正确恒等式见上行）。若严格按原题文字修复 LaTeX 格式（不修改内容，仅修正语法与排版），则为：  （多选）已知 $x \\in \\mathbb{R}$，则下列等式恒成立的是（　　）   A. $\\sin(-x) = \\sin x$　　B. $\\sin(\\pi - x) = \\sin x$　　C. $\\sin(\\pi + x) = \\sin x$　　D. $\\sin(2\\pi - x) = \\sin x$",
+    "难度（1-5）": "2",
+    "知识点标签": "诱导公式的恒等式",
+    "解析": "答案：BC   解析：$\\sin(-x) = -\\sin x$，A不成立；B、C成立，$\\sin(2\\pi - x) = \\sin(-x) = -\\sin x$，D不成立。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-3-1诱导公式二、三、四.md",
+    "title": "5-3-1诱导公式二、三、四",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-1诱导公式二、三、四.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-1诱导公式二、三、四.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-3-1诱导公式二、三、四.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:15"
+}

@@ -1,5 +1,6 @@
-from .._shared import *
+import logging
 import re
+from .._shared import *
 from ..classify_results_helpers.filters import calculate_relevance_boost, matches_exercise_question_type
 from ..classify_results_helpers.resource_type import (
     init_classified,
@@ -7,10 +8,12 @@ from ..classify_results_helpers.resource_type import (
     normalize_resource_type,
 )
 
+_cls_log = logging.getLogger(__name__)
+
 DIFFICULTY_KEYWORD_POLICY = {
     "基础": ["基础", "简单", "入门", "初级", "1", "2"],
     "中等": ["中等", "一般", "普通", "常见", "3"],
-    "拔高": ["拔高", "难", "困难", "挑战", "压轴", "4", "5"],
+    "拔高": ["拔高", "难", "困难", "挑战", "压轴", "复杂", "4", "5"],  # 【V107.0新增】"复杂"映射到拔高难度
 }
 PROOF_KEYWORDS = ["求证", "证明", "证明题", "推导", "推导题"]
 PROOF_QUERY_HINTS = ["单调性", "证明"]
@@ -35,7 +38,26 @@ class _ClassifyResultsMixin:
         query_features = getattr(self, "_current_query_features", {})
         classified = init_classified()
 
+        print(f"   [V19.2调试] _classify_results被调用")
+        print(f"   [V19.2调试] results.keys() = {list(results.keys()) if results else 'None'}")
+        print(f"   [V19.2调试] resource_types = {resource_types}")
+        print(f"   [V19.2调试] core_theme = {core_theme}")
+        # 【V107.0调试】打印难度参数
+        print(f"   [V107.0调试] difficulty = '{difficulty}', grade = '{grade}', exam_form = '{exam_form}'")
+        
+        # 统计跳过的资源
+        skipped_count = 0
+        skipped_reasons = {"type_mismatch": 0, "other": 0}
+        
         if results["documents"] and results["documents"][0]:
+            print(f"   [V19.3调试] _classify_results开始处理，文档数量: {len(results['documents'][0])}")
+            print(f"   [V19.3调试] 前5个资源的标题和类型:")
+            for i in range(min(5, len(results['documents'][0]))):
+                meta = self._get_metadata(results, i)
+                rt = normalize_resource_type(meta, meta.get("resource_type", "theory"))
+                title = meta.get('title', '未知')[:60]
+                print(f"     [{i+1}] 类型={rt}, 标题={title}")
+            
             for i, doc in enumerate(results["documents"][0]):
                 metadata = self._get_metadata(results, i)
                 distance = self._get_distance(results, i)
@@ -43,7 +65,11 @@ class _ClassifyResultsMixin:
 
                 print(f"   🔍 V19.3调试 - 资源类型: '{resource_type}', 标题: '{metadata.get('title', '未知')}'")
                 matched = matches_requested_resource_type(resource_type, resource_types)
+                print(f"   🔍 V19.4调试 - 匹配结果: matched={matched}, resource_type='{resource_type}', resource_types={resource_types}")
                 if not matched:
+                    skipped_count += 1
+                    skipped_reasons["type_mismatch"] += 1
+                    print(f"   ⚠️ V19.4跳过资源（类型不匹配）: '{metadata.get('title', '未知')}', resource_type='{resource_type}'")
                     continue
 
                 relevance_info = calculate_relevance_boost(
@@ -68,16 +94,24 @@ class _ClassifyResultsMixin:
                         continue
 
                 if resource_type == "exercise":
+                    _cls_log.warning(
+                        f"[方案A调试] 检查习题一致性: title='{metadata.get('title', '未知')}', "
+                        f"relevance={relevance:.3f}, source={metadata.get('source_file', '')[:60]}"
+                    )
                     is_consistent = self._check_knowledge_point_consistency(metadata, core_theme, doc, query, relevance)
                     if not is_consistent:
                         if self._should_soft_keep_exercise(metadata, query, resource_types, question_type, relevance):
-                            print(f"   ✅ V96.0保留语义相关但知识点未精确对齐的习题: '{metadata.get('title', '未知')}'")
+                            _cls_log.warning(f"[方案A调试] 软保留习题: '{metadata.get('title', '未知')}'")
                             metadata = dict(metadata)
                             metadata["_soft_kept_exercise"] = True
                         else:
-                            print(f"   ⚠️ V15.0跳过不一致的习题: '{metadata.get('title', '未知')}' (来源: {metadata.get('source_file', '')})")
+                            _cls_log.warning(
+                                f"[方案A调试] 跳过习题: title='{metadata.get('title', '未知')}', "
+                                f"source={metadata.get('source_file', '')[:60]}, relevance={relevance:.3f}"
+                            )
                             continue
                     if not self._passes_exercise_filters(metadata, doc, query, classified, grade, difficulty, exam_form):
+                        _cls_log.warning(f"[方案A调试] 习题未通过额外过滤: '{metadata.get('title', '未知')}'")
                         continue
 
                 if self._is_special_resource_request(resource_type, resource_types):
@@ -93,7 +127,17 @@ class _ClassifyResultsMixin:
                 if resource.get("should_show", True):
                     self._add_resource_to_classified(classified, resource, resource_type, resource_types, doc, metadata, query)
                 else:
-                    print(f"   ⚠️ V30.5跳过should_show=False的资源: '{resource.get('title', '未知')}'")
+                    skipped_count += 1
+                    skipped_reasons["other"] += 1
+                    # V42.0改进：记录详细的跳过原因
+                    match_result = resource.get("match_result", {})
+                    reject_reason = match_result.get("reject_reason", "未知原因") if match_result else "未知原因"
+                    relevance = resource.get("relevance", 0)
+                    print(f"   ⚠️ V42.0跳过should_show=False的资源: '{resource.get('title', '未知')}'")
+                    print(f"      原因: {reject_reason}")
+                    print(f"      相关性: {relevance:.3f}, 资源类型: {resource_type}")
+        
+        print(f"   [V19.5调试] _classify_results处理完成 - 总文档数: {len(results['documents'][0]) if results.get('documents') and results['documents'][0] else 0}, 跳过: {skipped_count} (类型不匹配: {skipped_reasons['type_mismatch']}, 其他: {skipped_reasons['other']})")
 
         return self._finalize_classified_results(classified, query)
 
@@ -265,6 +309,10 @@ class _ClassifyResultsMixin:
             print("   📊 V88.0分类调整 - 教案资源添加到lesson_plan_patterns")
             self._add_to_category(classified, "lesson_plan", resource)
             return
+        if resource_type == "excellent_case" and resource_types and any(rt in ["优秀案例", "优秀案例分析", "案例分析"] for rt in resource_types):
+            print("   📊 V88.0分类调整 - 优秀案例分析资源添加到excellent_case_resources")
+            self._add_to_category(classified, "excellent_case", resource)
+            return
 
         dynamic_category = self._dynamic_classify_resource(resource, doc, metadata, query)
         if dynamic_category:
@@ -307,7 +355,30 @@ class _ClassifyResultsMixin:
             return classified
 
         client = self.vector_db_builder.get_chroma_client()
-        collection = client.get_collection(name=self.COLLECTION_NAME)
+        
+        # 根据主题确定板块集合名称
+        board_mapping = {
+            "函数": "math_resources_function",
+            "几何": "math_resources_geometry",
+            "概率统计": "math_resources_probability",
+            "代数": "math_resources_algebra",
+            "通用": "math_resources_general"
+        }
+        
+        # 根据查询内容确定板块
+        collection_name = "math_resources_function"  # 默认使用函数板块
+        for board_name, col_name in board_mapping.items():
+            if board_name in query:
+                collection_name = col_name
+                break
+        
+        # 检查集合是否存在
+        try:
+            collection = client.get_collection(name=collection_name)
+        except ValueError:
+            print(f"   ❌ 集合 {collection_name} 不存在")
+            return classified
+        
         from app.core.theme_matcher import ThemeMatcher
 
         theme_matcher = ThemeMatcher()

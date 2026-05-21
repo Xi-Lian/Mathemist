@@ -41,7 +41,7 @@ def _extract_chapter_number(image_filename: str) -> Optional[int]:
 def _build_chapter_dir(chapter_number: Optional[int], image_kind: str) -> str:
     if chapter_number is None:
         return ""
-    suffix = "图片题目" if image_kind == "question" else "图片答案"
+    suffix = "题目" if image_kind == "question" else "答案"
     return f"第{_to_chinese_numeral(chapter_number)}章{suffix}"
 
 

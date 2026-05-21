@@ -1,0 +1,58 @@
+{
+  "exercise_id": "exercise_376_16891",
+  "resource_type": "exercise",
+  "title": "5-5-1二倍角的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "同角三角函数的基本关系",
+      "二倍角的正弦、余弦、正切公式",
+      "和角与差角公式",
+      "三角函数值的符号判断",
+      "角的范围与三角函数值的确定"
+    ],
+    "题型": "填空题",
+    "核心考点": "综合运用二倍角公式、和角公式及同角关系进行三角函数求值，重点考查根据角的范围确定三角函数值的符号以及代数变形能力。",
+    "涉及公式": [
+      "(sinα+cosα)²=1+sin2α",
+      "sin2α=2sinαcosα",
+      "cos2α=√(1-sin²2α)",
+      "tan2α=sin2α/cos2α",
+      "sin(2β-π/2)=-cos2β",
+      "cos²α=(1+cos2α)/2",
+      "cos(α+2β)=cosαcos2β-sinαsin2β"
+    ],
+    "解题思路": "先由已知条件平方求出sin2α，再根据α范围确定cos2α正负，求得tan2α；然后利用β的范围及sin(β-π/4)求出cos(β-π/4)，通过二倍角公式得到sin(2β-π/2)进而得cos2β，再求sin2β；最后利用半角公式或同角关系求出sinα和cosα，代入和角公式计算cos(α+2β)。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "已知$\\sin \\alpha + \\cos \\alpha = \\dfrac{3\\sqrt{5}}{5}$，$\\alpha \\in \\left(0, \\dfrac{\\pi}{4}\\right)$，$\\sin \\left(\\beta - \\dfrac{\\pi}{4}\\right) = \\dfrac{3}{5}$，$\\beta \\in \\left(\\dfrac{\\pi}{4}, \\dfrac{\\pi}{2}\\right)$，则$\\tan 2\\alpha = \\underline{\\hspace{3em}}$，$\\cos (\\alpha + 2\\beta) = \\underline{\\hspace{3em}}$．",
+    "难度（1-5）": "5",
+    "知识点标签": "二倍角;和角公式;同角关系;综合求值",
+    "解析": "答案: $\\dfrac{4}{3}$; $-\\dfrac{11\\sqrt{5}}{25}$   解析: 由题意得 $(\\sin \\alpha + \\cos \\alpha)^2 = \\dfrac{9}{5}$，即 $1 + \\sin 2\\alpha = \\dfrac{9}{5}$，∴ $\\sin 2\\alpha = \\dfrac{4}{5}$．   又∵ $2\\alpha \\in \\left(0, \\dfrac{\\pi}{2}\\right)$，∴ $\\cos 2\\alpha = \\sqrt{1 - \\sin^2 2\\alpha} = \\dfrac{3}{5}$，   ∴ $\\tan 2\\alpha = \\dfrac{\\sin 2\\alpha}{\\cos 2\\alpha} = \\dfrac{4}{3}$．    ∵ $\\beta \\in \\left(\\dfrac{\\pi}{4}, \\dfrac{\\pi}{2}\\right)$，∴ $\\beta - \\dfrac{\\pi}{4} \\in \\left(0, \\dfrac{\\pi}{4}\\right)$，   又 $\\sin \\left(\\beta - \\dfrac{\\pi}{4}\\right) = \\dfrac{3}{5}$，∴ $\\cos \\left(\\beta - \\dfrac{\\pi}{4}\\right) = \\dfrac{4}{5}$，   ∴ $\\sin \\left[2\\left(\\beta - \\dfrac{\\pi}{4}\\right)\\right] = 2 \\sin \\left(\\beta - \\dfrac{\\pi}{4}\\right) \\cdot \\cos \\left(\\beta - \\dfrac{\\pi}{4}\\right) = \\dfrac{24}{25}$．   又 $\\sin \\left[2\\left(\\beta - \\dfrac{\\pi}{4}\\right)\\right] = \\sin \\left(2\\beta - \\dfrac{\\pi}{2}\\right) = -\\cos 2\\beta$，   ∴ $\\cos 2\\beta = -\\dfrac{24}{25}$．   又易知 $2\\beta \\in \\left(\\dfrac{\\pi}{2}, \\pi\\right)$，∴ $\\sin 2\\beta = \\sqrt{1 - \\cos^2 2\\beta} = \\dfrac{7}{25}$．    又 $\\cos^2 \\alpha = \\dfrac{1 + \\cos 2\\alpha}{2} = \\dfrac{1 + \\frac{3}{5}}{2} = \\dfrac{4}{5}$，   ∴ $\\cos \\alpha = \\dfrac{2\\sqrt{5}}{5}$（取正值，因 $\\alpha \\in \\left(0, \\dfrac{\\pi}{4}\\right)$），   ∴ $\\sin \\alpha = \\sqrt{1 - \\cos^2 \\alpha} = \\dfrac{\\sqrt{5}}{5}$，   ∴   $$ \\cos (\\alpha + 2\\beta) = \\cos \\alpha \\cos 2\\beta - \\sin \\alpha \\sin 2\\beta  = \\dfrac{2\\sqrt{5}}{5} \\cdot \\left(-\\dfrac{24}{25}\\right) - \\dfrac{\\sqrt{5}}{5} \\cdot \\dfrac{7}{25}  = -\\dfrac{48\\sqrt{5}}{125} - \\dfrac{7\\sqrt{5}}{125}  = -\\dfrac{55\\sqrt{5}}{125}  = -\\dfrac{11\\sqrt{5}}{25}. $$",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+    "title": "5-5-1二倍角的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-1二倍角的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-1二倍角的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:11"
+}

@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_372_16891",
+  "resource_type": "exercise",
+  "title": "5-5-1二倍角的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "诱导公式",
+      "同角三角函数关系",
+      "二倍角的正弦公式"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用诱导公式化简条件，转化为正切值，再通过二倍角公式求值",
+    "涉及公式": [
+      "cos(α-π/2)=sinα",
+      "sin(α+π/2)=cosα",
+      "sin2α=2sinαcosα",
+      "sin2α=2tanα/(1+tan²α)"
+    ],
+    "解题思路": "先用诱导公式将条件化为2sinα=cosα，得到tanα=1/2；再利用二倍角正弦公式的齐次式形式sin2α=2tanα/(1+tan²α)代入计算得4/5",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "(2024年重庆沙坪坝区期末)已知$2\\cos\\left(\\alpha-\\frac{\\pi}{2}\\right)=\\sin\\left(\\alpha+\\frac{\\pi}{2}\\right)$，则$\\sin 2\\alpha=$__________．",
+    "难度（1-5）": "3",
+    "知识点标签": "诱导公式的正弦二倍角",
+    "解析": "答案: $\\dfrac{4}{5}$   解析: 由于 $2\\cos\\left(\\alpha-\\dfrac{\\pi}{2}\\right)=\\sin\\left(\\alpha+\\dfrac{\\pi}{2}\\right)$，即 $2\\sin\\alpha=\\cos\\alpha$，故 $\\tan\\alpha=\\dfrac{1}{2}$，则   $$ \\sin 2\\alpha = \\frac{2\\sin\\alpha\\cos\\alpha}{\\sin^2\\alpha + \\cos^2\\alpha}  = \\frac{2\\tan\\alpha}{\\tan^2\\alpha + 1}  = \\frac{2 \\cdot \\frac{1}{2}}{\\left(\\frac{1}{2}\\right)^2 + 1}  = \\frac{1}{\\frac{1}{4} + 1}  = \\frac{1}{\\frac{5}{4}}  = \\frac{4}{5}. $$",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+    "title": "5-5-1二倍角的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-1二倍角的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-1二倍角的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-1二倍角的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:06"
+}

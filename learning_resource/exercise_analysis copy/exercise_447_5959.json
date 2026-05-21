@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_447_5959",
+  "resource_type": "exercise",
+  "title": "5-7三角函数的应用",
+  "source_file": "云端习题/函数习题/5-7三角函数的应用.md",
+  "analysis": {
+    "知识点": [
+      "正弦函数的振幅",
+      "正弦函数的周期公式",
+      "正弦函数的初相"
+    ],
+    "题型": "选择题",
+    "核心考点": "根据正弦函数的振幅、最小正周期和初相确定函数解析式",
+    "涉及公式": [
+      "T = 2π/|ω|",
+      "y = A sin(ωx + φ)"
+    ],
+    "解题思路": "由最大值为1/2得振幅A=1/2；由最小正周期T=2π/3，利用周期公式T=2π/ω求出ω=3；由初相为π/6得φ=π/6；代入标准形式y=A sin(ωx+φ)得y=1/2 sin(3x+π/6)，对应选项D。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "最大值为$\\frac{1}{2}$，最小正周期为$\\frac{2\\pi}{3}$，初相为$\\frac{\\pi}{6}$的函数表达式是（　　）   A. $y=\\frac{1}{2}\\sin\\left(\\frac{x}{3}+\\frac{\\pi}{6}\\right)$   B. $y=\\frac{1}{2}\\sin\\left(\\frac{x}{3}-\\frac{\\pi}{6}\\right)$   C. $y=\\frac{1}{2}\\sin\\left(3x-\\frac{\\pi}{6}\\right)$   D. $y=\\frac{1}{2}\\sin\\left(3x+\\frac{\\pi}{6}\\right)$",
+    "难度（1-5）": "2",
+    "知识点标签": "正弦函数的实际应用",
+    "解析": "答案：D   解析：最小正周期 $T = \\dfrac{2\\pi}{\\omega} = \\dfrac{2\\pi}{3}$，得 $\\omega = 3$；初相 $\\varphi = \\dfrac{\\pi}{6}$；振幅 $A = \\dfrac{1}{2}$。故表达式为   $$ y = \\frac{1}{2} \\sin\\left(3x + \\frac{\\pi}{6}\\right). $$",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-7三角函数的应用.md",
+    "title": "5-7三角函数的应用",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-7三角函数的应用.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-7三角函数的应用.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-7三角函数的应用.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:29:05"
+}

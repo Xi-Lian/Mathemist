@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_698_37764",
+  "resource_type": "exercise",
+  "title": "7-1条件概率与全概率公式",
+  "source_file": "云端习题/概率与统计习题/7-1条件概率与全概率公式.md",
+  "analysis": {
+    "知识点": [
+      "条件概率",
+      "互斥事件的概率加法公式",
+      "古典概型"
+    ],
+    "题型": "解答题",
+    "核心考点": "条件概率的计算，以及利用互斥事件分解复杂事件求概率",
+    "涉及公式": [
+      "P(A∪B)=P(A)+P(B) (A,B互斥)",
+      "P(AB)=P(A)P(B|A)",
+      "P(A|B)=P(AB)/P(B)"
+    ],
+    "解题思路": "(1) 将“不超过3次按对”分解为“第一次按对”、“第一次错第二次对”、“前两次错第三次对”三个互斥事件，利用乘法公式依次计算概率后相加。(2) 在已知最后一位是偶数的条件下，样本空间缩小为5个偶数，同样分解事件并利用条件概率公式计算。",
+    "考察能力": [
+      "逻辑推理",
+      "运算能力"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "银行储蓄卡的密码由6位数字组成。某人在银行自助取款机上取钱时，忘记了密码的最后1位数字。(1)任意按最后1位数字，求不超过3次就按对的概率；(2)如果记得密码的最后1位是偶数，求不超过3次就按对的概率。",
+    "难度（1-5）": "3",
+    "知识点标签": "条件概率",
+    "解析": "答案：(1) $\\frac{3}{10}$；(2) $\\frac{3}{5}$  \n解析：(1) 设第 $i$ 次按对密码为 $A_i$（$i=1,2,3$），不超过 3 次就按对为事件 $A$，则  \n$$\nA = A_1 \\cup \\overline{A}_1 A_2 \\cup \\overline{A}_1 \\overline{A}_2 A_3,\n$$  \n所以  \n$$\n\\begin{aligned}\nP(A) &= P(A_1) + P(\\overline{A}_1 A_2) + P(\\overline{A}_1 \\overline{A}_2 A_3) \\\\\n&= P(A_1) + P(\\overline{A}_1) P(A_2 \\mid \\overline{A}_1) + P(\\overline{A}_1) P(\\overline{A}_2 \\mid \\overline{A}_1) P(A_3 \\mid \\overline{A}_1 \\overline{A}_2) \\\\\n&= \\frac{1}{10} + \\frac{9}{10} \\times \\frac{1}{9} + \\frac{9}{10} \\times \\frac{8}{9} \\times \\frac{1}{8} = \\frac{3}{10}.\n\\end{aligned}\n$$  \n\n(2) 设最后 1 位密码为偶数为事件 $B$，则  \n$$\n\\begin{aligned}\nP(A \\mid B) &= P\\bigl(A_1 \\cup \\overline{A}_1 A_2 \\cup \\overline{A}_1 \\overline{A}_2 A_3 \\,\\big|\\, B\\bigr) \\\\\n&= P(A_1 \\mid B) + P(\\overline{A}_1 A_2 \\mid B) + P(\\overline{A}_1 \\overline{A}_2 A_3 \\mid B) \\\\\n&= \\frac{1}{5} + \\frac{4 \\times 1}{5 \\times 4} + \\frac{4 \\times 3 \\times 1}{5 \\times 4 \\times 3} = \\frac{3}{5}.\n\\end{aligned}\n$$\n\n---",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/7-1条件概率与全概率公式.md",
+    "title": "7-1条件概率与全概率公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-1条件概率与全概率公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-1条件概率与全概率公式.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\7-1条件概率与全概率公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "高一下学期",
+    "grade_level": 11,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:32:06"
+}

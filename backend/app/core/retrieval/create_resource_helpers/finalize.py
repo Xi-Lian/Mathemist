@@ -11,9 +11,15 @@ RESOURCE_RELEVANCE_POLICY = {
 }
 
 
-def update_resource_with_match(resource, match_result):
-    resource["matched_themes"] = match_result["matched_themes"]
-    resource["matched_theme_count"] = len(match_result["matched_themes"])
+def update_resource_with_match(resource, match_result, metadata=None):
+    # V311.0改进：如果metadata中有_matched_themes（来自多主题分别检索），优先使用
+    if metadata and "_matched_themes" in metadata and metadata["_matched_themes"]:
+        resource["matched_themes"] = metadata["_matched_themes"]
+        resource["matched_theme_count"] = len(metadata["_matched_themes"])
+    else:
+        resource["matched_themes"] = match_result["matched_themes"]
+        resource["matched_theme_count"] = len(match_result["matched_themes"])
+
     resource["core_theme"] = match_result["core_theme_match"]
     resource["related_themes"] = match_result["related_themes"]
     resource["mentioned_themes"] = match_result["mentioned_themes"]

@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_398_5960",
+  "resource_type": "exercise",
+  "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "同角三角函数的基本关系",
+      "两角和的余弦公式",
+      "三角函数值的符号判断",
+      "角的范围与取值"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用两角和的余弦公式求角，并结合角的范围确定唯一值",
+    "涉及公式": [
+      "sin²α + cos²α = 1",
+      "cos(α+β) = cosα cosβ - sinα sinβ"
+    ],
+    "解题思路": "由已知锐角条件，利用同角关系求出cosα和sinβ，代入两角和的余弦公式计算得cos(α+β) = -√2/2；再根据α、β为锐角，确定α+β的范围为(0,π)，在此范围内余弦值为-√2/2的角只有3π/4，故得答案。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "2分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "已知锐角$\\alpha$，$\\beta$满足$\\sin \\alpha=\\dfrac{\\sqrt{5}}{5}$，$\\cos \\beta=\\dfrac{3\\sqrt{10}}{10}$，则$\\alpha+\\beta$等于（　　）   A. $\\dfrac{\\pi}{4}$　　B. $\\dfrac{\\pi}{4}$或$\\dfrac{3\\pi}{4}$　　C. $\\dfrac{3\\pi}{4}$　　D. $2k\\pi+\\dfrac{\\pi}{4}\\ (k\\in\\mathbb{Z})$",
+    "难度（1-5）": "4",
+    "知识点标签": "余弦和角的象限判断",
+    "解析": "答案: C   解析: 由 $\\sin \\alpha = \\frac{\\sqrt{5}}{5}$，$\\cos \\beta = \\frac{3\\sqrt{10}}{10}$，且 $\\alpha$、$\\beta$ 为锐角，可知 $\\cos \\alpha = \\frac{2\\sqrt{5}}{5}$，$\\sin \\beta = \\frac{\\sqrt{10}}{10}$，故   $$ \\cos(\\alpha + \\beta) = \\cos \\alpha \\cos \\beta - \\sin \\alpha \\sin \\beta = -\\frac{\\sqrt{2}}{2}. $$   又 $0 < \\alpha + \\beta < \\pi$，故 $\\alpha + \\beta = \\frac{3\\pi}{4}$．",
+    "适用场景": "综合运用",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:25"
+}

@@ -71,37 +71,19 @@ def evaluate_multi_theme_match(retriever, doc, metadata, base_relevance, core_th
 
 
 def _filter_valid_themes(retriever, doc, metadata, core_theme, matched_themes):
-    theme_matcher_v90 = get_theme_matcher_v90()
+    """
+    V309.0：简化版主题过滤
+    去掉函数类排除词检查，避免误伤概率统计类主题
+    只检查主题关键词是否命中
+    去掉硬编码的互斥词，使用更通用的方法：主题优先级
+    """
     valid_themes = []
-    query_themes = [t.strip() for t in core_theme.split(",") if t.strip()]
-    full_text = f"{metadata.get('title', '')} {doc}".lower()
-    explicit_exclusion_words = ["幂函数", "三角函数", "二次函数", "一次函数", "分段函数", "三角", "sin", "cos", "tan"]
 
     for theme in matched_themes:
-        exclusion_words = theme_matcher_v90.theme_exclusion_words.get(theme, [])
-        filtered_exclusion_words = []
-        for word in exclusion_words:
-            is_other_theme_keyword = any(other_theme != theme and word in other_theme for other_theme in query_themes)
-            if not is_other_theme_keyword:
-                filtered_exclusion_words.append(word)
-
-        print(f"    🔍 主题 '{theme}' 的排除词: {exclusion_words}")
-        print(f"    🔍 查询主题: {query_themes}")
-        print(f"    🔍 过滤后的排除词: {filtered_exclusion_words}")
-
-        has_exclusion_word = False
-        for word in filtered_exclusion_words:
-            if word in explicit_exclusion_words and word.lower() in full_text:
-                has_exclusion_word = True
-                print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（包含排除词 '{word}'）")
-                break
-
-        if has_exclusion_word:
-            print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（包含排除词）")
-            continue
-
+        # 直接检查主题关键词是否命中
         if _has_theme_keyword_hit(retriever, theme, metadata, doc):
             valid_themes.append(theme)
+            print(f"    ✅ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 匹配")
         else:
             print(f"    ⚠️ 多主题检索：'{metadata.get('title', '未知')}' 与主题 '{theme}' 不匹配（未命中主题关键词）")
 

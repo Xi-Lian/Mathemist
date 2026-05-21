@@ -1,5 +1,8 @@
+import logging
 from .._shared import *
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
+
+logger = logging.getLogger(__name__)
 
 
 class _AppendResourceInfoMixin:
@@ -60,6 +63,8 @@ class _AppendResourceInfoMixin:
         matched_themes = resource.get("matched_themes", [])
         matched_theme_count = resource.get("matched_theme_count", 0)
         
+        logger.warning(f"📝 [资源格式化] 开始处理资源: title='{title[:30]}', has_content={bool(content)}, has_source={bool(source)}, matched_themes={matched_themes}")
+        
         # V9.0：获取精准匹配信息
         core_theme = resource.get("core_theme")
         related_themes = resource.get("related_themes", [])
@@ -92,6 +97,22 @@ class _AppendResourceInfoMixin:
             scenario,
             resource
         ).strip()
+
+        # 根据资源类型调整标题显示
+        display_title = title
+        print(f"   🔍 调试 - category_name: '{category_name}', display_title: '{display_title}'")
+        if category_name == "教案资源":
+            # 教案资源中移除标题中的习题相关字样
+            if "涔犻" in display_title:
+                display_title = display_title.replace("涔犻:", "").replace("涔犻", "").strip()
+                print(f"   🔍 调试 - 移除'涔犻'后: '{display_title}'")
+            elif "习题" in display_title:
+                display_title = display_title.replace("习题:", "").replace("习题", "").strip()
+                print(f"   🔍 调试 - 移除'习题'后: '{display_title}'")
+            if not display_title:
+                display_title = "教案"
+                print(f"   🔍 调试 - 设置为'教案': '{display_title}'")
+        print(f"   🔍 调试 - 最终display_title: '{display_title}'")
 
         # 获取用户原始查询，用于提取所有查询主题
         user_input = ""
@@ -160,7 +181,7 @@ class _AppendResourceInfoMixin:
             title_prefix += "⭐ "
         elif is_comprehensive:
             title_prefix += "🔥 "
-        response_parts.append(f"**{title_prefix}{title}**")
+        response_parts.append(f"**{title_prefix}{display_title}**")
 
         match_label_map = {
             "exact": "高度匹配",
@@ -178,12 +199,79 @@ class _AppendResourceInfoMixin:
             reason_parts.append(match_explanation)
 
         response_parts.append(f"- 适配说明：{'；'.join(reason_parts)}")
-        if "\n" in processed_content:
-            response_parts.append("- 内容预览：")
-            for line in processed_content.splitlines():
-                response_parts.append(line if line else "")
+        
+        # V43.1：添加教学用途降级提示
+        teaching_use = resource.get('teaching_use', '')
+        if state and teaching_use:
+            user_input = self._get_state_value(state, "user_input", "")
+            if user_input:
+                # 检测用户是否明确要求某种教学用途
+                user_intent = None
+                if '复习' in user_input or '总结' in user_input or '回顾' in user_input:
+                    user_intent = '复习课'
+                elif '练习' in user_input or '习题' in user_input or '训练' in user_input:
+                    user_intent = '练习课'
+                elif '新授' in user_input or '新课' in user_input:
+                    user_intent = '新授课'
+                
+                # 如果用户有明确意图，且课件用途不匹配，添加提示
+                if user_intent and user_intent not in teaching_use:
+                    fallback_message = self._get_fallback_message(user_intent, teaching_use)
+                    if fallback_message:
+                        response_parts.append(f"- ⚠️ {fallback_message}")
+        
+        # 教学大纲资源特殊处理：显示完整内容，不做预览
+        # 同时检查resource_type和category_name，确保教学大纲资源能被正确识别
+        resource_type = resource.get('resource_type', '')
+        is_syllabus = (category_name == "教学大纲" or category_name == "syllabus" or 
+                      resource_type == 'syllabus' or 'syllabus' in str(resource_type).lower())
+        
+        if is_syllabus:
+            response_parts.append("")  # 添加空行分隔
+            response_parts.append("**📚 教学大纲内容：**")
+            response_parts.append("")
+            
+            # 解析并格式化教学大纲内容
+            lines = processed_content.splitlines()
+            in_code_block = False
+            
+            for line in lines:
+                # 处理标题
+                if line.startswith('### '):
+                    response_parts.append(f"#### {line[4:]}")
+                elif line.startswith('## '):
+                    response_parts.append(f"**◆ {line[3:]}**")
+                elif line.startswith('# '):
+                    response_parts.append(f"**📌 {line[2:]}**")
+                # 处理列表
+                elif line.startswith('- **') and '** (当前章节)' in line:
+                    # 提取章节名称（去掉 "- **" 前缀和 "** (当前章节)" 后缀）
+                    chapter_name = line.replace('- **', '').replace('** (当前章节)', '').strip()
+                    response_parts.append(f"  ✅ {chapter_name}")
+                elif line.startswith('- '):
+                    response_parts.append(f"  ○ {line[2:]}")
+                # 处理特殊标记
+                elif line.startswith('【') and line.endswith('】'):
+                    response_parts.append("")
+                    response_parts.append(f"**{line}**")
+                    response_parts.append("")
+                # 处理分隔线
+                elif line.strip() == '---':
+                    response_parts.append("---")
+                # 处理普通文本
+                elif line.strip():
+                    response_parts.append(f"  {line}")
+                # 空行
+                else:
+                    response_parts.append("")
         else:
-            response_parts.append(f"- 内容预览：{processed_content}")
+            # 其他资源显示内容预览
+            if "\n" in processed_content:
+                response_parts.append("- 内容预览：")
+                for line in processed_content.splitlines():
+                    response_parts.append(line if line else "")
+            else:
+                response_parts.append(f"- 内容预览：{processed_content}")
 
         if self.show_debug_scores:
             debug_parts = []
@@ -198,7 +286,48 @@ class _AppendResourceInfoMixin:
             debug_parts.append(f"综合性 {comprehensiveness*100:.1f}%")
             response_parts.append(f"- 调试分数：{' | '.join(debug_parts)}")
 
-        response_parts.append(f"- 文件路径：{self._build_source_markdown(display_source)}")
+        # V45.0：课例视频特殊处理：显示视频链接、教材、课程名称、分析
+        is_lesson_case = (category_name == "课例资源" or category_name == "lesson_case" or 
+                         resource_type == 'lesson_case' or 'lesson_case' in str(resource_type).lower())
+        
+        # V45.3修复：课例视频不显示Excel文件路径，直接显示视频链接
+        if not is_syllabus and not is_lesson_case:
+            response_parts.append(f"- 文件路径：{self._build_source_markdown(display_source)}")
+        
+        if is_lesson_case:
+            # 获取课例视频的关键字段
+            video_url = resource.get('视频文件名/网址', '') or resource.get('video_url', '') or resource.get('url', '')
+            textbook = resource.get('教材', '') or resource.get('textbook', '')
+            course_name = resource.get('课程名称', '') or resource.get('course_name', '') or resource.get('title', '')
+            analysis = resource.get('分析', '') or resource.get('analysis', '') or resource.get('content', '')
+            chapter = resource.get('章节', '') or resource.get('chapter', '')
+            
+            # 显示视频链接（如果有）
+            if video_url:
+                # 判断是URL还是文件名
+                if video_url.startswith('http'):
+                    response_parts.append(f"- 🎬 **视频链接**：[{video_url}]({video_url})")
+                else:
+                    # 文件名，尝试构建链接
+                    response_parts.append(f"- 🎬 **视频文件**：`{video_url}`")
+            
+            # 显示教材信息
+            if textbook:
+                response_parts.append(f"- 📚 **教材**：{textbook}")
+            
+            # 显示课程名称
+            if course_name and course_name != title:
+                response_parts.append(f"- 📖 **课程名称**：{course_name}")
+            
+            # 显示章节信息
+            if chapter:
+                response_parts.append(f"- 📑 **章节**：{chapter}")
+            
+            # 显示分析内容
+            if analysis:
+                # 如果分析内容太长，截取前200字符
+                analysis_preview = analysis[:200] + "..." if len(analysis) > 200 else analysis
+                response_parts.append(f"- 💡 **分析**：{analysis_preview}")
 
         if category_name == "教案资源":
             cloud_url = (resource.get("cloud_url") or "").strip()
@@ -216,3 +345,39 @@ class _AppendResourceInfoMixin:
             if related_file:
                 response_parts.append(f"- 关联文件：`{related_file}`")
         response_parts.append("")
+    
+    def _get_fallback_message(self, user_intent: str, teaching_use: str) -> str:
+        """
+        V43.1：生成教学用途降级提示信息
+        
+        Args:
+            user_intent: 用户意图（复习课/练习课/新授课）
+            teaching_use: 课件实际教学用途
+        
+        Returns:
+            降级提示信息，如果不需要提示则返回空字符串
+        """
+        # 定义降级关系
+        fallback_map = {
+            '复习课': {
+                '练习课': '这是练习课课件，可用于复习参考',
+                '习题课': '这是习题课课件，可用于复习参考',
+                '新授课': '这是新授课课件，可作为复习参考资料（数据库中暂无复习课课件）',
+            },
+            '练习课': {
+                '习题课': '这是习题课课件，可用于练习参考',
+                '新授课': '这是新授课课件，可作为练习参考资料（数据库中暂无练习课课件）',
+            },
+            '习题课': {
+                '练习课': '这是练习课课件，可用于习题参考',
+                '新授课': '这是新授课课件，可作为习题参考资料（数据库中暂无习题课课件）',
+            }
+        }
+        
+        # 检查是否有降级关系
+        if user_intent in fallback_map:
+            for fallback_type, message in fallback_map[user_intent].items():
+                if fallback_type in teaching_use:
+                    return message
+        
+        return ""

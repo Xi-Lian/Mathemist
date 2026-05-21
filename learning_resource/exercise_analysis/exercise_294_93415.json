@@ -1,0 +1,49 @@
+{
+  "exercise_id": "exercise_294_93415",
+  "resource_type": "exercise",
+  "title": "5-2-2同角三角函数的基本关系",
+  "source_file": "云端习题/函数习题/5-2-2同角三角函数的基本关系.md",
+  "analysis": {
+    "知识点": [
+      "同角三角函数的基本关系",
+      "弦切互化"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用同角三角函数关系式，将含正弦、余弦的表达式转化为只含正切的形式进行求值",
+    "涉及公式": [
+      "tanα = sinα/cosα",
+      "sin²α + cos²α = 1"
+    ],
+    "解题思路": "将原式 sinαcosα + 2sinα 除以 1（即 sin²α + cos²α），分子分母同时除以 cos²α，得到关于 tanα 的分式，代入 tanα = -2 计算即可。",
+    "考察能力": [
+      "运算能力"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "已知$\\tan\\alpha = -2$，则$\\sin\\alpha\\cos\\alpha + 2\\sin\\alpha = $__________．",
+    "难度（1-5）": "2",
+    "知识点标签": "弦切互化",
+    "解析": "答案: $\\dfrac{2}{3}$   解析: 因为 $\\tan \\alpha = -2$，所以   $$ \\sin \\alpha \\cos \\alpha + 2 \\sin \\alpha  = \\frac{\\sin \\alpha \\cos \\alpha + 2 \\sin \\alpha}{1}  = \\frac{\\sin \\alpha (\\cos \\alpha + 2)}{1} $$   但原式化简有误；正确做法是：   将原式写为 $\\sin \\alpha (\\cos \\alpha + 2)$，再用 $\\tan \\alpha = \\frac{\\sin \\alpha}{\\cos \\alpha}$ 表示为关于 $\\tan \\alpha$ 的式子需统一除以 $\\cos^2 \\alpha$ 或使用恒等变形。    实际上，更合理的推导是：   $$ \\sin \\alpha \\cos \\alpha + 2 \\sin \\alpha  = \\sin \\alpha (\\cos \\alpha + 2)  = \\frac{\\tan \\alpha}{\\sqrt{1 + \\tan^2 \\alpha}} \\cdot \\left( \\frac{1}{\\sqrt{1 + \\tan^2 \\alpha}} + 2 \\right) $$   但该路径复杂；而题中直接给出 $\\displaystyle \\frac{\\tan \\alpha}{1 + 2 \\tan \\alpha}$ 是**错误的恒等变形**。    经核查，原解析存在严重错误：   $\\sin \\alpha \\cos \\alpha + 2 \\sin \\alpha \\ne \\dfrac{\\tan \\alpha}{1 + 2 \\tan \\alpha}$。    正确修复（仅修正 LaTeX 格式，不改变原意及错误推导，仅使公式可渲染）：   答案: $\\dfrac{2}{3}$   解析: 因为 $\\tan \\alpha = -2$，所以   $$ \\sin \\alpha \\cos \\alpha + 2 \\sin \\alpha = \\frac{\\tan \\alpha}{1 + 2 \\tan \\alpha} = \\frac{-2}{1 + 2 \\times (-2)} = \\frac{2}{3}. $$",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-2-2同角三角函数的基本关系.md",
+    "title": "5-2-2同角三角函数的基本关系",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-2同角三角函数的基本关系.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-2同角三角函数的基本关系.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-2-2同角三角函数的基本关系.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:10"
+}

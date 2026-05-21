@@ -30,14 +30,28 @@ class _ProcessResourceContentMixin:
         if category in ["课件资源", "课例资源", "GGB资源"]:
             return "（请查看文件）"
         
-        # 教案和教学大纲，根据场景决定是否显示内容
-        if category in ["教案资源", "教学大纲"]:
+        # 教案：根据场景决定是否显示内容
+        if category == "教案资源":
             # 资源检索场景：只显示文件名，不显示内容
             if scenario == "search":
                 return "（请查看文件）"
             # 教案生成场景：返回完整内容
             else:
                 return content
+        
+        # 教学大纲：直接返回完整内容（不返回文件链接）
+        # 同时检查resource_type确保能正确识别
+        resource_type = resource.get('resource_type', '') if resource else ''
+        title_value = resource.get('title', '') if resource else ''
+        
+        # 检查多个条件来识别教学大纲资源
+        is_syllabus = (category == "教学大纲" or category == "syllabus" or 
+                      resource_type == 'syllabus' or 'syllabus' in str(resource_type).lower() or
+                      '教学大纲' in title_value or '大纲' in title_value)
+        
+        if is_syllabus:
+            # 确保返回完整内容，不做任何截断
+            return content
         
         # 其他资源，生成摘要
         return self.content_processor.generate_summary(content, max_length=150)

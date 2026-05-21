@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_764_11446",
+  "resource_type": "exercise",
+  "title": "7-4二项分布与超几何分布",
+  "source_file": "云端习题/概率与统计习题/7-4二项分布与超几何分布.md",
+  "analysis": {
+    "知识点": [
+      "二项分布",
+      "方差的性质",
+      "随机变量的线性变换"
+    ],
+    "题型": "填空题",
+    "核心考点": "二项分布的方差计算及随机变量线性变换后方差的计算",
+    "涉及公式": [
+      "Var(X) = np(1-p)",
+      "Var(aX) = a^2 Var(X)"
+    ],
+    "解题思路": "先确定每道题答对的概率为1/3，答对题数n服从二项分布B(12,1/3)，计算n的方差，再根据X=5n，利用方差性质得到D(X)=25×D(n)。",
+    "考察能力": [
+      "运算能力",
+      "数据分析"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "对于某套数学试卷的12个选择题（每小题5分，且每小题的四个选项中只有一个是正确的），我们假定：某考生在做每个选择题时都能排除掉一个错误选项，而对其他三个选项都没有把握。设该考生选择题的总得分为 $ X $ 分，则  \n$$\nD(X) = \\boxed{75}\n$$  \n\n**解析**：  \n每道题可排除一个错误选项，剩余3个选项中随机选1个，故答对概率为 $ p = \\frac{1}{3} $。  \n设第 $ i $ 题得分为 $ X_i $，则 $ X_i \\in \\{0, 5\\} $，且  \n$$\n\\mathbb{P}(X_i = 5) = \\frac{1}{3},\\quad \\mathbb{P}(X_i = 0) = \\frac{2}{3}.\n$$  \n于是  \n$$\n\\mathbb{E}[X_i] = 5 \\cdot \\frac{1}{3} + 0 \\cdot \\frac{2}{3} = \\frac{5}{3},\\quad\n\\mathbb{E}[X_i^2] = 25 \\cdot \\frac{1}{3} + 0 \\cdot \\frac{2}{3} = \\frac{25}{3},\n$$  \n$$\n\\operatorname{Var}(X_i) = \\mathbb{E}[X_i^2] - (\\mathbb{E}[X_i])^2 = \\frac{25}{3} - \\left(\\frac{5}{3}\\right)^2 = \\frac{25}{3} - \\frac{25}{9} = \\frac{50}{9}.\n$$  \n由于 $ X = X_1 + X_2 + \\cdots + X_{12} $，且各 $ X_i $ 独立，故  \n$$\nD(X) = \\operatorname{Var}(X) = 12 \\cdot \\frac{50}{9} = \\frac{600}{9} = \\frac{200}{3} \\approx 66.\\overline{6}.\n$$  \n但注意：若将每题得分建模为 $ 5 \\times \\text{Bernoulli}\\left(\\frac{1}{3}\\right) $，则  \n$$\n\\operatorname{Var}(X_i) = 25 \\cdot \\frac{1}{3} \\cdot \\frac{2}{3} = \\frac{50}{9},\n$$  \n同上，故  \n$$\nD(X) = 12 \\times \\frac{50}{9} = \\frac{600}{9} = \\frac{200}{3}.\n$$  \n因此，正确答案为  \n$$\nD(X) = \\frac{200}{3}.\n$$",
+    "难度（1-5）": "3",
+    "知识点标签": "二项分布的方差",
+    "解析": "答案：$\\dfrac{200}{3}$  \n解析：设该考生答对选择题的个数为 $n$，则 $X = 5n$。该考生答对每个选择题的概率均为 $\\dfrac{1}{3}$，且 $n \\sim B\\left(12,\\dfrac{1}{3}\\right)$，  \n∴ $D(n) = 12 \\times \\dfrac{1}{3} \\times \\left(1 - \\dfrac{1}{3}\\right) = \\dfrac{8}{3}$，  \n∴ $D(X) = 5^2 D(n) = 25 \\times \\dfrac{8}{3} = \\dfrac{200}{3}$。\n\n---",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/7-4二项分布与超几何分布.md",
+    "title": "7-4二项分布与超几何分布",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-4二项分布与超几何分布.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/7-4二项分布与超几何分布.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\7-4二项分布与超几何分布.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:32:56"
+}

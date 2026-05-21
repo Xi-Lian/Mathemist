@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_284_62144",
+  "resource_type": "exercise",
+  "title": "5-2-1三角函数的概念",
+  "source_file": "云端习题/函数习题/5-2-1三角函数的概念.md",
+  "analysis": {
+    "知识点": [
+      "三角函数的定义",
+      "三角函数值的符号判断",
+      "平方根运算"
+    ],
+    "题型": "选择题",
+    "核心考点": "根据角终边上点的坐标判断三角函数值的符号，并计算组合表达式的符号",
+    "涉及公式": [
+      "sinα = y/r",
+      "cosα = x/r",
+      "tanα = y/x",
+      "r = √(x² + y²)"
+    ],
+    "解题思路": "由点P(1,m)且m<0，得r=√(m²+1)>0，sinα=m/r<0，cosα=1/r>0，tanα=m<0。分别计算各选项：A符号不定；B cosα-sinα>0；C sinαcosα<0；D sinαtanα=m²/r>0。故B、D一定为正。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）在平面直角坐标系 $xOy$ 中，角 $\\alpha$ 以 $Ox$ 为始边，终边经过点 $P(1, m)$（其中 $m < 0$），则下列各式的计算结果一定为正的是（　　）   A. $\\sin\\alpha + \\cos\\alpha$   B. $\\cos\\alpha - \\sin\\alpha$   C. $\\sin\\alpha \\cos\\alpha$   D. $\\sin\\alpha \\tan\\alpha$",
+    "难度（1-5）": "3",
+    "知识点标签": "三角函数定义;符号判断",
+    "解析": "答案：$B$、$D$   解析：由已知得 $r = OP = \\sqrt{m^2 + 1}$，且 $m < 0$，则   $$ \\sin\\alpha = \\frac{m}{\\sqrt{m^2 + 1}} < 0,\\quad  \\cos\\alpha = \\frac{1}{\\sqrt{m^2 + 1}} > 0; $$   $\\sin\\alpha + \\cos\\alpha$ 的符号无法确定；   $$ \\cos\\alpha - \\sin\\alpha > 0,\\quad  \\sin\\alpha\\cos\\alpha < 0,\\quad  \\tan\\alpha = m < 0; $$   故 $\\sin\\alpha\\tan\\alpha = m \\cdot \\frac{m}{\\sqrt{m^2 + 1}} = \\frac{m^2}{\\sqrt{m^2 + 1}} > 0$。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-2-1三角函数的概念.md",
+    "title": "5-2-1三角函数的概念",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-1三角函数的概念.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-1三角函数的概念.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-2-1三角函数的概念.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:27:04"
+}

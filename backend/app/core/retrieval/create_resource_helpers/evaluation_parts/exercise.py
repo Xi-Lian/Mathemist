@@ -40,8 +40,23 @@ def evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme
     elif any(st in core_theme for st in ["函数概念", "函数的概念"]):
         print(f"   ⚠️ V30.4严格过滤: '{core_theme}'主题需要严格匹配，知识点不一致，直接过滤")
         explanation = f"严格过滤主题'{core_theme}'知识点不匹配"
+    elif base_relevance > 0.5:
+        # 高相关性资源，即使知识点不完全匹配也允许通过
+        relevance_score = base_relevance * 0.7
+        overall_score = relevance_score
+        should_show = True
+        match_level = "related"
+        explanation = f"高相关性资源: {core_theme}"
     elif specific_theme_query:
-        explanation = f"明确主题查询未命中知识点: {core_theme}"
+        # 特定主题查询但知识点不匹配，检查相关性
+        if base_relevance > 0.3:
+            relevance_score = base_relevance * 0.5
+            overall_score = relevance_score
+            should_show = True
+            match_level = "related"
+            explanation = f"主题相关资源: {core_theme}"
+        else:
+            explanation = f"明确主题查询未命中知识点: {core_theme}"
     else:
         relevance_score = base_relevance * 0.3
         overall_score = relevance_score
@@ -79,6 +94,8 @@ def evaluate_exercise_match(retriever, doc, metadata, base_relevance, core_theme
 def check_exercise_strict_match(retriever, metadata, question_content, core_theme, core_themes):
     knowledge_tags = metadata.get("知识点", "") or metadata.get("知识点标签", "")
     strict_match = True
+    
+    # 从题目内容提取知识点标签
     if not knowledge_tags and question_content:
         all_math_themes = ["二次函数", "幂函数", "三角函数", "指数函数", "对数函数", "函数的零点", "一次函数", "集合", "不等式", "三角恒等变换"]
         extracted_themes = [t for t in all_math_themes if t in question_content]
@@ -92,6 +109,7 @@ def check_exercise_strict_match(retriever, metadata, question_content, core_them
         is_strict_filter_theme = any(st in core_theme for st in strict_filter_themes)
         generic_themes = ["函数", "数学", "教学", "函数的应用", "高中数学", "数学教学"]
         is_generic_theme = any(gt in core_theme for gt in generic_themes)
+        
         if is_strict_filter_theme:
             if metadata.get("resource_type", "") == "ggb" and (not knowledge_tags or knowledge_tags == "unknown"):
                 print("   ✅ V61.0GGB资源特殊处理: GGB资源知识点标签为unknown，允许通过筛选")
@@ -101,12 +119,58 @@ def check_exercise_strict_match(retriever, metadata, question_content, core_them
                     print(f"   ⚠️ V30.6严格过滤：知识点标签'{knowledge_tags}'不包含函数概念相关关键词，严格过滤")
                     strict_match = False
         elif not is_generic_theme:
+            # 检查是否直接匹配查询主题
             has_query_theme = any(theme in knowledge_tags for theme in core_themes)
-            all_math_themes = ["二次函数", "幂函数", "三角函数", "指数函数", "对数函数", "函数的零点", "一次函数", "集合", "不等式", "三角恒等变换"]
-            other_themes_in_tags = [t for t in all_math_themes if t in knowledge_tags and t not in core_themes]
-            if not has_query_theme and other_themes_in_tags:
-                print(f"   ⚠️ V20.1严格过滤：知识点标签'{knowledge_tags}'包含非查询主题{other_themes_in_tags}，但不包含查询主题{core_themes}")
-                strict_match = False
+            
+            if has_query_theme:
+                print(f"   ✅ V20.0直接匹配：知识点标签'{knowledge_tags}'包含查询主题{core_themes}")
+                strict_match = True
+            else:
+                # 尝试使用知识图谱扩展匹配
+                has_kg_related_match = False
+                try:
+                    # 获取查询主题的相关概念（包含父概念和子概念）
+                    kg = getattr(retriever, 'kg', None)
+                    if kg:
+                        for theme in core_themes:
+                            related_concepts = kg.get_related_nodes(theme)
+                            # 检查知识点标签是否包含相关概念
+                            for concept in related_concepts:
+                                if concept in knowledge_tags:
+                                    print(f"   ✅ V20.2知识图谱扩展匹配：知识点标签'{knowledge_tags}'包含相关概念'{concept}'")
+                                    has_kg_related_match = True
+                                    break
+                            if has_kg_related_match:
+                                break
+                        
+                        # 检查知识点标签是否包含相关关键词
+                        if not has_kg_related_match:
+                            for theme in core_themes:
+                                expanded_query = kg.expand_query(theme)
+                                expanded_terms = expanded_query.split()
+                                for term in expanded_terms:
+                                    if term in knowledge_tags:
+                                        print(f"   ✅ V20.3知识图谱关键词匹配：知识点标签'{knowledge_tags}'包含扩展关键词'{term}'")
+                                        has_kg_related_match = True
+                                        break
+                                if has_kg_related_match:
+                                    break
+                except Exception as e:
+                    print(f"   ⚠️ 知识图谱匹配失败: {str(e)[:50]}")
+                
+                if has_kg_related_match:
+                    strict_match = True
+                else:
+                    # 原始严格过滤逻辑：检查是否包含其他不相关的主题
+                    all_math_themes = ["二次函数", "幂函数", "三角函数", "指数函数", "对数函数", "函数的零点", "一次函数", "集合", "不等式", "三角恒等变换"]
+                    other_themes_in_tags = [t for t in all_math_themes if t in knowledge_tags and t not in core_themes]
+                    if other_themes_in_tags:
+                        print(f"   ⚠️ V20.1严格过滤：知识点标签'{knowledge_tags}'包含非查询主题{other_themes_in_tags}，但不包含查询主题{core_themes}")
+                        strict_match = False
+                    else:
+                        # 如果没有其他主题，则认为是中性匹配，不过滤
+                        print(f"   ✅ V20.4中性匹配：知识点标签'{knowledge_tags}'不包含冲突主题，允许通过")
+                        strict_match = True
         else:
             print(f"   ✅ V37.1通用主题处理：查询主题'{core_theme}'是通用主题，允许包含相关知识点标签")
             has_related_keyword = any(keyword in knowledge_tags for keyword in retriever.all_theme_keywords)

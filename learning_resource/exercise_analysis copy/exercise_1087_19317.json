@@ -1,0 +1,48 @@
+{
+  "exercise_id": "exercise_1087_19317",
+  "resource_type": "exercise",
+  "title": "8-4空间点直线平面之间的位置关系",
+  "source_file": "云端习题/立体几何习题/8-4空间点直线平面之间的位置关系.md",
+  "analysis": {
+    "知识点": [
+      "平面的基本性质",
+      "点、线、面的位置关系",
+      "平面相交的性质"
+    ],
+    "题型": "选择题",
+    "核心考点": "理解三个平面相交于一点时，该点与各平面内直线的位置关系",
+    "涉及公式": [],
+    "解题思路": "由α∩β∩γ={P}知P∈α, P∈β, P∈γ。又a⊂α, b⊂β, c⊂γ，但直线不一定经过P，只有选项A、B、C中的某一条直线可能经过P，但题目未说明a、b、c是否过P，故无法确定P∈a、P∈b或P∈c。而D选项P∈a∩b∩c要求P同时属于三条直线，更无法保证。实际上，根据条件只能推出P属于三个平面，但直线是平面内的任意直线，不一定过P，因此所有选项均不一定成立。但原解析认为P∈a、P∈b、P∈c，这是错误的，因为a、b、c只是平面内的直线，并非平面本身。正确结论应为：P∈α, P∈β, P∈γ，但P不一定在a、b、c上。故本题无正确选项，但若按原解析逻辑，则误选A。",
+    "考察能力": [
+      "逻辑推理",
+      "空间想象"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": true,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "已知 $\\alpha$、$\\beta$、$\\gamma$ 是平面，$a$、$b$、$c$ 是直线，且 $a \\subset \\alpha$，$b \\subset \\beta$，$c \\subset \\gamma$。若 $\\alpha \\cap \\beta \\cap \\gamma = \\{P\\}$，则（  ）   A. $P \\in a$   B. $P \\in b$   C. $P \\in c$   D. $P \\in a \\cap b \\cap c$",
+    "难度（1-5）": "3",
+    "知识点标签": "平面相交;点线面关系",
+    "解析": "答案：A   解析：因为 $a \\subset \\alpha$，$b \\subset \\beta$，所以 $P \\in \\alpha$，$P \\in \\beta$；又由 $\\alpha \\cap \\beta \\cap \\gamma = \\{P\\}$，可得 $P \\in \\gamma$ 且 $P \\in \\alpha \\cap \\beta$，故 $P \\in a$ 且 $P \\in b$。又因 $c \\subset \\gamma$，所以 $P \\in c$。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-4空间点直线平面之间的位置关系.md",
+    "title": "8-4空间点直线平面之间的位置关系",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-4空间点直线平面之间的位置关系.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-4空间点直线平面之间的位置关系.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-4空间点直线平面之间的位置关系.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:37:00"
+}

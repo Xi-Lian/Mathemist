@@ -12,8 +12,8 @@ class _LoadLatestLessonPlanMixin:
                     data = json.load(f)
                     self.latest_lesson_plan = data.get('lesson_plan')
                     self.latest_topic = data.get('topic')
-                print(f"✅ 从文件加载最新教案: {self.latest_topic}")
+                print(f"从文件加载最新教案: {self.latest_topic}")
             except Exception as e:
-                print(f"⚠️ 加载最新教案失败: {e}")
+                print(f"加载最新教案失败: {e}")
         else:
-            print("ℹ️ 最新教案文件不存在")
+            print("最新教案文件不存在")

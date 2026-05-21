@@ -15,7 +15,7 @@ FUNCTION_CONCEPT_KEYWORDS = [
     "函数的应用",
 ]
 GENERAL_MATERIAL_HINTS = ["资料", "学习资料", "教学资源", "教学资料", "资源", "内容"]
-EXPLICIT_EXERCISE_HINTS = ["习题", "题目", "练习题", "练习", "测试题", "选择题", "填空题", "解答题", "证明题"]
+EXPLICIT_EXERCISE_HINTS = ["习题", "题目", "测试题", "选择题", "填空题", "解答题", "证明题"]
 SEMANTIC_RESOURCE_HINTS = [
     "教案",
     "教学设计",
@@ -41,7 +41,7 @@ SPECIFIC_THEME_GUARD_BROAD_THEMES = {
 }
 QUERY_NOISE_TERMS = {
     "推荐", "几道", "给我", "找", "一些", "几个", "来几道", "来一些", "要几道",
-    "习题", "题目", "练习题", "练习", "测试题", "选择题", "填空题", "解答题", "证明题",
+    "习题", "题目", "测试题", "选择题", "填空题", "解答题", "证明题",
     "推荐几道", "帮我", "一下", "相关", "关于",
 }
 
@@ -51,6 +51,60 @@ def _normalize_match_text(text):
     normalized = normalized.replace("的", "")
     normalized = re.sub(r"[\s,，。；;、:：()\[\]（）\-_/]+", "", normalized)
     return normalized
+
+
+def apply_courseware_teaching_use_filter(results, courseware_teaching_use):
+    """
+    V53.0：按课件教学用途过滤结果。
+
+    仅当 courseware_teaching_use 非空时生效：
+    - 对 courseware 类型资源，保留 `教学用途` 字段包含目标用途的结果；
+    - 非 courseware 类型资源不受影响；
+    - 若过滤后课件全部被清空，则回退到保留全部课件（避免搜不到任何结果）。
+
+    Args:
+        results: ChromaDB 格式的检索结果 {"documents":[[...]], "metadatas":[[...]], ...}
+        courseware_teaching_use: 目标教学用途，如 "练习课"/"复习课"/"新授课"，或 None
+
+    Returns:
+        过滤后的结果（格式与输入相同）
+    """
+    if not courseware_teaching_use:
+        return results
+
+    print(f"🔍 V53.0应用课件教学用途筛选: '{courseware_teaching_use}'")
+
+    kept = {"documents": [[]], "metadatas": [[]], "distances": [[]], "ids": [[]]}
+    courseware_total = 0
+    courseware_kept = 0
+
+    for i, meta in enumerate(results["metadatas"][0]):
+        resource_type = meta.get("resource_type", "")
+        if resource_type != "courseware":
+            # 非课件资源直接保留
+            kept["documents"][0].append(results["documents"][0][i])
+            kept["metadatas"][0].append(meta)
+            kept["distances"][0].append(results["distances"][0][i])
+            kept["ids"][0].append(results["ids"][0][i])
+            continue
+
+        courseware_total += 1
+        teaching_use = meta.get("教学用途", "") or ""
+        if courseware_teaching_use in teaching_use:
+            kept["documents"][0].append(results["documents"][0][i])
+            kept["metadatas"][0].append(meta)
+            kept["distances"][0].append(results["distances"][0][i])
+            kept["ids"][0].append(results["ids"][0][i])
+            courseware_kept += 1
+
+    print(f"     ✅ V53.0课件教学用途筛选: 总课件 {courseware_total} 条，命中 '{courseware_teaching_use}' 的 {courseware_kept} 条")
+
+    # 如果课件全部被过滤掉（说明数据库中确实没有该教学用途的课件），回退保留全部
+    if courseware_total > 0 and courseware_kept == 0:
+        print(f"     ⚠️ V53.0未找到教学用途='{courseware_teaching_use}'的课件，回退保留所有课件")
+        return results
+
+    return kept
 
 
 def apply_difficulty_filter(results, difficulty_info, quantity_limit):
@@ -227,6 +281,14 @@ def _raw_theme_score(core_theme, meta, doc):
 
 def _extract_query_terms(query, core_theme):
     text = query or ""
+    
+    # V41.6新增：从查询中提取教学用途相关术语（练习课、复习课等）
+    teaching_use_terms = ['练习课', '复习课', '习题课', '新授课', '综合训练', '复习课课件', '练习课课件']
+    extracted_teaching_terms = []
+    for term in teaching_use_terms:
+        if term in text:
+            extracted_teaching_terms.append(term)
+    
     for hint in EXPLICIT_EXERCISE_HINTS + GENERAL_MATERIAL_HINTS + list(QUERY_NOISE_TERMS):
         text = text.replace(hint, " ")
     parts = [part.strip() for part in re.split(r"[\s,，。；、]+", text) if len(part.strip()) >= 2]
@@ -242,6 +304,9 @@ def _extract_query_terms(query, core_theme):
             expanded_terms.append("图象")
         if "图像" in part and "图像" not in expanded_terms:
             expanded_terms.append("图像")
+    
+    # V41.6新增：添加提取的教学用途术语
+    expanded_terms.extend(extracted_teaching_terms)
 
     unique_terms = []
     seen = set()
@@ -260,10 +325,12 @@ def _specific_query_score(query, core_theme, meta, doc):
     title = meta.get("title", "") or ""
     source_file = meta.get("source_file", "") or ""
     knowledge_tags = meta.get("知识点", "") or meta.get("知识点标签", "") or ""
+    teaching_use = meta.get("教学用途", "") or meta.get("usage", "") or ""  # V41.6新增：加入教学用途字段
     title_norm = _normalize_match_text(title)
     source_norm = _normalize_match_text(source_file)
     knowledge_norm = _normalize_match_text(knowledge_tags)
-    haystack = _normalize_match_text(f"{title} {source_file} {knowledge_tags} {doc or ''}")
+    teaching_use_norm = _normalize_match_text(teaching_use)  # V41.6新增：规范化教学用途
+    haystack = _normalize_match_text(f"{title} {source_file} {knowledge_tags} {teaching_use} {doc or ''}")  # V41.6新增：加入教学用途
 
     score = 0.0
     for term in terms:
@@ -274,6 +341,8 @@ def _specific_query_score(query, core_theme, meta, doc):
             score += 1.0
         elif normalized_term in source_norm:
             score += 0.9
+        elif normalized_term in teaching_use_norm:  # V41.6新增：检查教学用途字段，权重仅次于标题和文件名
+            score += 0.85
         elif normalized_term in knowledge_norm:
             score += 0.75
         elif normalized_term in haystack:
@@ -426,6 +495,14 @@ def _resource_matches_specific_theme(resource, themes):
     metadata = resource.get("metadata", {}) if isinstance(resource.get("metadata"), dict) else {}
     knowledge_tags = metadata.get("知识点标签", "") or metadata.get("知识点", "") or ""
     haystack = _normalize_match_text(f"{title} {content} {source} {knowledge} {knowledge_tags}")
+    
+    # 检查是否包含概率相关的关键词
+    if any("概率" in theme for theme in themes):
+        probability_keywords = ["概率", "概率基本性质", "概率的性质"]
+        normalized_keywords = [_normalize_match_text(keyword) for keyword in probability_keywords]
+        if any(keyword in haystack for keyword in normalized_keywords):
+            return True
+    
     return any(_normalize_match_text(theme) in haystack for theme in themes)
 
 

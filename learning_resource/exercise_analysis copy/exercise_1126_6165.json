@@ -1,0 +1,49 @@
+{
+  "exercise_id": "exercise_1126_6165",
+  "resource_type": "exercise",
+  "title": "8-6空间直线、平面的垂直",
+  "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+  "analysis": {
+    "知识点": [
+      "线面平行",
+      "面面垂直",
+      "线面垂直",
+      "面面平行的性质定理"
+    ],
+    "题型": "选择题",
+    "核心考点": "空间直线与平面、平面与平面的位置关系判定，特别是线面平行、面面垂直、线面垂直的性质与判定定理的应用",
+    "涉及公式": [],
+    "解题思路": "逐一分析每个选项：A选项通过构造反例（如l平行于α且垂直于β，但α与β不垂直）排除；B选项通过反例（如l同时垂直于两个相交平面）排除；C选项由面面平行的性质定理直接得出正确；D选项通过反例（β内无数条平行直线与l垂直，但l可能在α内或与α斜交）排除。",
+    "考察能力": [
+      "逻辑推理",
+      "空间想象"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": true,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "已知直线 $l$ 及两个不重合的平面 $\\alpha$、$\\beta$，下列命题正确的是（　　）   A. 若 $l \\parallel \\alpha$，$l \\perp \\beta$，则 $\\alpha \\perp \\beta$；   B. 若 $l \\perp \\alpha$，$l \\perp \\beta$，则 $\\alpha \\parallel \\beta$；   C. 若 $\\alpha \\parallel \\beta$，$l \\subset \\alpha$，则 $l \\parallel \\beta$；   D. 若 $\\alpha \\perp \\beta$，且 $\\beta$ 内有无数条直线与 $l$ 垂直，则 $l \\parallel \\alpha$。",
+    "难度（1-5）": "3",
+    "知识点标签": "线面平行;面面垂直;线面垂直",
+    "解析": "答案：C   解析：A、B、D 均可举出反例，C 选项可由面面平行的性质定理得到证明；   A 选项：如图 1，存在直线 $ l $ 满足 $ l \\parallel \\alpha $ 且 $ l \\perp \\beta $，但 $ \\alpha $ 与 $ \\beta $ 不垂直（即 $ \\alpha \\not\\perp \\beta $）；   B 选项：存在直线 $ l $ 满足 $ l \\perp \\alpha $ 且 $ l \\perp \\beta $，但 $ \\alpha $ 与 $ \\beta $ 不平行（即 $ \\alpha \\nparallel \\beta $）；   C 选项：若 $ \\alpha \\parallel \\beta $，且 $ l \\subset \\alpha $，则由面面平行的定义可知 $ l \\parallel \\beta $；   D 选项：若 $ \\beta $ 内有无数条直线均互相平行，则不能推出 $ l \\parallel \\alpha $。",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+    "title": "8-6空间直线、平面的垂直",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-6空间直线、平面的垂直.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:37:25"
+}

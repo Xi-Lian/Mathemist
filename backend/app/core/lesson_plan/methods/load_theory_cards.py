@@ -21,16 +21,16 @@ class _LoadTheoryCardsMixin:
             ]
             
             for i, file_path in enumerate(possible_paths, 1):
-                print(f"📂 尝试路径 {i}: {file_path}")
+                print(f"尝试路径 {i}: {file_path}")
                 if file_path.exists():
                     with open(file_path, 'r', encoding='utf-8') as f:
                         content = f.read()
-                        print(f"✅ 成功加载理论卡片文件: {len(content)} 字符")
+                        print(f"成功加载理论卡片文件: {len(content)} 字符")
                         return content
                 else:
-                    print(f"❌ 文件不存在: {file_path}")
+                    print(f"文件不存在: {file_path}")
         except Exception as e:
-            print(f"⚠️ 加载理论卡片文件失败: {e}")
+            print(f"加载理论卡片文件失败: {e}")
         
         # 内置默认理论卡片
         default_content = """# 教育理论卡片集
@@ -84,5 +84,5 @@ class _LoadTheoryCardsMixin:
 **核心观点**：学习应在真实的情境中进行，知识只有在应用中才有意义。
 **适用环节**：情境导入、应用练习、项目学习
 **教学启发**：创设真实的问题情境，让学生在解决实际问题中学习和应用知识。"""
-        print("📝 使用内置默认理论卡片内容")
+        print("使用内置默认理论卡片内容")
         return default_content

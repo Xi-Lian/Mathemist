@@ -2,15 +2,20 @@ from .._shared import *
 from .session import recover_session_from_latest
 
 
-FORMAT_SELECTION_RESPONSE = """📥 请选择您需要的导出格式：
+# V48.2修复：简化为只支持Markdown格式导出
+# 根据项目规范，教案导出应直接显示 Markdown 格式下载按钮，不询问用户选择其他格式
 
-1. 📄 Markdown格式 - 适合在编辑器中查看和编辑
-2. 🌐 HTML格式 - 适合在浏览器中查看
-3. 📝 Word格式 - 适合正式文档和打印
-4. 📕 PDF格式 - 适合打印与分享
-5. 📦 全部格式 - 同时导出所有格式（ZIP）
+FORMAT_SELECTION_RESPONSE = """📥 教案已准备好下载！
 
-请回复对应的数字或格式名称，例如："1"、"Word" 或 "PDF"。"""
+请点击下方链接下载 Markdown 格式文件：
+
+- [📄 下载 Markdown 文档 (.md)](sandbox:/mnt/data/lesson_plan.md)
+
+**说明：**
+- Markdown 格式适合在编辑器中查看和编辑
+- 您可以将 Markdown 内容复制到 Word、PDF 等其他工具中进行格式转换
+
+祝您使用愉快！🎯"""
 
 
 def handle_view_full_lesson_plan(system, user_input, session_id):
@@ -23,7 +28,7 @@ def handle_view_full_lesson_plan(system, user_input, session_id):
         session = system.sessions[session_id]
         if session.get("lesson_plan"):
             lesson_plan = session["lesson_plan"]
-            export_result = system.export_lesson_plan(session_id, "markdown")
+            # V46.0修复：直接显示教案内容，不调用导出功能
             response = f"""📖 完整教案如下：
 
 {lesson_plan}
@@ -33,10 +38,11 @@ def handle_view_full_lesson_plan(system, user_input, session_id):
 **您可以：**
 1. ✏️ 提出修改意见，我可以帮您调整
 2. 🔄 基于这个教案继续优化
+3. 💾 输入"导出教案"保存为文件
 
 请告诉我您的想法！"""
             session["conversation_history"].append({"role": "assistant", "content": response})
-            result = {
+            return {
                 "success": True,
                 "session_id": session_id,
                 "status": "completed",
@@ -44,16 +50,8 @@ def handle_view_full_lesson_plan(system, user_input, session_id):
                 "lesson_plan": lesson_plan,
                 "collected_info": session.get("collected_info", {}),
                 "conversation_history": session["conversation_history"],
+                # V46.0修复：不返回export_data，避免前端显示下载按钮
             }
-            if export_result.get("success"):
-                result["export_data"] = {
-                    "content": export_result.get("content", ""),
-                    "filename": export_result.get("filename", "lesson_plan.md"),
-                    "format": export_result.get("format", "markdown"),
-                    "encoding": export_result.get("encoding"),
-                    "mime_type": export_result.get("mime_type"),
-                }
-            return result
 
         response = "抱歉，还没有生成教案，请先生成教案后再查看完整内容。"
         session["conversation_history"].append({"role": "assistant", "content": response})
@@ -139,11 +137,9 @@ def _export_from_session(system, user_input, session_id, export_format):
         session["conversation_history"].append({"role": "assistant", "content": response})
         return {"success": False, "session_id": session_id, "status": "error", "response": response}
 
-    if "格式" in user_input or "导出为" in user_input:
-        session["conversation_history"].append({"role": "assistant", "content": FORMAT_SELECTION_RESPONSE})
-        return {"success": True, "session_id": session_id, "status": "format_selection", "response": FORMAT_SELECTION_RESPONSE}
-
-    export_result = system.export_lesson_plan(session_id, export_format)
+    # V48.2修复：直接导出Markdown格式，不再询问格式选择
+    print(f"📥 直接导出Markdown格式")
+    export_result = system.export_lesson_plan(session_id, "markdown")
     return build_export_response(session, session_id, export_result)
 
 

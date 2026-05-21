@@ -1,0 +1,56 @@
+{
+  "exercise_id": "exercise_311_53789",
+  "resource_type": "exercise",
+  "title": "5-3-1诱导公式二、三、四",
+  "source_file": "云端习题/函数习题/5-3-1诱导公式二、三、四.md",
+  "analysis": {
+    "知识点": [
+      "新定义理解与应用",
+      "诱导公式（二、三、四）",
+      "同角三角函数基本关系",
+      "象限角与三角函数值符号判断"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用新定义“广义互补”及诱导公式，结合同角关系与象限符号，判断给定三角函数值对应的角是否满足条件。",
+    "涉及公式": [
+      "sin(π+α) = -sinα",
+      "sin(π-α) = sinα",
+      "cos(π+β) = -cosβ",
+      "cos(2π-β) = cosβ",
+      "sin²α + cos²α = 1",
+      "tanα = sinα/cosα"
+    ],
+    "解题思路": "先由已知条件求出sinα=1/4，根据“广义互补”定义α+β=π得β=π-α。然后利用诱导公式分别计算各选项中三角函数值，并与β=π-α时的对应值比较，同时结合象限符号（sinα>0，α可能在一、二象限，β相应在二、一象限，sinβ>0）排除矛盾选项。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）（2024年芜湖月考）定义：角 $\\theta$ 与 $\\varphi$ 都是任意角，若满足 $\\theta + \\varphi = \\pi$，则称 $\\theta$ 与 $\\varphi$ “广义互补”．已知 $\\sin(\\pi + \\alpha) = -\\dfrac{1}{4}$，下列角 $\\beta$ 中，可能与角 $\\alpha$ “广义互补”的是（　　）   A. $\\sin \\beta = \\dfrac{1}{4}$　　B. $\\cos(\\pi + \\beta) = \\dfrac{\\sqrt{15}}{4}$　　C. $\\tan \\beta = \\sqrt{15}$　　D. $\\cos(2\\pi - \\beta) = -\\dfrac{\\sqrt{15}}{4}$",
+    "难度（1-5）": "5",
+    "知识点标签": "新定义的诱导公式的同角关系",
+    "解析": "答案：ABD   解析：因为 $\\sin(\\pi + \\alpha) = -\\sin \\alpha = -\\dfrac{1}{4}$，所以 $\\sin \\alpha = \\dfrac{1}{4}$．若 $\\alpha + \\beta = \\pi$，则 $\\beta = \\pi - \\alpha$．   对于 A：$\\sin \\beta = \\sin(\\pi - \\alpha) = \\sin \\alpha = \\dfrac{1}{4}$，故 A 符合题意；   对于 B：$\\cos(\\pi + \\beta) = \\cos(2\\pi - \\alpha) = \\cos \\alpha = \\pm \\dfrac{\\sqrt{15}}{4}$，故 B 符合题意；   对于 C：由 $\\tan \\beta = \\sqrt{15}$，得 $\\dfrac{\\sin \\beta}{\\cos \\beta} = \\sqrt{15}$，即 $\\sin \\beta = \\sqrt{15}\\, \\cos \\beta$．又 $\\sin^2 \\beta + \\cos^2 \\beta = 1$，代入得 $15 \\cos^2 \\beta + \\cos^2 \\beta = 1$，即 $16 \\cos^2 \\beta = 1$，所以 $\\cos \\beta = \\pm \\dfrac{1}{4}$，$\\sin \\beta = \\pm \\dfrac{\\sqrt{15}}{4}$．但由 $\\beta = \\pi - \\alpha$ 且 $\\sin \\alpha = \\dfrac{1}{4} > 0$，知 $\\alpha$ 可能在第一或第二象限，$\\beta$ 相应在第二或第一象限，$\\sin \\beta = \\sin \\alpha = \\dfrac{1}{4} > 0$，故 $\\sin \\beta = \\dfrac{1}{4}$，与 $\\pm \\dfrac{\\sqrt{15}}{4}$ 矛盾，因此 C 不符合题意；   对于 D：$\\cos(2\\pi - \\beta) = \\cos[2\\pi - (\\pi - \\alpha)] = \\cos(\\pi + \\alpha) = -\\cos \\alpha = \\pm \\dfrac{\\sqrt{15}}{4}$，故 D 符合题意．   综上，选 ABD．",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-3-1诱导公式二、三、四.md",
+    "title": "5-3-1诱导公式二、三、四",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-1诱导公式二、三、四.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-3-1诱导公式二、三、四.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-3-1诱导公式二、三、四.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:23"
+}

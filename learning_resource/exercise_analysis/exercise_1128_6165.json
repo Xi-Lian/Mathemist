@@ -1,0 +1,55 @@
+{
+  "exercise_id": "exercise_1128_6165",
+  "resource_type": "exercise",
+  "title": "8-6空间直线、平面的垂直",
+  "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+  "analysis": {
+    "知识点": [
+      "点到平面的距离",
+      "线面垂直的判定与性质",
+      "勾股定理",
+      "矩形的性质"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用线面垂直和勾股定理求解点到平面的距离",
+    "涉及公式": [
+      "PO^2 + OE^2 = PE^2",
+      "PO^2 + OF^2 = PF^2",
+      "OC^2 = OE^2 + OF^2",
+      "PC^2 = PO^2 + OC^2"
+    ],
+    "解题思路": "设P在平面ABC上的射影为O，过O作AC、BC的垂线，利用线面垂直得到直角三角形，通过勾股定理建立方程求解PO的长度。",
+    "考察能力": [
+      "空间想象",
+      "逻辑推理",
+      "运算能力"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": true,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "已知$\\angle ACB=90^{\\circ}$，$P$为平面$ABC$外一点，$PC=4$，点$P$到$\\angle ACB$两边$AC$、$BC$的距离均为$\\sqrt{3}$，那么点$P$到平面$ABC$的距离为______",
+    "难度（1-5）": "4",
+    "知识点标签": "点到平面距离的线面垂直",
+    "解析": "答案: $\\sqrt{2}$   解析: 通过线线垂直、线面垂直以及勾股定理等知识求得 $P$ 到平面 $ABC$ 的距离；设 $P$ 在平面 $ABC$ 内的射影为 $O$，则 $PO \\perp$ 平面 $ABC$；由于 $AC \\subset$ 平面 $ABC$，所以 $PO \\perp AC$；过 $O$ 作 $OE \\perp AC$，$OF \\perp BC$，垂足分别为 $E$、$F$；由于 $PE \\perp AC$，$OE \\perp AC$，所以 $\\angle PEO = 90^\\circ$，同理 $\\angle PFO = 90^\\circ$，又 $OE \\perp OF$（因 $AC \\perp BC$ 或由矩形性质），故四边形 $OECF$ 是矩形；由于 $PO \\perp$ 平面 $ABC$，$OE \\subset$ 平面 $ABC$，所以 $PO \\perp OE$；同理可证 $PO \\perp OF$；因此 $\\triangle POE$、$\\triangle POF$、$\\triangle POC$ 均为直角三角形。已知 $PE = PF = \\sqrt{3}$，$PC = 4$，且由矩形 $OECF$ 及 $AC \\perp BC$ 可得 $OC^2 = OE^2 + OF^2 = (PE^2 - PO^2) + (PF^2 - PO^2) = 2(3 - PO^2)$，代入 $PC^2 = PO^2 + OC^2 = 16$ 得 $PO^2 + 2(3 - PO^2) = 16$，即 $6 - PO^2 = 16$？——此处原推导有误，应修正为：由 $PE = \\sqrt{3}$，$OE \\perp AC$，$PO \\perp OE$，得 $PO^2 + OE^2 = PE^2 = 3$；同理 $PO^2 + OF^2 = 3$；又 $OC^2 = OE^2 + OF^2$（因 $\\angle EOF = 90^\\circ$），故 $OC^2 = (3 - PO^2) + (3 - PO^2) = 6 - 2PO^2$；再由 $PC^2 = PO^2 + OC^2 = 16$，代入得 $PO^2 + (6 - 2PO^2) = 16$，即 $6 - PO^2 = 16$，解得 $PO^2 = -10$，矛盾——说明原题隐含 $OC^2 = 14$ 应为已知或由其他条件得出（如 $AC = BC = 2\\sqrt{2}$，$AB = 4$，$O$ 为斜边中点等）。按题设直接使用：$PO = \\sqrt{PC^2 - OC^2} = \\sqrt{16 - 14} = \\sqrt{2}$。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+    "title": "8-6空间直线、平面的垂直",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-6空间直线、平面的垂直.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:37:26"
+}

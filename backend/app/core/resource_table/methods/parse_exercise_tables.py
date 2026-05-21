@@ -17,7 +17,7 @@ class _ParseExerciseTablesMixin:
             return {}
 
         index_map: Dict[str, Dict[str, str]] = {}
-        index_paths = [p for p in sorted(self.project_root.glob('*习题_云端资源汇总表.xlsx')) if not p.name.startswith('~$')]
+        index_paths = [p for p in sorted(self.learning_resource_path.glob('*习题_云端资源汇总表.xlsx')) if not p.name.startswith('~$')]
         for index_path in index_paths:
             board_name = index_path.stem.replace('_云端资源汇总表', '')
             try:
@@ -152,7 +152,7 @@ class _ParseExerciseTablesMixin:
             logger.warning("未安装 pandas，跳过根目录云端习题索引导入")
             return []
 
-        index_paths = [p for p in sorted(self.project_root.glob('*习题_云端资源汇总表.xlsx')) if not p.name.startswith('~$')]
+        index_paths = [p for p in sorted(self.learning_resource_path.glob('*习题_云端资源汇总表.xlsx')) if not p.name.startswith('~$')]
         if not index_paths:
             return []
 

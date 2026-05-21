@@ -1,0 +1,52 @@
+{
+  "exercise_id": "exercise_357_83965",
+  "resource_type": "exercise",
+  "title": "5-4-3正弦函数、余弦函数的周期性和奇偶性",
+  "source_file": "云端习题/函数习题/5-4-3正弦函数、余弦函数的周期性和奇偶性.md",
+  "analysis": {
+    "知识点": [
+      "余弦函数的奇偶性",
+      "充分条件与必要条件",
+      "三角恒等变换"
+    ],
+    "题型": "选择题",
+    "核心考点": "判断余弦型函数为偶函数的条件，以及充分必要条件的逻辑关系",
+    "涉及公式": [
+      "cos(θ - π) = -cosθ",
+      "cos(θ - 2kπ) = cosθ",
+      "cos(-x) = cosx"
+    ],
+    "解题思路": "先代入φ的具体表达式化简f(x)判断是否为偶函数，再设f(x)为偶函数推导φ满足的条件，比较两个条件集合的包含关系确定充分必要性",
+    "考察能力": [
+      "逻辑推理",
+      "运算能力"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "3"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "(2024年武汉模拟)已知函数 $f(x) = \\cos(2x - 2\\varphi)$，则“$\\varphi = \\dfrac{\\pi}{2} + k\\pi,\\ k \\in \\mathbb{Z}$”是“$f(x)$ 为偶函数”的（　　）   A. 充分不必要条件　　B. 必要不充分条件　　C. 充要条件　　D. 既不充分也不必要条件",
+    "难度（1-5）": "3",
+    "知识点标签": "余弦函数;奇偶性;充要条件",
+    "解析": "答案: A   解析: 函数 $ f(x) = \\cos(2x - 2\\varphi) $。当 $ \\varphi = \\dfrac{\\pi}{2} + k\\pi \\ (k \\in \\mathbb{Z}) $ 时，   $$ f(x) = \\cos\\left[2x - 2\\left(\\dfrac{\\pi}{2} + k\\pi\\right)\\right] = \\cos(2x - \\pi - 2k\\pi) = \\cos(2x - \\pi) = -\\cos 2x, $$   （因 $ \\cos(\\theta - 2k\\pi) = \\cos\\theta $，且 $ \\cos(\\theta - \\pi) = -\\cos\\theta $），故 $ f(x) = -\\cos 2x $ 是偶函数，充分性成立。    若 $ f(x) $ 为偶函数，则对任意 $ x $，有 $ f(-x) = f(x) $，即   $$ \\cos(-2x - 2\\varphi) = \\cos(2x - 2\\varphi). $$   利用余弦函数的偶性，左边为 $ \\cos(2x + 2\\varphi) $，故   $$ \\cos(2x + 2\\varphi) = \\cos(2x - 2\\varphi), \\quad \\forall x. $$   该恒等式成立当且仅当   $$ 2\\varphi = k\\pi \\quad (k \\in \\mathbb{Z}), $$   即 $ \\varphi = \\dfrac{k\\pi}{2} \\ (k \\in \\mathbb{Z}) $。   而 $ \\varphi = \\dfrac{\\pi}{2} + k\\pi = \\dfrac{(2k+1)\\pi}{2} \\ (k \\in \\mathbb{Z}) $ 仅为上述解集中的奇数倍半整数情形（即 $ k $ 为奇数），不包含 $ \\varphi = m\\pi \\ (m \\in \\mathbb{Z}) $（如 $ \\varphi = 0 $ 时，$ f(x) = \\cos 2x $ 也是偶函数）。因此必要性不成立。    故 “$ \\varphi = \\dfrac{\\pi}{2} + k\\pi,\\ k \\in \\mathbb{Z} $” 是 “$ f(x) $ 为偶函数” 的**充分不必要条件**。故选 A。",
+    "适用场景": "综合运用",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-4-3正弦函数、余弦函数的周期性和奇偶性.md",
+    "title": "5-4-3正弦函数、余弦函数的周期性和奇偶性",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-4-3正弦函数、余弦函数的周期性和奇偶性.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-4-3正弦函数、余弦函数的周期性和奇偶性.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-4-3正弦函数、余弦函数的周期性和奇偶性.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:27:54"
+}

@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_638_72751",
+  "resource_type": "exercise",
+  "title": "6-2排列与组合",
+  "source_file": "云端习题/概率与统计习题/6-2排列与组合.md",
+  "analysis": {
+    "知识点": [
+      "组合数公式",
+      "组合恒等式",
+      "组合数的性质：C(n, k) = C(n, n-k)",
+      "阶乘运算"
+    ],
+    "题型": "解答题",
+    "核心考点": "利用组合数性质和阶乘运算求解参数，以及证明组合恒等式",
+    "涉及公式": [
+      "C(n, k) = n! / (k! (n-k)!)",
+      "C(n, k) = C(n, n-k)",
+      "C(n, k) * C(n-k, m-k) = C(n, m) * C(m, k)"
+    ],
+    "解题思路": "(1) 由C(n,x)=C(n,2x)利用性质得x+2x=n，代入第二个方程，将组合数展开为阶乘形式，约简后解方程求n和x。 (2) 将左右两边分别用阶乘公式展开，化简后比较分子分母，证明相等。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "综合题",
+    "是否需要画图": false,
+    "预估解题时间": "8"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "(1)已知$\\begin{cases} \\binom{n}{x} = \\binom{n}{2x} \\\\[2pt] \\binom{n}{x+1} = \\dfrac{11}{3}\\binom{n}{x-1} \\end{cases}$，试求$x,n$的值；  \n(2)证明：$\\binom{n}{k} \\cdot \\binom{n-k}{m-k} = \\binom{n}{m} \\cdot \\binom{m}{k}$。",
+    "难度（1-5）": "4",
+    "知识点标签": "组合数公式;组合恒等式",
+    "解析": "答案：(1) $ n = 15 $，$ x = 5 $；(2) 见解析。  \n解析：  \n(1) 由 $ \\binom{n}{x} = \\binom{n}{2x} $ 可得 $ x = 2x $（舍去）或 $ x + 2x = n $，即 $ x = \\dfrac{n}{3} $。  \n于是有  \n$$\n\\binom{n}{\\frac{n}{3} + 1} = \\frac{11}{3} \\binom{n}{\\frac{n}{3} - 1}.\n$$  \n即  \n$$\n\\frac{n!}{\\left( \\frac{n}{3} + 1 \\right)! \\, \\left( n - \\frac{n}{3} - 1 \\right)!} \n= \\frac{11}{3} \\cdot \\frac{n!}{\\left( \\frac{n}{3} - 1 \\right)! \\, \\left( n - \\frac{n}{3} + 1 \\right)!}.\n$$  \n约去 $ n! $ 并整理分母阶乘关系，得  \n$$\n\\frac{1}{\\left( \\frac{n}{3} + 1 \\right) \\left( \\frac{n}{3} \\right) \\left( \\frac{n}{3} - 1 \\right)! \\cdot \\left( \\frac{2n}{3} - 1 \\right)!} \n= \\frac{11}{3} \\cdot \\frac{1}{\\left( \\frac{n}{3} - 1 \\right)! \\cdot \\left( \\frac{2n}{3} + 1 \\right) \\left( \\frac{2n}{3} \\right) \\left( \\frac{2n}{3} - 1 \\right)!}.\n$$  \n消去公共因子 $ \\left( \\frac{n}{3} - 1 \\right)! $ 和 $ \\left( \\frac{2n}{3} - 1 \\right)! $，得  \n$$\n\\frac{1}{\\left( \\frac{n}{3} + 1 \\right) \\left( \\frac{n}{3} \\right)} \n= \\frac{11}{3} \\cdot \\frac{1}{\\left( \\frac{2n}{3} + 1 \\right) \\left( \\frac{2n}{3} \\right)}.\n$$  \n交叉相乘整理得  \n$$\n11 \\left( \\frac{n}{3} + 1 \\right) \\cdot \\frac{n}{3} = 3 \\left( \\frac{2n}{3} + 1 \\right) \\cdot \\frac{2n}{3},\n$$  \n即  \n$$\n11(n + 3) \\cdot \\frac{n}{9} = 3(2n + 3) \\cdot \\frac{2n}{9}.\n$$  \n两边同乘 9，得  \n$$\n11(n + 3)n = 6(2n + 3)n.\n$$  \n因 $ n \\ne 0 $，两边除以 $ n $，得  \n$$\n11(n + 3) = 6(2n + 3),\n$$  \n解得 $ n = 15 $，故 $ x = \\dfrac{n}{3} = 5 $。  \n\n(2) 证明：  \n$$\n\\binom{n}{k} \\binom{n - k}{m - k} \n= \\frac{n!}{k! \\, (n - k)!} \\cdot \\frac{(n - k)!}{(m - k)! \\, (n - m)!} \n= \\frac{n!}{k! \\, (m - k)! \\, (n - m)!},\n$$  \n$$\n\\binom{n}{m} \\binom{m}{k} \n= \\frac{n!}{m! \\, (n - m)!} \\cdot \\frac{m!}{k! \\, (m - k)!} \n= \\frac{n!}{k! \\, (n - m)! \\, (m - k)!}.\n$$  \n因此，  \n$$\n\\binom{n}{k} \\binom{n - k}{m - k} = \\binom{n}{m} \\binom{m}{k}.\n$$\n\n---",
+    "适用场景": "拔高培优",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/概率与统计习题/6-2排列与组合.md",
+    "title": "6-2排列与组合",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/6-2排列与组合.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/03-概率与统计/02-习题/6-2排列与组合.xlsx",
+    "本地完整路径": "D:\\习题\\概率与统计-习题\\概率与统计-习题\\6-2排列与组合.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "概率与统计习题",
+    "索引文件": "概率与统计习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:31:23"
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -23,10 +23,29 @@ function normalizeBaseUrl(url: string): string {
 
 export function CombinedGeometryWorkbench() {
   const searchParams = useSearchParams();
-  const initialApiFromQuery = searchParams.get("apiUrl")?.trim() ?? "";
-  const [apiBaseUrl, setApiBaseUrl] = useState(
-    initialApiFromQuery || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001",
-  );
+  // V48.8修复：使用 useState + useEffect 避免 Hydration 不匹配
+  const [apiBaseUrl, setApiBaseUrl] = useState("http://localhost:8000");
+  const [isMounted, setIsMounted] = useState(false);
+  
+  // 在客户端挂载后初始化 apiBaseUrl
+  useEffect(() => {
+    const initialApiFromQuery = searchParams.get("apiUrl")?.trim() ?? "";
+    // V48.9修复：GGB接口不使用包含 /langgraph/math-agent 的 URL
+    // 无论是查询参数还是环境变量，都需要提取基础 URL
+    let baseUrl: string;
+    
+    if (initialApiFromQuery) {
+      // 从查询参数中提取基础 URL（去掉 /langgraph/math-agent）
+      baseUrl = initialApiFromQuery.replace(/\/langgraph\/math-agent$/, "");
+    } else {
+      // 从 NEXT_PUBLIC_API_URL 中提取基础 URL（去掉 /langgraph/math-agent）
+      const envUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      baseUrl = envUrl.replace(/\/langgraph\/math-agent$/, "");
+    }
+    
+    setApiBaseUrl(baseUrl);
+    setIsMounted(true);
+  }, [searchParams]);
   const [chapter, setChapter] = useState("");
   const [topic, setTopic] = useState("");
   const [teachingPurpose, setTeachingPurpose] = useState("");
@@ -111,7 +130,7 @@ export function CombinedGeometryWorkbench() {
                 <div>
                   <label className="mb-1 block text-sm font-medium">后端地址</label>
                   <Input
-                    value={apiBaseUrl}
+                    value={isMounted ? apiBaseUrl : ""}
                     onChange={(e) => setApiBaseUrl(e.target.value)}
                     placeholder="http://localhost:8000"
                   />

@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_437_18207",
+  "resource_type": "exercise",
+  "title": "5-6-2函数图象与性质的应用",
+  "source_file": "云端习题/函数习题/5-6-2函数图象与性质的应用.md",
+  "analysis": {
+    "知识点": [
+      "正弦型函数的解析式",
+      "三角函数的周期性",
+      "三角函数的单调性",
+      "函数图象的平移变换"
+    ],
+    "题型": "解答题",
+    "核心考点": "根据已知条件求正弦型函数的解析式，并求平移后函数的单调递减区间",
+    "涉及公式": [
+      "周期公式 T = 2π/ω",
+      "正弦函数的单调递减区间公式",
+      "函数平移变换公式"
+    ],
+    "解题思路": "（1）由相邻最高点距离得周期T=π，求出ω=2；代入点(0,1/2)得sinφ=1/2，结合φ范围得φ=π/6，从而得解析式。（2）对f(x)进行平移变换得y=sin2x，利用正弦函数的单调递减区间公式求解。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "5"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "已知函数 $ f(x) = \\sin(\\omega x + \\varphi) $（其中 $ \\omega > 0 $，$ 0 < \\varphi < \\dfrac{\\pi}{2} $）的图象过点 $ \\left(0, \\dfrac{1}{2}\\right) $，且其图象上相邻两个最高点之间的距离为 $ \\pi $．   (1) 求 $ f(x) $ 的解析式；   (2) 求函数 $ y = f\\left(x - \\dfrac{\\pi}{12}\\right) $ 的单调递减区间．",
+    "难度（1-5）": "3",
+    "知识点标签": "正弦型函数解析式的单调性",
+    "解析": "答案：(1) $ f(x) = \\sin\\left(2x + \\frac{\\pi}{6}\\right) $；(2) $ \\left[k\\pi + \\frac{\\pi}{4},\\; k\\pi + \\frac{3\\pi}{4}\\right],\\; k \\in \\mathbb{Z} $。   解析：(1) 由周期 $ T = \\pi $，得 $ \\omega = \\frac{2\\pi}{T} = 2 $。又 $ f(0) = \\sin\\varphi = \\frac{1}{2} $，且 $ 0 < \\varphi < \\frac{\\pi}{2} $，故 $ \\varphi = \\frac{\\pi}{6} $，所以 $ f(x) = \\sin\\left(2x + \\frac{\\pi}{6}\\right) $。   (2) 平移后函数为   $$ y = f\\left(x - \\frac{\\pi}{12}\\right) = \\sin\\left[2\\left(x - \\frac{\\pi}{12}\\right) + \\frac{\\pi}{6}\\right] = \\sin\\left(2x - \\frac{\\pi}{6} + \\frac{\\pi}{6}\\right) = \\sin 2x. $$   正弦函数 $ y = \\sin 2x $ 的单调递减区间满足   $$ 2k\\pi + \\frac{\\pi}{2} \\le 2x \\le 2k\\pi + \\frac{3\\pi}{2},\\quad k \\in \\mathbb{Z}, $$   解得   $$ k\\pi + \\frac{\\pi}{4} \\le x \\le k\\pi + \\frac{3\\pi}{4},\\quad k \\in \\mathbb{Z}. $$   故所求递减区间为 $ \\left[k\\pi + \\frac{\\pi}{4},\\; k\\pi + \\frac{3\\pi}{4}\\right],\\; k \\in \\mathbb{Z} $。",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-6-2函数图象与性质的应用.md",
+    "title": "5-6-2函数图象与性质的应用",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-6-2函数图象与性质的应用.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-6-2函数图象与性质的应用.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-6-2函数图象与性质的应用.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:28:57"
+}

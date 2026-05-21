@@ -1,0 +1,50 @@
+{
+  "exercise_id": "exercise_150_9621",
+  "resource_type": "exercise",
+  "title": "4-3-1对数的概念",
+  "source_file": "云端习题/函数习题/4-3-1对数的概念.md",
+  "analysis": {
+    "知识点": [
+      "对数的定义域",
+      "对数底数的取值范围",
+      "对数真数的取值范围"
+    ],
+    "题型": "解答题",
+    "核心考点": "对数函数定义域的限制条件：底数大于0且不等于1，真数大于0",
+    "涉及公式": [
+      "log_a b 中 a > 0 且 a ≠ 1，b > 0"
+    ],
+    "解题思路": "根据对数定义，分别对每个式子中的底数和真数列出不等式组，求解交集得到x的取值范围。注意真数中可能隐含的平方项非负条件，但需排除底数为1的情况。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "3"
+  },
+  "original_resource": {
+    "题目类型": "解答题",
+    "题干": "求下列各式中 $x$ 的取值范围：   (1) $\\log_{x-1}(x+2)$；   (2) $\\log_{x+1}\\left[(x-1)^2\\right]$。",
+    "难度（1-5）": "3",
+    "知识点标签": "对数定义域",
+    "解析": "答案: (1) $\\{x \\mid x > 1 \\text{ 且 } x \\neq 2\\}$；(2) $\\{x \\mid x > -1 \\text{ 且 } x \\neq 0,\\, x \\neq 1\\}$。   解析: (1) 由   \\[ \\begin{cases} x - 1 > 0 \\\\ x - 1 \\neq 1 \\\\ x + 2 > 0 \\end{cases}, \\]   解得   \\[ \\begin{cases} x > 1 \\\\ x \\neq 2 \\\\ x > -2 \\end{cases}, \\]   即 $x > 1$ 且 $x \\neq 2$，故 $x$ 的取值范围是 $\\{x \\mid x > 1 \\text{ 且 } x \\neq 2\\}$。   (2) 由   \\[ \\begin{cases} x + 1 > 0 \\\\ x + 1 \\neq 1 \\\\ x - 1 \\neq 0 \\end{cases}, \\]   解得   \\[ \\begin{cases} x > -1 \\\\ x \\neq 0 \\\\ x \\neq 1 \\end{cases}; \\]   故 $x$ 的取值范围是 $\\{x \\mid x > -1 \\text{ 且 } x \\neq 0,\\, x \\neq 1\\}$。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/4-3-1对数的概念.md",
+    "title": "4-3-1对数的概念",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/4-3-1对数的概念.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/4-3-1对数的概念.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第四章-指数与指数函数\\4-3-1对数的概念.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:25:26"
+}

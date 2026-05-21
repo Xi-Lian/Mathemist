@@ -1,0 +1,50 @@
+{
+  "exercise_id": "exercise_253_23545",
+  "resource_type": "exercise",
+  "title": "5-1-1任意角",
+  "source_file": "云端习题/函数习题/5-1-1任意角.md",
+  "analysis": {
+    "知识点": [
+      "象限角",
+      "倍角关系",
+      "终边相同的角"
+    ],
+    "题型": "选择题",
+    "核心考点": "通过倍角2α的终边位置确定α的象限范围",
+    "涉及公式": [
+      "k·360° < 2α < k·360° + 180°, k∈Z",
+      "k·180° < α < k·180° + 90°, k∈Z"
+    ],
+    "解题思路": "由2α终边在x轴上方得到其角度范围，除以2得到α的范围，再对整数k分奇偶讨论，确定α所在象限。",
+    "考察能力": [
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）已知角 $2\\alpha$ 的终边在 $x$ 轴的上方，那么角 $\\alpha$ 可能是（　　）   A. 第一象限角　　B. 第二象限角　　C. 第三象限角　　D. 第四象限角",
+    "难度（1-5）": "3",
+    "知识点标签": "象限角;倍角关系",
+    "解析": "答案：$A$；$C$   解析：由角 $2\\alpha$ 的终边在 $x$ 轴上方，得   $$ k \\cdot 360^\\circ < 2\\alpha < k \\cdot 360^\\circ + 180^\\circ,\\quad k \\in \\mathbb{Z}, $$   两边同除以 2，得   $$ k \\cdot 180^\\circ < \\alpha < k \\cdot 180^\\circ + 90^\\circ,\\quad k \\in \\mathbb{Z}. $$   当 $k$ 为偶数时，令 $k = 2n$（$n \\in \\mathbb{Z}$），则   $$ 2n \\cdot 180^\\circ < \\alpha < 2n \\cdot 180^\\circ + 90^\\circ \\quad \\Rightarrow \\quad 360^\\circ n < \\alpha < 360^\\circ n + 90^\\circ, $$   故 $\\alpha$ 为第一象限角；   当 $k$ 为奇数时，令 $k = 2n+1$（$n \\in \\mathbb{Z}$），则   $$ (2n+1) \\cdot 180^\\circ < \\alpha < (2n+1) \\cdot 180^\\circ + 90^\\circ \\quad \\Rightarrow \\quad 360^\\circ n + 180^\\circ < \\alpha < 360^\\circ n + 270^\\circ, $$   故 $\\alpha$ 为第三象限角。",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-1-1任意角.md",
+    "title": "5-1-1任意角",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-1-1任意角.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-1-1任意角.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-1-1任意角.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:26:43"
+}

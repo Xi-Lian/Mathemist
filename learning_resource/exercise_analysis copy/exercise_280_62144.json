@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_280_62144",
+  "resource_type": "exercise",
+  "title": "5-2-1三角函数的概念",
+  "source_file": "云端习题/函数习题/5-2-1三角函数的概念.md",
+  "analysis": {
+    "知识点": [
+      "三角函数的定义",
+      "三角函数有意义的条件",
+      "终边上的点坐标与三角函数值的关系"
+    ],
+    "题型": "选择题",
+    "核心考点": "根据角α终边上点的坐标判断各三角函数是否有意义",
+    "涉及公式": [
+      "sinα = y/r",
+      "cosα = x/r",
+      "tanα = y/x",
+      "r = √(x² + y²)"
+    ],
+    "解题思路": "由点P(0,3)可知x=0，y=3，r=3。根据三角函数定义，sinα=y/r=3/3=1有意义；cosα=x/r=0/3=0有意义；tanα=y/x=3/0分母为0无意义；tanα+sinα中tanα无意义，故整体无意义。因此有意义的为B和C。",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "选择题(多选)",
+    "题干": "（多选）若角$\\alpha$的终边上有一点$P(0,3)$，则下列式子有意义的是（　　）   A. $\\tan\\alpha$　　B. $\\sin\\alpha$　　C. $\\cos\\alpha$　　D. $\\tan\\alpha + \\sin\\alpha$",
+    "难度（1-5）": "2",
+    "知识点标签": "三角函数定义;有意义条件",
+    "解析": "答案：$B; C$   解析：由三角函数的定义 $\\sin\\alpha = \\dfrac{y}{r}$，$\\cos\\alpha = \\dfrac{x}{r}$，$\\tan\\alpha = \\dfrac{y}{x}$，可知当 $x = 0$ 时，$\\tan\\alpha$ 无定义；此时 $\\tan\\alpha + \\sin\\alpha$ 也无定义，因为加法运算要求各项均有定义。",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-2-1三角函数的概念.md",
+    "title": "5-2-1三角函数的概念",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-1三角函数的概念.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-2-1三角函数的概念.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-2-1三角函数的概念.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "高一上学期",
+    "grade_level": 10,
+    "grade_inference_source": "knowledge_tags",
+    "grade_confidence": 0.7999999999999999
+  },
+  "analyzed_at": "2026-05-04 02:27:02"
+}

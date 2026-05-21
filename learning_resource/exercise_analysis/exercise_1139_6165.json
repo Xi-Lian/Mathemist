@@ -1,0 +1,53 @@
+{
+  "exercise_id": "exercise_1139_6165",
+  "resource_type": "exercise",
+  "title": "8-6空间直线、平面的垂直",
+  "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+  "analysis": {
+    "知识点": [
+      "三棱锥的性质",
+      "线面垂直的性质",
+      "勾股定理",
+      "三角形的外心"
+    ],
+    "题型": "选择题",
+    "核心考点": "利用线面垂直和勾股定理证明点到三角形三个顶点距离相等，从而确定外心",
+    "涉及公式": [
+      "OA = √(PA² - PO²)",
+      "OB = √(PB² - PO²)",
+      "OC = √(PC² - PO²)"
+    ],
+    "解题思路": "由PA⊥平面ABC得PO⊥OA、PO⊥OB、PO⊥OC，在三个直角三角形中应用勾股定理，结合PA=PB=PC推出OA=OB=OC，故O为△ABC的外心",
+    "考察能力": [
+      "逻辑推理",
+      "空间想象"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": true,
+    "预估解题时间": "2"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选)",
+    "题干": "在三棱锥$P\\text{-}ABC$中，$PA \\perp$ 平面 $ABC$，垂足为 $O$，且 $PA = PB = PC$，则点 $O$ 一定是 $\\triangle ABC$ 的（　　）   A. 内心　　B. 外心　　C. 重心　　D. 垂心",
+    "难度（1-5）": "3",
+    "知识点标签": "三棱锥的三角形的五心",
+    "解析": "【答案】B   【点拨】根据题意，结合勾股定理，求得 \\( OA = OB = OC \\)，即可得出结论。   【详解】如图所示，分别连接 \\( OA \\)、\\( OB \\)、\\( OC \\)。因为 \\( PO \\perp \\) 平面 \\( ABC \\)，所以 \\( PO \\perp OA \\)、\\( PO \\perp OB \\)、\\( PO \\perp OC \\)。又已知 \\( PA = PB = PC \\)，在直角三角形 \\( \\triangle POA \\)、\\( \\triangle POB \\)、\\( \\triangle POC \\) 中，由勾股定理得：   \\[ OA = \\sqrt{PA^2 - PO^2},\\quad  OB = \\sqrt{PB^2 - PO^2},\\quad  OC = \\sqrt{PC^2 - PO^2}. \\]   由于 \\( PA = PB = PC \\)，故 \\( OA = OB = OC \\)，即点 \\( O \\) 到 \\( \\triangle ABC \\) 三个顶点的距离相等，因此点 \\( O \\) 是 \\( \\triangle ABC \\) 的外心。   故选：B。",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-6空间直线、平面的垂直.md",
+    "title": "8-6空间直线、平面的垂直",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-6空间直线、平面的垂直.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-6空间直线、平面的垂直.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:37:35"
+}

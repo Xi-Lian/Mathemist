@@ -1,0 +1,54 @@
+{
+  "exercise_id": "exercise_1079_19317",
+  "resource_type": "exercise",
+  "title": "8-4空间点直线平面之间的位置关系",
+  "source_file": "云端习题/立体几何习题/8-4空间点直线平面之间的位置关系.md",
+  "analysis": {
+    "知识点": [
+      "基本事实2（公理2）",
+      "点、直线、平面的位置关系",
+      "集合符号∈与⊂的区分"
+    ],
+    "题型": "选择题",
+    "核心考点": "基本事实2的符号化表示，区分元素与集合、集合与集合的关系符号",
+    "涉及公式": [
+      "A∈l",
+      "B∈l",
+      "A∈α",
+      "B∈α",
+      "l⊂α"
+    ],
+    "解题思路": "根据基本事实2，若直线l上的两个点A、B都在平面α内，则直线l在平面α内。点与直线、点与平面的关系用∈，直线与平面的包含关系用⊂。选项A缺少结论；选项C误用∈；选项D的l∩α=l虽等价但非标准表述；只有选项B完整且符号正确。",
+    "考察能力": [
+      "逻辑推理",
+      "空间想象"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1"
+  },
+  "original_resource": {
+    "题目类型": "选择题(单选),应用题",
+    "题干": "基本事实2：如果一条直线上的两个点在一个平面内，那么这条直线在这个平面内．可用符号表示为（  ）   A. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$   B. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   C. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   D. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$，则 $l\\cap\\alpha=l$    注：原选项 C 中的 $l\\in\\alpha$ 是错误的（直线不能属于平面，应为包含关系 $\\subset$）；选项 D 中 $l\\cap\\alpha$ 不完整，缺少等号右边，正确结论应为 $l\\cap\\alpha=l$ 或直接 $l\\subset\\alpha$。标准表述是 B（但需注意：B 中已完整写出前提与结论，且结论 $l\\subset\\alpha$ 正确）。然而，严格来说，**B 是唯一语法完整、逻辑正确、符号规范的选项**。  因此，修复后的 LaTeX 格式（仅修正排版与符号严谨性，不改变题干结构）如下：  基本事实2：如果一条直线上的两个点在一个平面内，那么这条直线在这个平面内．可用符号表示为（  ）   A. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$   B. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   C. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   D. $A\\in l$，$B\\in l$，且$A\\in\\alpha$，$B\\in\\alpha$，则 $l\\cap\\alpha=l$    但题目要求“修复LaTeX格式”，重点在语法正确、可渲染。原题中所有公式本身语法无误，但存在两处需规范：  - “/ A.” 等斜杠为误输入，应为换行或空格分隔； - 选项 D 中 “$l\\cap\\alpha$” 不完整，会导致 LaTeX 编译警告（虽可渲染，但语义缺失），应补全为 $l\\cap\\alpha=l$ 或更准确地用 $l\\subset\\alpha$； - 中文标点（如顿号、句号）应为全角，但 LaTeX 中通常用英文标点加空格，或统一用中文环境（此处按通用数学题习惯，保留中文标点，公式内保持英文）； - 公式间逗号后应加空格以提升可读性（非必须，但推荐）； - “则”后建议加空格再接公式。  修复后（仅修正 LaTeX 可渲染性与数学严谨性，保持原选项编号和内容意图）：  基本事实2：如果一条直线上的两个点在一个平面内，那么这条直线在这个平面内．可用符号表示为（  ）   A. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$   B. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   C. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   D. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$    ⚠️ 注意：原题选项 C 和 B 内容重复，D 不完整。标准公理表述必须包含结论“则 $l\\subset\\alpha$”。因此，**唯一正确且格式完备的选项是 B**，其余存在逻辑或语法缺陷。故最终修复版应使 B 准确、独立、可渲染，其余选项修正为常见干扰项形式（C 改为错误写法 $l\\in\\alpha$，D 改为无意义表达式），以符合单选题设计逻辑。  因此，严格按题干原始选项意图并修复 LaTeX 渲染问题后的标准答案格式为：  基本事实2：如果一条直线上的两个点在一个平面内，那么这条直线在这个平面内．可用符号表示为（  ）   A. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$   B. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   C. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\in\\alpha$   D. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\cap\\alpha$    但 D 中 $l\\cap\\alpha$ 仍不完整，LaTeX 虽能编译，但数学上不构成命题。应改为 $l\\cap\\alpha=l$ 或 $l\\cap\\alpha\\neq\\varnothing$ 等。最稳妥修复是补全为 $l\\cap\\alpha=l$，因其等价于 $l\\subset\\alpha$，且语法完整。  综上，最终修复版本（确保所有公式语法正确、语义明确、可被 MathJax 渲染）为：  基本事实2：如果一条直线上的两个点在一个平面内，那么这条直线在这个平面内．可用符号表示为（  ）   A. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$   B. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\subset\\alpha$   C. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\in\\alpha$   D. $A\\in l$，$B\\in l$，且 $A\\in\\alpha$，$B\\in\\alpha$，则 $l\\cap\\alpha=l$",
+    "难度（1-5）": "2",
+    "知识点标签": "基本事实2;符号表示",
+    "解析": "答案：B   解析：因为 $A$、$B$ 是点，是元素，属于直线 $l$ 和平面 $\\alpha$，所以用 $\\in$；而 $l$ 是点的集合，$\\alpha$ 是点集（或几何对象的集合），$l$ 与 $\\alpha$ 之间是集合与集合的关系，且 $l \\subset \\alpha$（当直线 $l$ 在平面 $\\alpha$ 内时），故用 $\\subset$。",
+    "适用场景": "课堂演练",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/立体几何习题/8-4空间点直线平面之间的位置关系.md",
+    "title": "8-4空间点直线平面之间的位置关系",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-4空间点直线平面之间的位置关系.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/02-立体几何/02-习题/8-4空间点直线平面之间的位置关系.xlsx",
+    "本地完整路径": "D:\\习题\\立体几何-习题\\立体几何-习题\\8-4空间点直线平面之间的位置关系.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "立体几何习题",
+    "索引文件": "立体几何习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:36:53"
+}

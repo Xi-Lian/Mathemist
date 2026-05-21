@@ -1,0 +1,50 @@
+{
+  "exercise_id": "exercise_400_5960",
+  "resource_type": "exercise",
+  "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+  "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+  "analysis": {
+    "知识点": [
+      "正切和角公式",
+      "韦达定理",
+      "一元二次方程根与系数的关系"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用韦达定理求两角和的正切值",
+    "涉及公式": [
+      "tan(α+β) = (tanα + tanβ) / (1 - tanα tanβ)",
+      "韦达定理: x₁+x₂ = -b/a, x₁x₂ = c/a"
+    ],
+    "解题思路": "由韦达定理求出tanα+tanβ和tanα·tanβ，代入正切和角公式计算即可。",
+    "考察能力": [
+      "运算能力"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "1分钟"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "已知$\\tan \\alpha$，$\\tan \\beta$是方程$2x^2+3x-5=0$的两个实数根，则$\\tan (\\alpha+\\beta)=$\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_．",
+    "难度（1-5）": "3",
+    "知识点标签": "正切和角的韦达定理",
+    "解析": "答案: $-\\dfrac{3}{7}$   解析: 因为 $\\tan \\alpha$、$\\tan \\beta$ 是方程 $2x^2 + 3x - 5 = 0$ 的两个实数根，所以   $$ \\tan \\alpha + \\tan \\beta = -\\frac{3}{2}, \\quad \\tan \\alpha \\tan \\beta = -\\frac{5}{2}. $$   因此，   $$ \\tan(\\alpha + \\beta) = \\frac{\\tan \\alpha + \\tan \\beta}{1 - \\tan \\alpha \\tan \\beta} = \\frac{-\\frac{3}{2}}{1 - \\left(-\\frac{5}{2}\\right)} = \\frac{-\\frac{3}{2}}{\\frac{7}{2}} = -\\frac{3}{7}. $$",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "title": "5-5-3两角和与差的正弦、余弦、正切公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-3两角和与差的正弦、余弦、正切公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-3两角和与差的正弦、余弦、正切公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:25"
+}

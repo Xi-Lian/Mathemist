@@ -1,0 +1,45 @@
+# Node
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Env
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+frontend/.env.local
+
+# Database / model cache
+chroma_db/
+backend/chroma_db/
+paraphrase-multilingual-MiniLM-L12-v2/
+backend/data/cloud_lesson_plan_cache/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / local tools
+.vscode/
+.idea/
+*.swp
+.claude
+.claude.md
+.iflow
+iflow.md

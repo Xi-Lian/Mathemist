@@ -51,6 +51,9 @@ class MathAgentState:
     
     clarified_topic: Optional[Dict[str, Any]] = None
     
+    # V53.0：课件教学用途过滤（如"练习课"/"复习课"/"新授课"），None 表示不过滤
+    courseware_teaching_use: Optional[str] = None
+    
     retrieved_resources: Optional[Dict[str, Any]] = None
     
     lesson_plan_session_id: Optional[str] = None
@@ -70,6 +73,9 @@ class MathAgentState:
     response_mode: Optional[str] = None
 
     skip_retrieval: bool = False
+
+    # 习题结构化详情：前端用于分区渲染（题干/答案/知识点分离展示）
+    exercise_details: List[Dict[str, Any]] = field(default_factory=list)
     
     chat_history: List[Dict[str, str]] = field(default_factory=list)
     

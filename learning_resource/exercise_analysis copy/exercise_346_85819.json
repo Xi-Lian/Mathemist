@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_346_85819",
+  "resource_type": "exercise",
+  "title": "5-4-2正弦函数、余弦函数的单调性与最值",
+  "source_file": "云端习题/函数习题/5-4-2正弦函数、余弦函数的单调性与最值.md",
+  "analysis": {
+    "知识点": [
+      "正弦函数的单调性",
+      "诱导公式",
+      "复合函数的单调性"
+    ],
+    "题型": "填空题",
+    "核心考点": "利用诱导公式化简正弦型函数，并求其在给定区间上的单调区间",
+    "涉及公式": [
+      "sin(π/4 - x) = -sin(x - π/4)",
+      "正弦函数的单调区间公式"
+    ],
+    "解题思路": "先利用诱导公式将f(x)化为-1/3 sin(x-π/4)，再根据正弦函数的单调性，结合负号对单调性的影响，求出整体函数的单调区间，最后在[0,π]上取交集",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "3"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "函数$f(x)=\\frac{1}{3}\\sin\\left(\\frac{\\pi}{4}-x\\right)$，$x\\in[0,\\pi]$的单调递增区间为$\\left[\\frac{\\pi}{4},\\pi\\right]$，单调递减区间为$\\left[0,\\frac{\\pi}{4}\\right]$．",
+    "难度（1-5）": "3",
+    "知识点标签": "正弦函数;诱导公式;单调区间",
+    "解析": "答案: $\\left[\\dfrac{3\\pi}{4}, \\pi\\right]$；$\\left[0, \\dfrac{3\\pi}{4}\\right]$   解析：由题意可知 $f(x) = -\\dfrac{1}{3} \\sin\\left(x - \\dfrac{\\pi}{4}\\right)$，令 $-\\dfrac{\\pi}{2} + 2k\\pi \\leq x - \\dfrac{\\pi}{4} \\leq \\dfrac{\\pi}{2} + 2k\\pi$，$k \\in \\mathbb{Z}$，则 $-\\dfrac{\\pi}{4} + 2k\\pi \\leq x \\leq \\dfrac{3\\pi}{4} + 2k\\pi$，$k \\in \\mathbb{Z}$ 时，$f(x)$ 单调递减．又因 $0 \\leq x \\leq \\pi$，故 $f(x)$ 的单调递减区间为 $\\left[0, \\dfrac{3\\pi}{4}\\right]$．同理，$f(x)$ 的单调递增区间为 $\\left[\\dfrac{3\\pi}{4}, \\pi\\right]$．",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-4-2正弦函数、余弦函数的单调性与最值.md",
+    "title": "5-4-2正弦函数、余弦函数的单调性与最值",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-4-2正弦函数、余弦函数的单调性与最值.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-4-2正弦函数、余弦函数的单调性与最值.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-4-2正弦函数、余弦函数的单调性与最值.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:27:46"
+}

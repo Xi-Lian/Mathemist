@@ -1,0 +1,51 @@
+{
+  "exercise_id": "exercise_386_84868",
+  "resource_type": "exercise",
+  "title": "5-5-2两角差的余弦公式",
+  "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+  "analysis": {
+    "知识点": [
+      "同角三角函数的基本关系",
+      "余弦的差角公式",
+      "象限符号与三角函数值的正负"
+    ],
+    "题型": "填空题",
+    "核心考点": "已知一个角的正弦值及所在象限，求该角的余弦值，并利用两角差的余弦公式计算特定角的余弦值",
+    "涉及公式": [
+      "sin²α + cos²α = 1",
+      "cos(π/4 - α) = cos(π/4)cosα + sin(π/4)sinα"
+    ],
+    "解题思路": "首先根据α的范围（第二象限）确定cosα为负，利用同角三角函数关系求出cosα = -8/17；然后代入两角差的余弦公式展开，代入cosα和sinα的值，化简得到结果7√2/34",
+    "考察能力": [
+      "运算能力",
+      "逻辑推理"
+    ],
+    "题目分类": "基础题",
+    "是否需要画图": false,
+    "预估解题时间": "2分钟"
+  },
+  "original_resource": {
+    "题目类型": "填空题",
+    "题干": "已知$\\sin \\alpha = \\frac{15}{17}$，$\\alpha \\in \\left( \\frac{\\pi}{2}, \\pi \\right)$，则$\\cos \\left( \\frac{\\pi}{4} - \\alpha \\right)$的值为__________．",
+    "难度（1-5）": "3",
+    "知识点标签": "余弦差角的象限符号",
+    "解析": "答案: $\\dfrac{7\\sqrt{2}}{34}$   解析: 因为 $\\sin \\alpha = \\dfrac{15}{17}$，$\\alpha \\in \\left( \\dfrac{\\pi}{2}, \\pi \\right)$，所以   $$ \\cos \\alpha = -\\sqrt{1 - \\sin^2 \\alpha} = -\\sqrt{1 - \\left( \\dfrac{15}{17} \\right)^2} = -\\dfrac{8}{17}. $$   因此，   $$ \\cos\\!\\left( \\dfrac{\\pi}{4} - \\alpha \\right)  = \\cos \\dfrac{\\pi}{4} \\cos \\alpha + \\sin \\dfrac{\\pi}{4} \\sin \\alpha  = \\dfrac{\\sqrt{2}}{2} \\cdot \\left( -\\dfrac{8}{17} \\right) + \\dfrac{\\sqrt{2}}{2} \\cdot \\dfrac{15}{17}  = \\dfrac{7\\sqrt{2}}{34}. $$",
+    "适用场景": "课后巩固",
+    "题目文件名": "",
+    "resource_type": "exercise",
+    "source_file": "云端习题/函数习题/5-5-2两角差的余弦公式.md",
+    "title": "5-5-2两角差的余弦公式",
+    "云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.md",
+    "原文件云端链接": "https://math-1415627924.cos.ap-guangzhou.myqcloud.com/math-teaching-resources/01-函数/02-习题/5-5-2两角差的余弦公式.xlsx",
+    "本地完整路径": "D:\\习题\\函数-习题\\函数-习题\\必修一第五章-三角函数\\5-5-2两角差的余弦公式.md",
+    "上传状态": "上传成功",
+    "链接状态": "可访问",
+    "板块": "函数习题",
+    "索引文件": "函数习题_云端资源汇总表.xlsx",
+    "grade": "未知",
+    "grade_level": 0,
+    "grade_inference_source": "none",
+    "grade_confidence": 0
+  },
+  "analyzed_at": "2026-05-04 02:28:17"
+}

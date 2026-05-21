@@ -33,6 +33,28 @@ export type LessonPlanExportData = {
   mime_type?: string;
 };
 
+export type ExerciseDetail = {
+  title: string;
+  question: string;
+  answer: string;
+  question_type: string;
+  knowledge_tags: string;
+  difficulty: string;
+  usage_scene?: string;
+  question_image_url: string;
+  answer_image_url: string;
+  question_format: "text" | "image";
+  answer_format: "text" | "latex" | "image";
+  has_question_image: boolean;
+  has_answer_image: boolean;
+  is_image_exercise: boolean;
+  relevance: number;
+  matched_themes: string[];
+  match_level: string;
+  source: string;
+  filename: string;
+};
+
 export type StateType = {
   messages: Message[];
   ui?: UIMessage[];
@@ -45,6 +67,7 @@ export type StateType = {
   response?: string;
   lesson_plan?: string;
   collected_info?: Record<string, unknown>;
+  exercise_details?: ExerciseDetail[];
 };
 
 const useTypedStream = useStream<
@@ -63,6 +86,7 @@ const useTypedStream = useStream<
       response?: string;
       lesson_plan?: string;
       collected_info?: Record<string, unknown>;
+      exercise_details?: ExerciseDetail[];
     };
     CustomEventType: UIMessage | RemoveUIMessage;
   }
@@ -116,12 +140,16 @@ const StreamSession = ({
 }) => {
   const [threadId, setThreadId] = useQueryState("threadId");
   const { getThreads, setThreads } = useThreads();
+  
+  // 检查是否是新会话（threadId为空），如果是，则不加载历史记录
+  const isNewSession = !threadId;
+  
   const streamValue = useTypedStream({
     apiUrl,
     apiKey: apiKey ?? undefined,
     assistantId,
     threadId: threadId ?? null,
-    fetchStateHistory: true,
+    fetchStateHistory: !isNewSession, // 只在已有会话时加载历史记录
     onCustomEvent: (event, options) => {
       if (isUIMessage(event) || isRemoveUIMessage(event)) {
         options.mutate((prev) => {
@@ -164,7 +192,7 @@ const StreamSession = ({
 };
 
 // Default values for the form
-const DEFAULT_API_URL = "http://localhost:8001/langgraph/math-agent";
+const DEFAULT_API_URL = "http://localhost:8000/langgraph/math-agent";
 const DEFAULT_ASSISTANT_ID = "math-agent";
 
 export const StreamProvider: React.FC<{ children: ReactNode }> = ({
