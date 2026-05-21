@@ -526,7 +526,7 @@ class VectorDatabaseBuilder:
         
         # 初始化习题分析器
         self.exercise_analyzer = None
-        deepseek_api_key = os.environ.get('DEEPSEEK_API_KEY', 'sk-b1bbbcbf88504b1c96e70da79772ff16')
+        deepseek_api_key = os.environ.get('DEEPSEEK_API_KEY')
         if deepseek_api_key:
             try:
                 self.exercise_analyzer = ExerciseAnalyzer(deepseek_api_key)
